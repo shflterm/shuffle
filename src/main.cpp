@@ -7,7 +7,7 @@ using namespace std;
 
 int main() {
   info("loading");
-  loadLanguageFile();
+  loadLanguageFile("ko_kr");
   loadCommands();
   system("clear");
 

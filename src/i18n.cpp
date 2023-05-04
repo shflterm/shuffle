@@ -8,8 +8,8 @@ using namespace std;
 
 string langJson;
 
-void loadLanguageFile() {
-  langJson = read_file("../lang/en_us.json");
+void loadLanguageFile(const string& region) {
+  langJson = read_file("../lang/" + region + ".json");
 }
 
 string translate(const string &translate_code, const initializer_list<string> &args) {
@@ -19,7 +19,7 @@ string translate(const string &translate_code, const initializer_list<string> &a
   string str = root[translate_code].asString();
 
   int i = 0;
-  for (const string& elem : args) {
+  for (const string &elem : args) {
     str = replace(str, "$" + to_string(i), elem);
     i++;
   }

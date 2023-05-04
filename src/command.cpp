@@ -35,6 +35,7 @@ void loadCommands() {
   commands.emplace_back("exit", CUSTOM);
   commands.emplace_back("cd", CUSTOM);
   commands.emplace_back("list", CUSTOM);
+  commands.emplace_back("lang", CUSTOM);
   commands.emplace_back("help", EXECUTE_PROGRAM, "help");
   commands.emplace_back("clear", EXECUTE_PROGRAM, "clear");
 }
@@ -65,6 +66,14 @@ void execute(string input) {
           path = newPath;
         else error("directory_not_found", {newPath});
       } else if (cmd[0] == "list") {
+        if (cmd.size() != 1) {
+          too_many_arguments();
+          return;
+        }
+
+        for (const auto &entry : fs::directory_iterator(path))
+          print(INFO, replace(entry.path(), path, ""));
+      } else if (cmd[0] == "lang") {
         if (cmd.size() != 1) {
           too_many_arguments();
           return;
