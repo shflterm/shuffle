@@ -1,7 +1,7 @@
 #ifndef UTILS
 #define UTILS
 
-#include <sstream>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -38,7 +38,7 @@ int levenshteinDist(string word1, string word2) {
   int size1 = word1.size();
   int size2 = word2.size();
   int verif[size1 + 1][size2 + 1];  // Verification matrix i.e. 2D array which
-                                    // will store the calculated distance.
+  // will store the calculated distance.
 
   // If one of the words has zero length, the distance is equal to the size of
   // the other word.
@@ -70,6 +70,30 @@ int levenshteinDist(string word1, string word2) {
 
   // The last position of the matrix will contain the Levenshtein distance.
   return verif[size1][size2];
+}
+
+string replace(string str, const string& from, const string& to) {
+  size_t start_pos = 0;
+  while((start_pos = str.find(from, start_pos)) != string::npos) {
+    str.replace(start_pos, from.length(), to);
+    start_pos += to.length();
+  }
+  return str;
+}
+
+string read_file(const string& path) {
+  string res;
+
+  ifstream openFile(path);
+  if (openFile.is_open()) {
+    string line;
+    while (getline(openFile, line)) {
+      res += line + "\n";
+    }
+    openFile.close();
+  }
+
+  return res;
 }
 
 #endif
