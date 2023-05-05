@@ -1,3 +1,5 @@
+#include <vector>
+
 #include "executor.h"
 #include "console.h"
 #include "i18n.h"
@@ -8,9 +10,14 @@ using namespace std;
 int main() {
   print(INFO, "Loading Shuffle...");
   loadLanguageFile("en_us");
-  loadCommands();
+  loadDefaultCommands();
 
-  clear();
+  vector<CommandData> commands = getRegisteredCommands();
+  for (const CommandData &command : commands) {
+    loadCommand(command);
+  }
+
+//  clear();
 
   info("system.welcome", {"v1.0"});
   info("system.copyrights");

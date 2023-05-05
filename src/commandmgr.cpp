@@ -1,22 +1,28 @@
 #include "commandmgr.h"
 
 #include <iostream>
+#include <json/json.h>
 
 #include "executor.h"
 #include "console.h"
 #include "suggestion.h"
+#include "utils.h"
 
 using namespace std;
 
 vector<Command> commands;
 
-void loadCommands() {
+void loadDefaultCommands() {
   commands.emplace_back("exit", CUSTOM);
   commands.emplace_back("cd", CUSTOM);
   commands.emplace_back("list", CUSTOM);
   commands.emplace_back("lang", CUSTOM);
   commands.emplace_back("help", CUSTOM);
-  commands.emplace_back("clear", EXECUTE_PROGRAM, "clear");
+//  commands.emplace_back("clear", EXECUTE_PROGRAM, "clear");
+}
+
+void loadCommand(const CommandData& data) {
+  commands.emplace_back(data.name, RUN_APP, data.execute);
 }
 
 void inputCommand() {
@@ -56,4 +62,26 @@ void inputCommand() {
   }
   white();
   if (!input.empty()) execute(input);
+}
+
+vector<CommandData> getRegisteredCommands() {
+  vector<CommandData> res;
+
+  Json::Value root;
+  Json::Reader reader;
+  reader.parse(readFile(string(getenv("APPDATA")) + "/.shuffle/commands.json"), root, false);
+
+  Json::Value commandList = root["commands"];
+  for (auto command : commandList) {
+    CommandData data;
+    data.name = command["name"].asString();
+    data.version = command["version"].asString();
+//    data.alias = command["alias"];
+    data.author = command["author"].asString();
+    data.website = command["website"].asString();
+    data.execute = replace(command["execute"].asString(), "{SHUFFLE_APPS}", string(getenv("APPDATA")) + "/.shuffle/apps");
+    res.push_back(data);
+  }
+
+  return res;
 }

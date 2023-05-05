@@ -5,6 +5,7 @@
 #include <vector>
 #include <filesystem>
 #include <sys/stat.h>
+#include <json/json.h>
 
 #include "console.h"
 #include "utils.h"
@@ -70,10 +71,19 @@ void execute(const string &input) {
         loadLanguageFile(cmd[1]);
         info("lang.changed", {cmd[1]});
       }
-    } else if (command.type == EXECUTE_PROGRAM) {
-      system(command.value.c_str());
-    } else if (command.type == RUN_SHFL) {
-    } else if (command.type == RUN_SAPP) {
+    } else if (command.type == RUN_APP) {
+      string runDotShfl = command.value + "/run.shfl";
+
+      Json::Value root;
+      Json::Reader reader;
+      reader.parse(readFile(runDotShfl), root, false);
+
+#ifdef _WIN32
+      Json::Value executable = root["executable-WINDOWS"];
+#elif __linux__
+      Json::Value executable = root["executable-LINUX"];
+#endif
+      system((command.value + "/" + executable.asString()).c_str());
     }
     break;
   }
