@@ -41,6 +41,14 @@ void error(const string &text) {
   error(text, {});
 }
 
+void clear() {
+#ifdef _WIN32
+  system("cls");
+#elif __linux__
+  system("clear");
+#endif
+}
+
 void white() { cout << "\n"; }
 
 void too_many_arguments() { error("too_many_arguments"); }
@@ -99,14 +107,14 @@ int wherex() {
   return buf.dwCursorPosition.X;
 #elif __linux__
   printf("\033[6n");
-  if (getch() != '\x1B') return 0;
-  if (getch() != '\x5B') return 0;
+  if (readChar() != '\x1B') return 0;
+  if (readChar() != '\x5B') return 0;
   int in;
   int ly = 0;
-  while ((in = getch()) != ';')
+  while ((in = readChar()) != ';')
     ly = ly * 10 + in - '0';
   int lx = 0;
-  while ((in = getch()) != 'R')
+  while ((in = readChar()) != 'R')
     lx = lx * 10 + in - '0';
   return lx;
 #endif
@@ -119,14 +127,14 @@ int wherey() {
   return buf.dwCursorPosition.Y;
 #elif __linux__
   printf("\033[6n");
-  if (getch() != '\x1B') return 0;
-  if (getch() != '\x5B') return 0;
+  if (readChar() != '\x1B') return 0;
+  if (readChar() != '\x5B') return 0;
   int in;
   int ly = 0;
-  while ((in = getch()) != ';')
+  while ((in = readChar()) != ';')
     ly = ly * 10 + in - '0';
   int lx = 0;
-  while ((in = getch()) != 'R')
+  while ((in = readChar()) != 'R')
     lx = lx * 10 + in - '0';
   return ly;
 #endif

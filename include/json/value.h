@@ -685,7 +685,7 @@ template <> inline const char* Value::as<const char*>() const {
   return asCString();
 }
 
-/** \brief Experimental and untested: represents an element of the "path" to
+/** \brief Experimental and untested: represents an element of the "value" to
  * access a node.
  */
 class JSON_API PathArgument {
@@ -704,7 +704,7 @@ private:
   Kind kind_{kindNone};
 };
 
-/** \brief Experimental and untested: represents a "path" to access a node.
+/** \brief Experimental and untested: represents a "value" to access a node.
  *
  * Syntax:
  * - "." => root node
@@ -725,7 +725,7 @@ public:
 
   const Value& resolve(const Value& root) const;
   Value resolve(const Value& root, const Value& defaultValue) const;
-  /// Creates the "path" to access the specified node and returns a reference on
+  /// Creates the "value" to access the specified node and returns a reference on
   /// the node.
   Value& make(Value& root) const;
 

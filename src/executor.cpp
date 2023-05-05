@@ -1,6 +1,5 @@
-#include "command.h"
+#include "executor.h"
 
-#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -9,29 +8,18 @@
 
 #include "console.h"
 #include "utils.h"
-
-#include "completion.h"
 #include "i18n.h"
+#include "commandmgr.h"
 
 using namespace std;
 using std::filesystem::current_path;
 namespace fs = std::filesystem;
 
-vector<Command> commands;
 #ifdef _WIN32
 string path = current_path().string();
 #elif __linux__
 string path = current_path();
 #endif
-
-void loadCommands() {
-  commands.emplace_back("exit", CUSTOM);
-  commands.emplace_back("cd", CUSTOM);
-  commands.emplace_back("list", CUSTOM);
-  commands.emplace_back("lang", CUSTOM);
-  commands.emplace_back("help", CUSTOM);
-  commands.emplace_back("clear", EXECUTE_PROGRAM, "clear");
-}
 
 void execute(const string &input) {
   vector<string> cmd = split(input, regex(R"(\s+)"));
@@ -83,7 +71,7 @@ void execute(const string &input) {
         info("lang.changed", {cmd[1]});
       }
     } else if (command.type == EXECUTE_PROGRAM) {
-      system(command.path.c_str());
+      system(command.value.c_str());
     } else if (command.type == RUN_SHFL) {
     } else if (command.type == RUN_SAPP) {
     }
@@ -101,54 +89,4 @@ void execute(const string &input) {
     if (similarWord.first > 1) warning("system.check_command");
     else warning("system.similar_command", {similarWord.second.name});
   }
-}
-
-string findSuggestion(const string &input) {
-  vector<string> suggestions = createSuggestions(input, commands);
-  if (suggestions.empty()) return "";
-
-  string suggestion = suggestions[0];
-  if (suggestion.size() < input.length() + 1) return "";
-
-  suggestion = suggestion.substr(input.length());
-  return suggestion;
-}
-
-void command() {
-  cout << path << "> ";
-  cout.flush();
-
-  string input;
-  char c;
-  while (true) {
-    c = readChar();
-
-    if (c == '\b') {
-      if (!input.empty()) {
-        gotoxy(wherex() - 1, wherey());
-        cout << ' ';
-        gotoxy(wherex() - 1, wherey());
-        input = input.substr(0, input.length() - 1);
-      }
-    } else if (c == '\n' || c == '\r') {
-      break;
-    } else if (c == '\t') {
-      string suggestion = findSuggestion(input);
-      if (suggestion.empty()) continue;
-
-      input += suggestion;
-      cout << "\033[0m" << suggestion;
-    } else {
-      cout << "\033[0m" << c;
-      input += c;
-    }
-
-    string suggestion = findSuggestion(input);
-    if (suggestion.empty()) continue;
-
-    cout << "\033[90m" << suggestion;
-    gotoxy(wherex() - (int) suggestion.size(), wherey());
-  }
-  white();
-  if (!input.empty()) execute(input);
 }

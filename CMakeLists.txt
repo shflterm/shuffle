@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.18)
 
 project(shuffle)
 
-set(SOURCES src/command.cpp src/completion.cpp src/utils.cpp src/console.cpp src/i18n.cpp)
+set(SOURCES src/executor.cpp src/suggestion.cpp src/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp)
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} src/main.cpp)
+add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp)
 
 target_link_directories(${PROJECT_NAME} PRIVATE lib)
 

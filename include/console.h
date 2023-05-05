@@ -21,6 +21,7 @@ void error(const string &text, const initializer_list<string> &args);
 void info(const string &text);
 void warning(const string &text);
 void error(const string &text);
+void clear();
 void white();
 void too_many_arguments();
 char readChar();
