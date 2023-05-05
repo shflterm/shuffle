@@ -1,12 +1,12 @@
 {
-  "loading": "Loading Shuffle...",
-  "welcome": "Welcome to SHUFFLE $0",
-  "copyrights": "(C) 2023. Shuffle Team All rights reserved.",
-  "help": "Type 'help' to get help!",
-  "command_not_found": "Sorry. Command '$0' not found.",
-  "check_command": "Please make sure you entered the correct command.",
-  "similar_command": "Did you mean '$0'?",
-  "too_many_arguments": "There are too many or too few arguments.",
-  "directory_not_found": "Directory '$0' not found.",
-  "bye": "Bye."
+  "system.welcome": "Welcome to SHUFFLE $0",
+  "system.copyrights": "(C) 2023. Shuffle Team All rights reserved.",
+  "system.help": "Type 'help' to get help!",
+  "system.command_not_found": "Sorry. Command '$0' not found.",
+  "system.check_command": "Please make sure you entered the correct command.",
+  "system.similar_command": "Did you mean '$0'?",
+  "system.too_many_arguments": "There are too many or too few arguments.",
+  "cd.directory_not_found": "Directory '$0' not found.",
+  "exit.bye": "Bye.",
+  "lang.changed": "The language has been changed to '$0'."
 }

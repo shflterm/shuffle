@@ -6,15 +6,15 @@
 using namespace std;
 
 int main() {
-  info("loading");
+  print(INFO, "Loading Shuffle...");
   loadLanguageFile("en_us");
   loadCommands();
   system("clear");
 
-  info("welcome", {"v1.0"});
-  info("copyrights");
+  info("system.welcome", {"v1.0"});
+  info("system.copyrights");
   white();
-  info("help");
+  info("system.help");
 
   while (true) {
     command();

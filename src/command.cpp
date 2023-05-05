@@ -51,7 +51,7 @@ void execute(string input) {
 
     if (command.type == CUSTOM) {
       if (cmd[0] == "exit") {
-        info("bye");
+        info("exit.bye");
         exit(0);
       } else if (cmd[0] == "cd") {
         if (cmd.size() != 2) {
@@ -64,7 +64,7 @@ void execute(string input) {
         struct stat sb{};
         if (stat(newPath.c_str(), &sb) == 0)
           path = newPath;
-        else error("directory_not_found", {newPath});
+        else error("cd.directory_not_found", {newPath});
       } else if (cmd[0] == "list") {
         if (cmd.size() != 1) {
           too_many_arguments();
@@ -80,6 +80,8 @@ void execute(string input) {
         }
 
         loadLanguageFile(cmd[1]);
+        info("lang.changed", {cmd[1]});
+//        gotoxy(0, 0);
       }
     } else if (command.type == EXECUTE_PROGRAM) {
       system(command.path.c_str());
@@ -90,15 +92,15 @@ void execute(string input) {
   }
 
   if (!isCommandFounded) {
-    error("command_not_found", {cmd[0]});
+    error("system.command_not_found", {cmd[0]});
     pair<int, Command> similarWord = {1000000000, {"", CUSTOM, ""}};
     for (const Command &command : commands) {
       int dist = levenshteinDist(cmd[0], command.name);
       if (dist < similarWord.first) similarWord = {dist, command};
     }
 
-    if (similarWord.first <= 2) warning("check_command");
-    else warning("similar_command", {similarWord.second.name});
+    if (similarWord.first <= 2) warning("system.check_command");
+    else warning("system.similar_command", {similarWord.second.name});
   }
 }
 
