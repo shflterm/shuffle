@@ -1,23 +1,19 @@
-#ifndef UTILS
-#define UTILS
+#include "utils.h"
 
-#include <fstream>
-#include <string>
+#include <iostream>
 #include <vector>
+#include <string>
+#include <regex>
 #include <algorithm>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
 
-vector<string> split(string input, char delimiter) {
-  vector<string> answer;
-  stringstream ss(input);
-  string temp;
-
-  while (getline(ss, temp, delimiter)) {
-    answer.push_back(temp);
-  }
-
-  return answer;
+vector<string> split(const string &s, const regex &delimiter_regex) {
+  std::sregex_token_iterator iter(s.begin(), s.end(), delimiter_regex, -1);
+  std::sregex_token_iterator end;
+  return {iter, end};
 }
 
 const string WHITESPACE = " \n\r\t\f\v";
@@ -34,67 +30,41 @@ string rtrim(const string &s) {
 
 string trim(const string &s) { return rtrim(ltrim(s)); }
 
-// https://github.com/guilhermeagostinelli/levenshtein/
-int levenshteinDist(string word1, string word2) {
-  int size1 = word1.size();
-  int size2 = word2.size();
-  int verif[size1 + 1][size2 + 1];  // Verification matrix i.e. 2D array which
-  // will store the calculated distance.
+int levenshteinDist(const string &str1, const string &str2) {
+  int len1 = (int) str1.length();
+  int len2 = (int) str2.length();
 
-  // If one of the words has zero length, the distance is equal to the size of
-  // the other word.
-  if (size1 == 0) return size2;
-  if (size2 == 0) return size1;
+  vector<vector<int>> dp(len1 + 1, vector<int>(len2 + 1, 0));
 
-  // Sets the first row and the first column of the verification matrix with the
-  // numerical order from 0 to the length of each word.
-  for (int i = 0; i <= size1; i++) verif[i][0] = i;
-  for (int j = 0; j <= size2; j++) verif[0][j] = j;
-
-  // Verification step / matrix filling.
-  for (int i = 1; i <= size1; i++) {
-    for (int j = 1; j <= size2; j++) {
-      // Sets the modification cost.
-      // 0 means no modification (i.e. equal letters) and 1 means that a
-      // modification is needed (i.e. unequal letters).
-      int cost = (word2[j - 1] == word1[i - 1]) ? 0 : 1;
-
-      // Sets the current position of the matrix as the minimum value between a
-      // (deletion), b (insertion) and c (substitution). a = the upper adjacent
-      // value plus 1: verif[i - 1][j] + 1 b = the left adjacent value plus 1:
-      // verif[i][j - 1] + 1 c = the upper left adjacent value plus the
-      // modification cost: verif[i - 1][j - 1] + cost
-      verif[i][j] = min(min(verif[i - 1][j] + 1, verif[i][j - 1] + 1),
-                        verif[i - 1][j - 1] + cost);
+  for (int i = 0; i <= len1; ++i) {
+    for (int j = 0; j <= len2; ++j) {
+      if (i == 0) {
+        dp[i][j] = j;
+      } else if (j == 0) {
+        dp[i][j] = i;
+      } else if (str1[i - 1] == str2[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] = 1 + std::min({dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]});
+      }
     }
   }
 
-  // The last position of the matrix will contain the Levenshtein distance.
-  return verif[size1][size2];
+  return dp[len1][len2];
 }
 
-string replace(string str, const string& from, const string& to) {
+string replace(string str, const string &from, const string &to) {
   size_t start_pos = 0;
-  while((start_pos = str.find(from, start_pos)) != string::npos) {
+  while ((start_pos = str.find(from, start_pos)) != string::npos) {
     str.replace(start_pos, from.length(), to);
     start_pos += to.length();
   }
   return str;
 }
 
-string read_file(const string& path) {
-  string res;
-
-  ifstream openFile(path);
-  if (openFile.is_open()) {
-    string line;
-    while (getline(openFile, line)) {
-      res += line + "\n";
-    }
-    openFile.close();
-  }
-
-  return res;
+string readFile(const string &path) {
+  ifstream file(path);
+  ostringstream content_stream;
+  content_stream << file.rdbuf();
+  return content_stream.str();
 }
-
-#endif

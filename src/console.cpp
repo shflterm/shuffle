@@ -1,16 +1,11 @@
-#ifndef CONSOLE
-#define CONSOLE
+#include "console.h"
 
 #include <iostream>
 #include <string>
 
-#include "i18n.cpp"
+#include "i18n.h"
 
 using namespace std;
-
-enum PrintLevel {
-  INFO, WARNING, ERROR
-};
 
 void print(PrintLevel level, const string &text) {
   string ansi = "\033[0m";
@@ -50,38 +45,47 @@ void white() { cout << "\n"; }
 
 void too_many_arguments() { error("too_many_arguments"); }
 
-#ifdef WIN32
+#include <stdio.h>
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <conio.h>
 #elif __linux__
-#include <stdio.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <termios.h>
 #endif
 
-int getch() {
-#ifdef WIN32
-  //TODO
-#elif __linux__
-  struct termios oldt{}, newt{};
-  int ch;
-  tcgetattr(STDIN_FILENO, &oldt);
-  newt = oldt;
-  newt.c_lflag &= ~ICANON;
-  newt.c_lflag &= ~ECHO;
-  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-  ch = getchar();
-  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-  return ch;
+char readChar() {
+#ifdef _WIN32 // Windows 환경
+  while (!_kbhit()) {}
+  return _getch();
+#else // Linux 환경
+  char buf = 0;
+    struct termios old = {0};
+    fflush(stdout);
+    if(tcgetattr(0, &old) < 0)
+        perror("tcsetattr()");
+    old.c_lflag &= ~ICANON;
+    old.c_lflag &= ~ECHO;
+    old.c_cc[VMIN] = 1;
+    old.c_cc[VTIME] = 0;
+    if(tcsetattr(0, TCSANOW, &old) < 0)
+        perror("tcsetattr ICANON");
+    if(read(0, &buf, 1) < 0)
+        perror("read()");
+    old.c_lflag |= ICANON;
+    old.c_lflag |= ECHO;
+    if(tcsetattr(0, TCSADRAIN, &old) < 0)
+        perror("tcsetattr ~ICANON");
+    return buf;
 #endif
 }
 
 void gotoxy(int x, int y) {
-#ifdef WIN32
+#ifdef _WIN32
   COORD pos;
-  pos.X = x;
-  pos.Y = y;
+  pos.X = (short) x;
+  pos.Y = (short) y;
   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 #elif __linux__
   printf("\033[%d;%df",y,x);
@@ -89,7 +93,7 @@ void gotoxy(int x, int y) {
 }
 
 int wherex() {
-#ifdef WIN32
+#ifdef _WIN32
   CONSOLE_SCREEN_BUFFER_INFO buf;
   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &buf);
   return buf.dwCursorPosition.X;
@@ -109,7 +113,7 @@ int wherex() {
 }
 
 int wherey() {
-#ifdef WIN32
+#ifdef _WIN32
   CONSOLE_SCREEN_BUFFER_INFO buf;
   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &buf);
   return buf.dwCursorPosition.Y;
@@ -127,5 +131,3 @@ int wherey() {
   return ly;
 #endif
 }
-
-#endif

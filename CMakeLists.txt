@@ -2,12 +2,18 @@ cmake_minimum_required(VERSION 3.18)
 
 project(shuffle)
 
-set(SOURCES src/main.cpp)
+set(SOURCES src/command.cpp src/completion.cpp src/utils.cpp src/console.cpp src/i18n.cpp)
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} src/main.cpp)
 
 target_link_directories(${PROJECT_NAME} PRIVATE lib)
-target_link_libraries(${PROJECT_NAME} PRIVATE libjsoncpp.so)
+
+if (WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE jsoncpp.lib)
+elseif (UNIX)
+    target_link_libraries(${PROJECT_NAME} PRIVATE libjsoncpp.so)
+endif ()
+
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
