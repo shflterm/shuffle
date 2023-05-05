@@ -4,10 +4,8 @@
 #include <vector>
 #include <filesystem>
 #include <sys/stat.h>
-#include <filesystem>
 
 #include "console.cpp"
-#include "scriptmgr.cpp"
 #include "utils.cpp"
 
 using namespace std;
@@ -29,7 +27,11 @@ typedef struct Command {
 } Command;
 
 vector<Command> commands;
+#ifdef WIN32
+string path = current_path().string();
+#elif __linux__
 string path = current_path();
+#endif
 
 void loadCommands() {
   commands.emplace_back("exit", CUSTOM);
@@ -71,8 +73,13 @@ void execute(string input) {
           return;
         }
 
-        for (const auto &entry : fs::directory_iterator(path))
+        for (const auto &entry : fs::directory_iterator(path)) {
+#ifdef WIN32
+          print(INFO, replace(entry.path().string(), path, ""));
+#elif __linux__
           print(INFO, replace(entry.path(), path, ""));
+#endif
+        }
       } else if (cmd[0] == "lang") {
         if (cmd.size() != 2) {
           too_many_arguments();
@@ -81,7 +88,6 @@ void execute(string input) {
 
         loadLanguageFile(cmd[1]);
         info("lang.changed", {cmd[1]});
-//        gotoxy(0, 0);
       }
     } else if (command.type == EXECUTE_PROGRAM) {
       system(command.path.c_str());
@@ -106,7 +112,23 @@ void execute(string input) {
 
 void command() {
   cout << path << "> ";
+  cout.flush();
+
   string input;
-  getline(cin, input);
+  char c;
+  while (true) {
+    c = getch();
+
+    if (c == '\b') {
+      cout << '\b';
+    } else if (c == '\n') {
+      break;
+    } else {
+      cout << c << "!";
+      gotoxy(wherex() - 1, wherey());
+      input += c;
+    }
+  }
+  white();
   execute(input);
 }
