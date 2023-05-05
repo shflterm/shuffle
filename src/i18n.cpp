@@ -17,6 +17,7 @@ string translate(const string &translate_code, const initializer_list<string> &a
   Json::Reader reader;
   reader.parse(langJson, root, false);
   string str = root[translate_code].asString();
+  if (str.empty()) str = translate_code;
 
   int i = 0;
   for (const string &elem : args) {

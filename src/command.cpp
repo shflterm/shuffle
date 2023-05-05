@@ -74,13 +74,12 @@ void execute(string input) {
         for (const auto &entry : fs::directory_iterator(path))
           print(INFO, replace(entry.path(), path, ""));
       } else if (cmd[0] == "lang") {
-        if (cmd.size() != 1) {
+        if (cmd.size() != 2) {
           too_many_arguments();
           return;
         }
 
-        for (const auto &entry : fs::directory_iterator(path))
-          print(INFO, replace(entry.path(), path, ""));
+        loadLanguageFile(cmd[1]);
       }
     } else if (command.type == EXECUTE_PROGRAM) {
       system(command.path.c_str());
