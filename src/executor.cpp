@@ -23,34 +23,52 @@ string path = current_path();
 #endif
 
 void execute(const string &input) {
-  vector<string> cmd = split(input, regex(R"(\s+)"));
-  if (cmd.empty()) return;
+  vector<string> args = split(input, regex(R"(\s+)"));
+  if (args.empty()) return;
 
   bool isCommandFounded = false;
   for (const Command &command : commands) {
-    if (command.name != cmd[0]) continue;
+    if (command.name != args[0]) continue;
     isCommandFounded = true;
 
     if (command.type == CUSTOM) {
-      if (cmd[0] == "exit") {
-        info("exit.bye");
-        exit(0);
-      } else if (cmd[0] == "help") {
-        info("system.wip");
-      } else if (cmd[0] == "cd") {
-        if (cmd.size() != 2) {
+      if (args[0] == "shfl") {
+        if (args.size() < 2) {
           too_many_arguments();
           return;
         }
 
-        string newPath = cmd[1][0] == '/' || cmd[1][0] == '\\' ? cmd[1] : path.append("/").append(cmd[1]);
+        if (args[1] == "register") {
+          if (args.size() != 4) {
+            too_many_arguments();
+            return;
+          }
+
+          CommandData newData;
+          newData.name = args[2];
+          newData.execute = args[3];
+          newData.type = EXECUTABLE;
+          addRegisteredCommand(newData);
+        }
+      } else if (args[0] == "exit") {
+        info("exit.bye");
+        exit(0);
+      } else if (args[0] == "help") {
+        info("system.wip");
+      } else if (args[0] == "cd") {
+        if (args.size() != 2) {
+          too_many_arguments();
+          return;
+        }
+
+        string newPath = args[1][0] == '/' || args[1][0] == '\\' ? args[1] : path.append("/").append(args[1]);
 
         struct stat sb{};
         if (stat(newPath.c_str(), &sb) == 0)
           path = newPath;
         else error("cd.directory_not_found", {newPath});
-      } else if (cmd[0] == "list") {
-        if (cmd.size() != 1) {
+      } else if (args[0] == "list") {
+        if (args.size() != 1) {
           too_many_arguments();
           return;
         }
@@ -62,16 +80,16 @@ void execute(const string &input) {
           print(INFO, replace(entry.path(), path, ""));
 #endif
         }
-      } else if (cmd[0] == "lang") {
-        if (cmd.size() != 2) {
+      } else if (args[0] == "lang") {
+        if (args.size() != 2) {
           too_many_arguments();
           return;
         }
 
-        loadLanguageFile(cmd[1]);
-        info("lang.changed", {cmd[1]});
+        loadLanguageFile(args[1]);
+        info("lang.changed", {args[1]});
       }
-    } else if (command.type == RUN_APP) {
+    } else if (command.type == SAPP) {
       string runDotShfl = command.value + "/run.shfl";
 
       Json::Value root;
@@ -84,15 +102,21 @@ void execute(const string &input) {
       Json::Value executable = root["executable-LINUX"];
 #endif
       system((command.value + "/" + executable.asString()).c_str());
+    } else if (command.type == EXECUTABLE) {
+      string cmd = command.value;
+      for (int i = 1; i < args.size(); ++i) {
+        cmd.append(" ").append(args[i]);
+      }
+      system(cmd.c_str());
     }
     break;
   }
 
   if (!isCommandFounded) {
-    error("system.command_not_found", {cmd[0]});
+    error("system.command_not_found", {args[0]});
     pair<int, Command> similarWord = {1000000000, {"", CUSTOM, ""}};
     for (const Command &command : commands) {
-      int dist = levenshteinDist(cmd[0], command.name);
+      int dist = levenshteinDist(args[0], command.name);
       if (dist < similarWord.first) similarWord = {dist, command};
     }
 

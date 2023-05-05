@@ -51,7 +51,7 @@ void clear() {
 
 void white() { cout << "\n"; }
 
-void too_many_arguments() { error("too_many_arguments"); }
+void too_many_arguments() { error("system.too_many_arguments"); }
 
 #include <stdio.h>
 #ifdef _WIN32

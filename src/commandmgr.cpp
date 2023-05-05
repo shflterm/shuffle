@@ -8,6 +8,8 @@
 #include "suggestion.h"
 #include "utils.h"
 
+#define COMMANDS_JSON string(getenv("APPDATA")) + "/.shuffle/commands.json"
+
 using namespace std;
 
 vector<Command> commands;
@@ -18,11 +20,12 @@ void loadDefaultCommands() {
   commands.emplace_back("list", CUSTOM);
   commands.emplace_back("lang", CUSTOM);
   commands.emplace_back("help", CUSTOM);
+  commands.emplace_back("shfl", CUSTOM);
 //  commands.emplace_back("clear", EXECUTE_PROGRAM, "clear");
 }
 
-void loadCommand(const CommandData& data) {
-  commands.emplace_back(data.name, RUN_APP, data.execute);
+void loadCommand(const CommandData &data) {
+  commands.emplace_back(data.name, data.type, data.execute);
 }
 
 void inputCommand() {
@@ -69,19 +72,38 @@ vector<CommandData> getRegisteredCommands() {
 
   Json::Value root;
   Json::Reader reader;
-  reader.parse(readFile(string(getenv("APPDATA")) + "/.shuffle/commands.json"), root, false);
+  reader.parse(readFile(COMMANDS_JSON), root, false);
 
   Json::Value commandList = root["commands"];
   for (auto command : commandList) {
     CommandData data;
     data.name = command["name"].asString();
-    data.version = command["version"].asString();
-//    data.alias = command["alias"];
-    data.author = command["author"].asString();
-    data.website = command["website"].asString();
-    data.execute = replace(command["execute"].asString(), "{SHUFFLE_APPS}", string(getenv("APPDATA")) + "/.shuffle/apps");
+    data.execute =
+        replace(command["execute"].asString(), "{SHUFFLE_APPS}", string(getenv("APPDATA")) + "/.shuffle/apps");
+    if (command["type"].asString() == "SAPP") data.type = SAPP;
+    else data.type = EXECUTABLE;
     res.push_back(data);
   }
 
   return res;
+}
+
+void addRegisteredCommand(const CommandData &data) {
+  vector<CommandData> res;
+
+  Json::Value root;
+  Json::Reader reader;
+  reader.parse(readFile(COMMANDS_JSON), root, false);
+
+  Json::Value commandList = root["commands"];
+
+  Json::Value value(Json::objectValue);
+  value["name"] = data.name;
+  value["execute"] = data.execute;
+  value["type"] = data.type;
+  commandList.append(value);
+
+  root["commands"] = commandList;
+
+  writeFile(COMMANDS_JSON, root.toStyledString());
 }

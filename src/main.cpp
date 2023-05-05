@@ -12,8 +12,7 @@ int main() {
   loadLanguageFile("en_us");
   loadDefaultCommands();
 
-  vector<CommandData> commands = getRegisteredCommands();
-  for (const CommandData &command : commands) {
+  for (const CommandData &command : getRegisteredCommands()) {
     loadCommand(command);
   }
 

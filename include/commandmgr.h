@@ -10,7 +10,7 @@
 
 using namespace std;
 
-enum ExecutableType { CUSTOM, RUN_APP };
+enum ExecutableType { CUSTOM, SAPP, EXECUTABLE };
 class Command {
  public:
   string name;
@@ -25,11 +25,8 @@ class Command {
 class CommandData {
  public:
   string name;
-  string version;
-  vector<string> alias;
-  string author;
-  string website;
   string execute;
+  ExecutableType type;
 };
 
 extern vector<Command> commands;
@@ -39,5 +36,6 @@ void loadCommand(const CommandData& data);
 void inputCommand();
 
 vector<CommandData> getRegisteredCommands();
+void addRegisteredCommand(const CommandData& data);
 
 #endif //SHUFFLE_INCLUDE_COMMANDMGR_H_
