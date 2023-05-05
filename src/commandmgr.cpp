@@ -1,10 +1,12 @@
 #include "commandmgr.h"
 
 #include <iostream>
+#include <regex>
 
 #include "executor.h"
 #include "console.h"
 #include "suggestion.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -14,7 +16,8 @@ void loadCommands() {
   commands.emplace_back("exit", CUSTOM);
   commands.emplace_back("cd", CUSTOM);
   commands.emplace_back("list", CUSTOM);
-  commands.emplace_back("lang", CUSTOM);
+  commands.push_back(Command("lang", CUSTOM, {Command("en_us", CUSTOM),
+                                              Command("ko_kr", CUSTOM)}));
   commands.emplace_back("help", CUSTOM);
   commands.emplace_back("clear", EXECUTE_PROGRAM, "clear");
 }
@@ -38,7 +41,14 @@ void inputCommand() {
     } else if (c == '\n' || c == '\r') {
       break;
     } else if (c == '\t') {
-      string suggestion = findSuggestion(input, commands);
+      vector<string> args = split(input, regex(R"(\s+)"));
+      string suggestion;
+      if (args.size() == 1) {
+        suggestion = findSuggestion(args[args.size() - 1], commands);
+      } else {
+        Command command = findCommand(args[0]);
+        suggestion = findSuggestion(args[args.size() - 1], command.children);
+      }
       if (suggestion.empty()) continue;
 
       input += suggestion;
@@ -48,7 +58,15 @@ void inputCommand() {
       input += c;
     }
 
-    string suggestion = findSuggestion(input, commands);
+    // suggestion
+    vector<string> args = split(input, regex(R"(\s+)"));
+    string suggestion;
+    if (args.size() == 1) {
+      suggestion = findSuggestion(args[args.size() - 1], commands);
+    } else {
+      Command command = findCommand(args[0]);
+      suggestion = findSuggestion(args[args.size() - 1], command.children);
+    }
     if (suggestion.empty()) continue;
 
     cout << "\033[90m" << suggestion;
@@ -56,4 +74,9 @@ void inputCommand() {
   }
   white();
   if (!input.empty()) execute(input);
+}
+
+Command findCommand(string &name) {
+  for (const auto &item : commands) if (item.name == name) return item;
+  return {"", CUSTOM};
 }

@@ -80,7 +80,7 @@ void execute(const string &input) {
 
   if (!isCommandFounded) {
     error("system.command_not_found", {cmd[0]});
-    pair<int, Command> similarWord = {1000000000, {"", CUSTOM, ""}};
+    pair<int, Command> similarWord = {1000000000, {"", CUSTOM}};
     for (const Command &command : commands) {
       int dist = levenshteinDist(cmd[0], command.name);
       if (dist < similarWord.first) similarWord = {dist, command};
