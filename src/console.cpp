@@ -59,7 +59,7 @@ void too_many_arguments() { error("system.too_many_arguments"); }
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <conio.h>
-#elif __linux__
+#elif __linux__ || __APPLE__
 #include <unistd.h>
 #include <termios.h>
 #endif
