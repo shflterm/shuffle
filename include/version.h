@@ -1,1 +1,0 @@
-#define SHUFFLE_VERSION "DEV"
