@@ -7,35 +7,46 @@
 
 #include <vector>
 #include <string>
+#include <memory>
+#include "utils/cmdexecutor.h"
 
 using namespace std;
 
 enum ExecutableType { CUSTOM, SAPP, EXECUTABLE };
 class Command {
- public:
+ protected:
   string name;
   ExecutableType type;
   string value;
+  CommandExecutor executor{};
+ public:
+  [[nodiscard]] const string &getName() const;
+  [[nodiscard]] ExecutableType getType() const;
+  [[nodiscard]] const string &getValue() const;
 
-  Command(string name, ExecutableType type, string path) : name(std::move(name)), type(type), value(std::move(path)) {}
+  virtual void run(const vector<std::string> &args) const;
 
-  Command(string name, ExecutableType type) : name(std::move(name)), type(type) {}
+  Command(string name, ExecutableType type, string value);
+
+  Command(string name, CommandExecutor executor);
+
+  explicit Command(string name);
 };
 
 class CommandData {
  public:
   string name;
-  string execute;
+  string value;
   ExecutableType type;
 };
 
-extern vector<Command> commands;
+extern vector<unique_ptr<Command>> commands;
 
 void loadDefaultCommands();
-void loadCommand(const CommandData& data);
-void inputCommand();
+void loadCommand(const CommandData &data);
+void inputCommand(bool enableSuggestion);
 
 vector<CommandData> getRegisteredCommands();
-void addRegisteredCommand(const CommandData& data);
+void addRegisteredCommand(const CommandData &data);
 
 #endif //SHUFFLE_INCLUDE_COMMANDMGR_H_

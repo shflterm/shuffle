@@ -5,6 +5,8 @@
 #ifndef SHUFFLE_INCLUDE_UTILS_H_
 #define SHUFFLE_INCLUDE_UTILS_H_
 
+#define DOT_SHUFFLE string(getenv("APPDATA")) + "/.shuffle"
+
 #include <string>
 #include <vector>
 #include <regex>

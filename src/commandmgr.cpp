@@ -2,68 +2,76 @@
 
 #include <iostream>
 #include <json/json.h>
+#include <memory>
 
 #include "executor.h"
 #include "console.h"
 #include "suggestion.h"
-#include "utils.h"
+#include "utils/utils.h"
+#include "basic_commands.h"
+#include "sapp/sapp.h"
 
-#define COMMANDS_JSON string(getenv("APPDATA")) + "/.shuffle/commands.json"
+#define COMMANDS_JSON (DOT_SHUFFLE + "/commands.json")
 
 using namespace std;
 
-vector<Command> commands;
+vector<unique_ptr<Command>> commands;
 
 void loadDefaultCommands() {
-  commands.emplace_back("exit", CUSTOM);
-  commands.emplace_back("cd", CUSTOM);
-  commands.emplace_back("list", CUSTOM);
-  commands.emplace_back("lang", CUSTOM);
-  commands.emplace_back("help", CUSTOM);
-  commands.emplace_back("shfl", CUSTOM);
-//  commands.emplace_back("clear", EXECUTE_PROGRAM, "clear");
+  commands.push_back(make_unique<Command>(Command("help", helpCmd)));
+  commands.push_back(make_unique<Command>(Command("shfl", shflCmd)));
+  commands.push_back(make_unique<Command>(Command("cd", cdCmd)));
+  commands.push_back(make_unique<Command>(Command("list", listCmd)));
+  commands.push_back(make_unique<Command>(Command("lang", langCmd)));
+  commands.push_back(make_unique<Command>(Command("exit", exitCmd)));
+  commands.push_back(make_unique<Command>(Command("clear", clearCmd)));
 }
 
 void loadCommand(const CommandData &data) {
-  commands.emplace_back(data.name, data.type, data.execute);
+  commands.push_back(make_unique<SAPPCommand>(SAPPCommand(data.name)));
 }
 
-void inputCommand() {
-  cout << path << "> ";
+void inputCommand(bool enableSuggestion) {
+  cout << absolute(dir).string() << "> ";
   cout.flush();
 
   string input;
-  char c;
-  while (true) {
-    c = readChar();
+  if (enableSuggestion) {
+    char c;
+    while (true) {
+      c = readChar();
 
-    if (c == '\b') {
-      if (!input.empty()) {
-        gotoxy(wherex() - 1, wherey());
-        cout << ' ';
-        gotoxy(wherex() - 1, wherey());
-        input = input.substr(0, input.length() - 1);
+      if (c == '\b') {
+        if (!input.empty()) {
+          gotoxy(wherex() - 1, wherey());
+          cout << ' ';
+          gotoxy(wherex() - 1, wherey());
+          input = input.substr(0, input.length() - 1);
+        }
+      } else if (c == '\n' || c == '\r') {
+        break;
+      } else if (c == '\t') {
+        string suggestion = findSuggestion(input, commands);
+        if (suggestion.empty()) continue;
+
+        input += suggestion;
+        cout << "\033[0m" << suggestion;
+      } else {
+        cout << "\033[0m" << c;
+        input += c;
       }
-    } else if (c == '\n' || c == '\r') {
-      break;
-    } else if (c == '\t') {
+
       string suggestion = findSuggestion(input, commands);
       if (suggestion.empty()) continue;
 
-      input += suggestion;
-      cout << "\033[0m" << suggestion;
-    } else {
-      cout << "\033[0m" << c;
-      input += c;
+      cout << "\033[90m" << suggestion;
+      gotoxy(wherex() - (int) suggestion.size(), wherey());
     }
-
-    string suggestion = findSuggestion(input, commands);
-    if (suggestion.empty()) continue;
-
-    cout << "\033[90m" << suggestion;
-    gotoxy(wherex() - (int) suggestion.size(), wherey());
+    white();
+  } else {
+    getline(cin, input);
   }
-  white();
+
   if (!input.empty()) execute(input);
 }
 
@@ -78,10 +86,12 @@ vector<CommandData> getRegisteredCommands() {
   for (auto command : commandList) {
     CommandData data;
     data.name = command["name"].asString();
-    data.execute =
-        replace(command["execute"].asString(), "{SHUFFLE_APPS}", string(getenv("APPDATA")) + "/.shuffle/apps");
-    if (command["type"].asString() == "SAPP") data.type = SAPP;
-    else data.type = EXECUTABLE;
+    if (command["type"].asString() == "SAPP") {
+      data.type = SAPP;
+    } else if (command["type"].asString() == "EXECUTABLE") {
+      data.type = EXECUTABLE;
+      data.value = command["value"].asString();
+    }
     res.push_back(data);
   }
 
@@ -99,7 +109,7 @@ void addRegisteredCommand(const CommandData &data) {
 
   Json::Value value(Json::objectValue);
   value["name"] = data.name;
-  value["execute"] = data.execute;
+  value["value"] = data.value;
   value["type"] = data.type;
   commandList.append(value);
 
@@ -107,3 +117,26 @@ void addRegisteredCommand(const CommandData &data) {
 
   writeFile(COMMANDS_JSON, root.toStyledString());
 }
+
+const string &Command::getName() const {
+  return name;
+}
+
+ExecutableType Command::getType() const {
+  return type;
+}
+
+const string &Command::getValue() const {
+  return value;
+}
+
+void Command::run(const vector<std::string> &args) const {
+  executor(args);
+}
+
+Command::Command(string name, ExecutableType type, string value)
+    : name(std::move(name)), type(type), value(std::move(value)), executor(emptyExecutor) {}
+
+Command::Command(string name, CommandExecutor executor) : name(std::move(name)), type(CUSTOM), executor(executor) {}
+
+Command::Command(string name) : name(std::move(name)), type(SAPP) {}
