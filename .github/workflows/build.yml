@@ -39,7 +39,7 @@ jobs:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         title: "Shuffle for Linux (${{ steps.date.outputs.date }})"
         automatic_release_tag: "linux/${{ steps.date.outputs.date }}"
-        prerelease: false
+        prerelease: true
         files: |
           build/shuffle
           
@@ -72,7 +72,7 @@ jobs:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         title: "Shuffle for Windows (${{ steps.date.outputs.date }})"
         automatic_release_tag: "windows/${{ steps.date.outputs.date }}"
-        prerelease: false
+        prerelease: true
         files: |
           build/shuffle.exe
           
@@ -105,6 +105,6 @@ jobs:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         title: "Shuffle for MacOS (${{ steps.date.outputs.date }})"
         automatic_release_tag: "macos/${{ steps.date.outputs.date }}"
-        prerelease: false
+        prerelease: true
         files: |
           build/shuffle
