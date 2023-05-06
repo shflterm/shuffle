@@ -1,3 +1,6 @@
+#include <vector>
+#include <iostream>
+
 #include "executor.h"
 #include "console.h"
 #include "i18n.h"
@@ -6,7 +9,7 @@
 using namespace std;
 
 int main() {
-  print(INFO, "Loading Shuffle...");
+  cout << "Loading Shuffle...";
   loadLanguageFile("en_us");
   loadCommands();
 
@@ -18,6 +21,6 @@ int main() {
   info("system.help");
 
   while (true) {
-    inputCommand();
+    inputCommand(false);
   }
 }

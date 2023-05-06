@@ -9,9 +9,10 @@
 #include <filesystem>
 
 using namespace std;
-using std::filesystem::current_path;
+namespace fs = std::filesystem;
+using namespace fs;
 
-extern string path;
+extern path dir;
 
 void execute(const string& input);
 
