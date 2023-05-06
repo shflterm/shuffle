@@ -1,6 +1,4 @@
 {
-  "system.welcome": "SHUFFLE $0에 오신걸 환영합니다!",
-  "system.copyrights": "(C) 2023. Shuffle Team All rights reserved.",
   "system.help": "'help'를 입력해서 도움말을 확인하세요.",
   "system.command_not_found": "명령어 '$0'를 찾을 수 없습니다.",
   "system.check_command": "올바른 명령어를 입력했는지 다시한번 확인해주십시오.",

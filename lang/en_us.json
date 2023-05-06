@@ -1,6 +1,4 @@
 {
-  "system.welcome": "Welcome to SHUFFLE $0",
-  "system.copyrights": "(C) 2023. Shuffle Team All rights reserved.",
   "system.help": "Type 'help' to get help!",
   "system.command_not_found": "Sorry. Command '$0' not found.",
   "system.check_command": "Please make sure you entered the correct command.",
