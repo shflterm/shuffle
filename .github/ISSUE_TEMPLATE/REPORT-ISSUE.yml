@@ -1,6 +1,6 @@
 name: "Report an issue"
 description: "Please let us know of any issues with Shuffle!"
-title: "[Report Issue]"
+title: "[Report Issue] "
 labels: ["bug"]
 body:
   - type: markdown
@@ -33,7 +33,6 @@ body:
     attributes:
       label: "'Other' type"
       description: "If you selected 'Other', please fill out"
-      render: shell
   - type: dropdown
     id: platforms
     attributes:
@@ -50,7 +49,6 @@ body:
     attributes:
       label: Version
       description: Which version of Shuffle are you using?
-      render: shell
   - type: textarea
     id: errors-txt
     attributes:
