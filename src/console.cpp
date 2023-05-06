@@ -65,28 +65,20 @@ void too_many_arguments() { error("system.too_many_arguments"); }
 #endif
 
 char readChar() {
-#ifdef _WIN32 // Windows 환경
+#ifdef _WIN32
   while (!_kbhit()) {}
   return _getch();
-#else // Linux 환경
-  char buf = 0;
-    struct termios old = {0};
-    fflush(stdout);
-    if(tcgetattr(0, &old) < 0)
-        perror("tcsetattr()");
-    old.c_lflag &= ~ICANON;
-    old.c_lflag &= ~ECHO;
-    old.c_cc[VMIN] = 1;
-    old.c_cc[VTIME] = 0;
-    if(tcsetattr(0, TCSANOW, &old) < 0)
-        perror("tcsetattr ICANON");
-    if(read(0, &buf, 1) < 0)
-        perror("read()");
-    old.c_lflag |= ICANON;
-    old.c_lflag |= ECHO;
-    if(tcsetattr(0, TCSADRAIN, &old) < 0)
-        perror("tcsetattr ~ICANON");
-    return buf;
+#elif __linux__ || __APPLE__
+  struct termios oldt, newt;
+  int ch;
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ICANON | ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+  ch = getchar();
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+
+  return ch;
 #endif
 }
 
@@ -96,8 +88,8 @@ void gotoxy(int x, int y) {
   pos.X = (short) x;
   pos.Y = (short) y;
   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
-#elif __linux__
-  printf("\033[%d;%df",y,x);
+#elif __linux__ || __APPLE__
+  printf("\033[%d;%dH", y, x);
 #endif
 }
 
@@ -106,7 +98,7 @@ int wherex() {
   CONSOLE_SCREEN_BUFFER_INFO buf;
   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &buf);
   return buf.dwCursorPosition.X;
-#elif __linux__
+#elif __linux__ || __APPLE__
   printf("\033[6n");
   if (readChar() != '\x1B') return 0;
   if (readChar() != '\x5B') return 0;
@@ -126,7 +118,7 @@ int wherey() {
   CONSOLE_SCREEN_BUFFER_INFO buf;
   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &buf);
   return buf.dwCursorPosition.Y;
-#elif __linux__
+#elif __linux__ || __APPLE__
   printf("\033[6n");
   if (readChar() != '\x1B') return 0;
   if (readChar() != '\x5B') return 0;

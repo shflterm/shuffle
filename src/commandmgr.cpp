@@ -45,7 +45,7 @@ void inputCommand(bool enableSuggestion) {
     while (true) {
       c = readChar();
 
-      if (c == '\b') {
+      if (c == '\b' || c == 127) {
         if (!input.empty()) {
           gotoxy(wherex() - 1, wherey());
           cout << ' ';
