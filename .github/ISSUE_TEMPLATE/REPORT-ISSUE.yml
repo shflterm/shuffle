@@ -31,8 +31,8 @@ body:
   - type: input
     id: type-other
     attributes:
-      label: \'Other\' type
-      description: If you selected 'Other', please fill out
+      label: "\'Other\' type"
+      description: "If you selected \'Other\', please fill out"
       render: shell
   - type: dropdown
     id: platforms
