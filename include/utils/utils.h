@@ -5,7 +5,12 @@
 #ifndef SHUFFLE_INCLUDE_UTILS_H_
 #define SHUFFLE_INCLUDE_UTILS_H_
 
-#define DOT_SHUFFLE string(getenv("APPDATA")) + "/.shuffle"
+#ifdef _WIN32
+#define HOME string(getenv("APPDATA"))
+#elif __linux__
+#define HOME string(getenv("HOME"))
+#endif
+#define DOT_SHUFFLE (HOME + "/.shuffle")
 
 #include <string>
 #include <vector>

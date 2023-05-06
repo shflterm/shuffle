@@ -63,11 +63,7 @@ void listCmd(const vector<string> &args) {
   }
 
   for (const auto &entry : fs::directory_iterator(dir)) {
-#ifdef _WIN32
     string name = replace(absolute(entry.path()).string(), absolute(dir).string(), "");
-#elif __linux__
-    // TODO: Linux support
-#endif
     if (name[0] == '\\' || name[0] == '/') name = name.substr(1);
     if (entry.is_directory()) {
       info(BG_BLUE + name + "/");

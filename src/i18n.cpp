@@ -9,7 +9,7 @@ using namespace std;
 string langJson;
 
 void loadLanguageFile(const string& region) {
-  langJson = readFile("../lang/" + region + ".json");
+  langJson = readFile(DOT_SHUFFLE + "/lang/" + region + ".json");
 }
 
 string translate(const string &translate_code, const initializer_list<string> &args) {
