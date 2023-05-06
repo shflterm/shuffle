@@ -24,18 +24,20 @@ jobs:
       run: echo "::set-output name=date::$(date +'%Y%m%d%H%M')"
       
     - name: Create version.h
-      uses: "finnp/create-file-action@master"
-      env:
-        FILE_NAME: "include/version.h"
-        FILE_DATA: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
+      uses: 1arp/create-a-file-action@0.2
+      with:
+        path: "include"
+        file: "version.h"
+        content: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
 
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
     
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
+    - name: Upload Release
+      uses: "marvinpinto/action-automatic-releases@latest"
       with:
-        tag_name: ${{ steps.date.outputs.date }}
-        name: Shuffle@${{ steps.date.outputs.date }}
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "linux/${{ steps.date.outputs.date }}"
+        prerelease: false
         files: |
           build/shuffle
           
@@ -53,18 +55,20 @@ jobs:
       run: echo "::set-output name=date::$(date +'%Y%m%d%H%M')"
       
     - name: Create version.h
-      uses: "finnp/create-file-action@master"
-      env:
-        FILE_NAME: "include/version.h"
-        FILE_DATA: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
+      uses: 1arp/create-a-file-action@0.2
+      with:
+        path: "include"
+        file: "version.h"
+        content: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
 
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
     
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
+    - name: Upload Release
+      uses: "marvinpinto/action-automatic-releases@latest"
       with:
-        tag_name: ${{ steps.date.outputs.date }}
-        name: Shuffle@${{ steps.date.outputs.date }}
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "windows/${{ steps.date.outputs.date }}"
+        prerelease: false
         files: |
           build/shuffle.exe
           
@@ -82,17 +86,19 @@ jobs:
       run: echo "::set-output name=date::$(date +'%Y%m%d%H%M')"
       
     - name: Create version.h
-      uses: "finnp/create-file-action@master"
-      env:
-        FILE_NAME: "include/version.h"
-        FILE_DATA: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
+      uses: 1arp/create-a-file-action@0.2
+      with:
+        path: "include"
+        file: "version.h"
+        content: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
 
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
     
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
+    - name: Upload Release
+      uses: "marvinpinto/action-automatic-releases@latest"
       with:
-        tag_name: ${{ steps.date.outputs.date }}
-        name: Shuffle@${{ steps.date.outputs.date }}
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "macos/${{ steps.date.outputs.date }}"
+        prerelease: false
         files: |
           build/shuffle
