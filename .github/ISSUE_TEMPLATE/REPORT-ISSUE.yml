@@ -1,6 +1,6 @@
-name: Bug Report
+name: Report an issue
 description: Please let us know of any issues with Shuffle!
-title: "[Bug]: "
+title: ""
 labels: ["bug"]
 body:
   - type: markdown
@@ -17,6 +17,24 @@ body:
     validations:
       required: true
   - type: dropdown
+    id: type
+    attributes:
+      label: What type of problem is it?
+      description: If you checked 'Other', please fill out the fields below.
+      options:
+        - Command Related
+        - Automatic Completion (Command Suggestion)
+        - Input Command (Typing)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: type-other
+    attributes:
+      label: 'Other' type
+      description: If you selected 'Other', please fill out
+      render: shell
+  - type: dropdown
     id: platforms
     attributes:
       label: Platform
@@ -27,11 +45,11 @@ body:
         - MacOS
     validations:
       required: true
-  - type: textarea
+  - type: input
     id: version
     attributes:
       label: Version
-      description: 어떤 버전의 Shuffle을 사용중이신가요?
+      description: Which version of Shuffle are you using?
       render: shell
   - type: textarea
     id: errors-txt
