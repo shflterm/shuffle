@@ -19,7 +19,7 @@ using std::filesystem::current_path;
 
 #ifdef _WIN32
 path dir = current_path();
-#elif __linux__
+#elif __linux__ || __APPLE__
 path dir = current_path();
 #endif
 

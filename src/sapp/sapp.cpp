@@ -24,6 +24,8 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
   Json::Value executable = root["executable-WINDOWS"];
 #elif __linux__
   Json::Value executable = root["executable-LINUX"];
+#elif __APPLE__
+  Json::Value executable = root["executable-MACOS"];
 #endif
 
   value = executable.asString();

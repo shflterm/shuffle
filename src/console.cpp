@@ -46,7 +46,7 @@ void error(const string &text) {
 void clear() {
 #ifdef _WIN32
   system("cls");
-#elif __linux__
+#elif __linux__ || __APPLE__
   system("clear");
 #endif
 }
