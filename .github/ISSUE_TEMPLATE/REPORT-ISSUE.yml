@@ -17,7 +17,7 @@ body:
     validations:
       required: true
   - type: dropdown
-    id: version
+    id: platforms
     attributes:
       label: Platform
       description: What version of our software are you running?
