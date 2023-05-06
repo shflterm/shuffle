@@ -28,7 +28,11 @@ void loadDefaultCommands() {
 }
 
 void loadCommand(const CommandData &data) {
-  commands.push_back(make_unique<SAPPCommand>(SAPPCommand(data.name)));
+  if (data.type == SAPP) commands.push_back(make_unique<SAPPCommand>(SAPPCommand(data.name)));
+  else if (data.type == EXECUTABLE)
+    commands.push_back(make_unique<Command>(Command(data.name,
+                                                    EXECUTABLE,
+                                                    data.value)));
 }
 
 void inputCommand(bool enableSuggestion) {
@@ -110,12 +114,24 @@ void addRegisteredCommand(const CommandData &data) {
   Json::Value value(Json::objectValue);
   value["name"] = data.name;
   value["value"] = data.value;
-  value["type"] = data.type;
+  if (data.type == CUSTOM) value["type"] = "CUSTOM";
+  else if (data.type == SAPP) value["type"] = "SAPP";
+  else if (data.type == EXECUTABLE) value["type"] = "EXECUTABLE";
   commandList.append(value);
 
   root["commands"] = commandList;
 
   writeFile(COMMANDS_JSON, root.toStyledString());
+}
+
+void loadCommands() {
+  commands.clear();
+
+  loadDefaultCommands();
+
+  for (const CommandData &command : getRegisteredCommands()) {
+    loadCommand(command);
+  }
 }
 
 const string &Command::getName() const {

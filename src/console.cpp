@@ -12,6 +12,11 @@ void info(const string &text, const initializer_list<string> &args) {
   cout.flush();
 }
 
+void success(const string &text, const initializer_list<string> &args) {
+  cout << FG_GREEN << translate(text, args) << RESET << "\n";
+  cout.flush();
+}
+
 void warning(const string &text, const initializer_list<string> &args) {
   cout << FG_YELLOW << translate(text, args) << RESET << "\n";
   cout.flush();
@@ -24,6 +29,10 @@ void error(const string &text, const initializer_list<string> &args) {
 
 void info(const string &text) {
   info(text, {});
+}
+
+void success(const string &text) {
+  success(text, {});
 }
 
 void warning(const string &text) {

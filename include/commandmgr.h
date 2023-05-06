@@ -49,4 +49,6 @@ void inputCommand(bool enableSuggestion);
 vector<CommandData> getRegisteredCommands();
 void addRegisteredCommand(const CommandData &data);
 
+void loadCommands();
+
 #endif //SHUFFLE_INCLUDE_COMMANDMGR_H_

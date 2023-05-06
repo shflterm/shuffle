@@ -11,13 +11,9 @@ using namespace std;
 int main() {
   cout << "Loading Shuffle...";
   loadLanguageFile("en_us");
-  loadDefaultCommands();
+  loadCommands();
 
-  for (const CommandData &command : getRegisteredCommands()) {
-    loadCommand(command);
-  }
-
-//  clear();
+  clear();
 
   info("system.welcome", {"v1.0"});
   info("system.copyrights");

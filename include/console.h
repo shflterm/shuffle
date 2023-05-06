@@ -34,9 +34,11 @@
 using namespace std;
 
 void info(const string &text, const initializer_list<string> &args);
+void success(const string &text, const initializer_list<string> &args);
 void warning(const string &text, const initializer_list<string> &args);
 void error(const string &text, const initializer_list<string> &args);
 void info(const string &text);
+void success(const string &text);
 void warning(const string &text);
 void error(const string &text);
 void clear();

@@ -33,14 +33,16 @@ void execute(const string &input) {
     if (command.getName() != args[0]) continue;
     isCommandFounded = true;
 
+    vector<string> newArgs;
+    for (int i = 1; i < args.size(); ++i) newArgs.push_back(args[i]);
     if (command.getType() == CUSTOM) {
       command.run(args);
     } else if (command.getType() == SAPP) {
-      dynamic_cast<SAPPCommand &>(command).run(args);
+      dynamic_cast<SAPPCommand &>(command).run(newArgs);
     } else if (command.getType() == EXECUTABLE) {
       string cmd = command.getValue();
-      for (int i = 1; i < args.size(); ++i) {
-        cmd.append(" ").append(args[i]);
+      for (const auto &arg : newArgs) {
+        cmd.append(" ").append(arg);
       }
       system(cmd.c_str());
     }

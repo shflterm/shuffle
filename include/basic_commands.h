@@ -35,6 +35,10 @@ void shflCmd(const vector<string> &args) {
     newData.value = args[3];
     newData.type = EXECUTABLE;
     addRegisteredCommand(newData);
+  } else if (args[1] == "reload") {
+    info("Reloading command...");
+    loadCommands();
+    success("Reloaded all commands!");
   }
 }
 
