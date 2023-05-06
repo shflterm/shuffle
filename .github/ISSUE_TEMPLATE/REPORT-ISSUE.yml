@@ -1,6 +1,6 @@
 name: "Report an issue"
 description: "Please let us know of any issues with Shuffle!"
-title: ""
+title: "[Report Issue]"
 labels: ["bug"]
 body:
   - type: markdown
