@@ -1,5 +1,5 @@
-name: Report an issue
-description: Please let us know of any issues with Shuffle!
+name: "Report an issue"
+description: "Please let us know of any issues with Shuffle!"
 title: ""
 labels: ["bug"]
 body:
@@ -20,7 +20,7 @@ body:
     id: type
     attributes:
       label: What type of problem is it?
-      description: If you checked 'Other', please fill out the fields below.
+      description: "If you checked 'Other', please fill out the fields below."
       options:
         - Command Related
         - Automatic Completion (Command Suggestion)
@@ -31,8 +31,8 @@ body:
   - type: input
     id: type-other
     attributes:
-      label: "\'Other\' type"
-      description: "If you selected \'Other\', please fill out"
+      label: "'Other' type"
+      description: "If you selected 'Other', please fill out"
       render: shell
   - type: dropdown
     id: platforms
