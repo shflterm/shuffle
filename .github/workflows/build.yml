@@ -90,7 +90,7 @@ jobs:
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
     
     - name: Create Release
-      uses: softprops/action-gh-release@v1.1.0
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.date.outputs.date }}
         name: Shuffle@${{ steps.date.outputs.date }}
