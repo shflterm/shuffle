@@ -7,14 +7,10 @@ on:
     branches: [ "main" ]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
 
 jobs:
-  build:
-    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
-    # You can convert this to a matrix build if you need cross-platform coverage.
-    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+  build-ubuntu:
     runs-on: ubuntu-latest
 
     steps:
@@ -36,8 +32,67 @@ jobs:
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
     
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v1.1.0
       with:
+        tag_name: ${{ steps.date.outputs.date }}
+        name: Shuffle@${{ steps.date.outputs.date }}
         files: |
           build/shuffle
+          
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y%m%d%H%M')"
+      
+    - name: Create version.h
+      uses: "finnp/create-file-action@master"
+      env:
+        FILE_NAME: "include/version.h"
+        FILE_DATA: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
+
+    - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1.1.0
+      with:
+        tag_name: ${{ steps.date.outputs.date }}
+        name: Shuffle@${{ steps.date.outputs.date }}
+        files: |
           build/shuffle.exe
+          
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y%m%d%H%M')"
+      
+    - name: Create version.h
+      uses: "finnp/create-file-action@master"
+      env:
+        FILE_NAME: "include/version.h"
+        FILE_DATA: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
+
+    - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1.1.0
+      with:
+        tag_name: ${{ steps.date.outputs.date }}
+        name: Shuffle@${{ steps.date.outputs.date }}
+        files: |
+          build/shuffle
