@@ -28,16 +28,6 @@ jobs:
         content: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
 
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-    
-    - name: Upload Release
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        title: "Shuffle for Linux (${{ steps.date.outputs.date }})"
-        automatic_release_tag: "linux/${{ steps.date.outputs.date }}"
-        prerelease: true
-        files: |
-          build/shuffle
           
   build-windows:
     permissions: write-all
@@ -61,16 +51,6 @@ jobs:
         content: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
 
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-    
-    - name: Upload Release
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        title: "Shuffle for Windows (${{ steps.date.outputs.date }})"
-        automatic_release_tag: "windows/${{ steps.date.outputs.date }}"
-        prerelease: true
-        files: |
-          build/shuffle.exe
           
   build-macos:
     permissions: write-all
@@ -94,13 +74,3 @@ jobs:
         content: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
 
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-    
-    - name: Upload Release
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        title: "Shuffle for MacOS (${{ steps.date.outputs.date }})"
-        automatic_release_tag: "macos/${{ steps.date.outputs.date }}"
-        prerelease: true
-        files: |
-          build/shuffle
