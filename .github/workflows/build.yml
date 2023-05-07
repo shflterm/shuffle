@@ -80,7 +80,7 @@ jobs:
         automatic_release_tag: "windows/${{ steps.date.outputs.date }}"
         prerelease: true
         files: |
-          build/bin/shuffle.exe
+          build/bin/${{env.BUILD_TYPE}}/shuffle.exe
           
   build-macos:
     permissions: write-all
