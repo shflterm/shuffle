@@ -21,7 +21,7 @@ jobs:
       run: "git submodule update --init --recursive"
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake . -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
       
     - name: Get current date
       id: date
@@ -34,7 +34,7 @@ jobs:
         file: "version.h"
         content: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
 
-    - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    - run: cmake --build . --config ${{env.BUILD_TYPE}}
           
   build-windows:
     permissions: write-all
@@ -47,7 +47,7 @@ jobs:
       run: "git submodule update --init --recursive"
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake . -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
       
     - name: Get current date
       id: date
@@ -60,7 +60,7 @@ jobs:
         file: "version.h"
         content: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
 
-    - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    - run: cmake --build . --config ${{env.BUILD_TYPE}}
           
   build-macos:
     permissions: write-all
@@ -73,7 +73,7 @@ jobs:
       run: "git submodule update --init --recursive"
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake . -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
       
     - name: Get current date
       id: date
@@ -86,4 +86,4 @@ jobs:
         file: "version.h"
         content: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
 
-    - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    - run: cmake --build . --config ${{env.BUILD_TYPE}}
