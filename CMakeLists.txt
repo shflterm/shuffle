@@ -10,11 +10,11 @@ add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp)
 
 add_dependencies(${PROJECT_NAME} jsoncpp_lib)
 
-target_link_directories(${PROJECT_NAME} PRIVATE lib)
+target_link_directories(${PROJECT_NAME} PRIVATE build/lib)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_link_directories(${PROJECT_NAME} PRIVATE lib/Debug)
+    target_link_directories(${PROJECT_NAME} PRIVATE build/lib/Debug)
 elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_link_directories(${PROJECT_NAME} PRIVATE lib/Release)
+    target_link_directories(${PROJECT_NAME} PRIVATE build/lib/Release)
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE jsoncpp)
