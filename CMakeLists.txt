@@ -8,7 +8,7 @@ add_subdirectory(jsoncpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp)
 
-add_dependencies(${PROJECT_NAME} jsoncpp_static)
+add_dependencies(${PROJECT_NAME} jsoncpp_lib)
 
 target_link_directories(${PROJECT_NAME} PRIVATE lib)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -17,11 +17,7 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
     target_link_directories(${PROJECT_NAME} PRIVATE lib/Release)
 endif()
 
-if (WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE jsoncpp.lib)
-elseif (UNIX)
-    target_link_libraries(${PROJECT_NAME} PRIVATE libjsoncpp.a)
-endif ()
+target_link_libraries(${PROJECT_NAME} PRIVATE jsoncpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
