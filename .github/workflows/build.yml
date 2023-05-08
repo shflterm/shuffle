@@ -42,8 +42,7 @@ jobs:
         automatic_release_tag: "linux/${{ steps.date.outputs.date }}"
         prerelease: true
         files: |
-          build/bin/shuffle
-          build/lib/libshuffle.so
+          build/lib/libjsoncpp.so
           
   build-windows:
     permissions: write-all
