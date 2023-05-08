@@ -43,7 +43,7 @@ jobs:
         prerelease: true
         files: |
           build/bin/shuffle
-          build/lib/libshuffle.so.25
+          build/lib/libshuffle.so
           
   build-windows:
     permissions: write-all
@@ -107,8 +107,6 @@ jobs:
         content: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
 
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
-    - run: tree
 
     - name: Upload Release
       uses: "marvinpinto/action-automatic-releases@latest"
