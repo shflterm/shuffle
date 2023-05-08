@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "utils/utils.h"
 
 #include <iostream>
 #include <vector>
@@ -66,5 +66,12 @@ string readFile(const string &path) {
   ifstream file(path);
   ostringstream content_stream;
   content_stream << file.rdbuf();
+  file.close();
   return content_stream.str();
+}
+
+void writeFile(const string &path, const string& value) {
+  ofstream file(path);
+  file << value;
+  file.close();
 }

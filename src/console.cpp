@@ -7,30 +7,32 @@
 
 using namespace std;
 
-void print(PrintLevel level, const string &text) {
-  string ansi = "\033[0m";
-  if (level == WARNING) ansi = "\033[33m";
-  if (level == ERROR) ansi = "\033[31m";
-  cout << ansi << text << "\033[0m" << "\n";
+void info(const string &text, const initializer_list<string> &args) {
+  cout << RESET << translate(text, args) << RESET << "\n";
+  cout.flush();
 }
 
-void info(const string &text, const initializer_list<string> &args) {
-  cout << "\033[0m" << translate(text, args) << "\033[0m" << "\n";
+void success(const string &text, const initializer_list<string> &args) {
+  cout << FG_GREEN << translate(text, args) << RESET << "\n";
   cout.flush();
 }
 
 void warning(const string &text, const initializer_list<string> &args) {
-  cout << "\033[33m" << translate(text, args) << "\033[0m" << "\n";
+  cout << FG_YELLOW << translate(text, args) << RESET << "\n";
   cout.flush();
 }
 
 void error(const string &text, const initializer_list<string> &args) {
-  cout << "\033[31m" << translate(text, args) << "\033[0m" << "\n";
+  cout << FG_RED << translate(text, args) << RESET << "\n";
   cout.flush();
 }
 
 void info(const string &text) {
   info(text, {});
+}
+
+void success(const string &text) {
+  success(text, {});
 }
 
 void warning(const string &text) {
@@ -51,9 +53,8 @@ void clear() {
 
 void white() { cout << "\n"; }
 
-void too_many_arguments() { error("too_many_arguments"); }
+void too_many_arguments() { error("system.too_many_arguments"); }
 
-#include <stdio.h>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

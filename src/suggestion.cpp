@@ -2,10 +2,11 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 using namespace std;
 
-string findSuggestion(const string &input, const vector<Command> &DICTIONARY) {
+string findSuggestion(const string &input, const vector<unique_ptr<Command>> &DICTIONARY) {
   vector<string> suggestions = createSuggestions(input, DICTIONARY);
   if (suggestions.empty()) return "";
 
@@ -16,12 +17,13 @@ string findSuggestion(const string &input, const vector<Command> &DICTIONARY) {
   return suggestion;
 }
 
-vector<string> createSuggestions(const string &str, const vector<Command> &DICTIONARY) {
+vector<string> createSuggestions(const string &str, const vector<unique_ptr<Command>> &DICTIONARY) {
   vector<string> res;
   std::vector<std::string> result;
-  for (const auto &command : DICTIONARY) {
-    if (command.name.substr(0, str.size()) == str) {
-      res.push_back(command.name);
+  for (const auto &item : DICTIONARY) {
+    Command &command = *item;
+    if (command.getName().substr(0, str.size()) == str) {
+      res.push_back(command.getName());
     }
   }
 

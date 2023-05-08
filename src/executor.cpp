@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 
 #include "console.h"
-#include "utils.h"
+#include "utils/utils.h"
 #include "i18n.h"
 #include "commandmgr.h"
 
@@ -80,9 +80,10 @@ void execute(const string &input) {
 
   if (!isCommandFounded) {
     error("system.command_not_found", {cmd[0]});
-    pair<int, Command> similarWord = {1000000000, {"", CUSTOM}};
-    for (const Command &command : commands) {
-      int dist = levenshteinDist(cmd[0], command.name);
+    pair<int, Command> similarWord = {1000000000, {"", CUSTOM, ""}};
+    for (const auto &item : commands) {
+      Command &command = *item;
+      int dist = levenshteinDist(cmd[0], command.getName());
       if (dist < similarWord.first) similarWord = {dist, command};
     }
 

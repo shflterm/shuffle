@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 project(shuffle)
 
-set(SOURCES src/executor.cpp src/suggestion.cpp src/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp)
+set(SOURCES src/executor.cpp src/suggestion.cpp src/utils/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp src/sapp/sapp.cpp include/utils/cmdexecutor.h include/basic_commands.h src/utils/cmdexecutor.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp)
 

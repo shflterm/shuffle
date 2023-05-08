@@ -5,39 +5,47 @@
 #ifndef SHUFFLE_INCLUDE_COMMANDMGR_H_
 #define SHUFFLE_INCLUDE_COMMANDMGR_H_
 
-#include <utility>
 #include <vector>
 #include <string>
-#include <map>
+#include <memory>
+#include "utils/cmdexecutor.h"
 
 using namespace std;
 
-enum ExecutableType { CUSTOM, EXECUTE_PROGRAM, RUN_SHFL, RUN_SAPP };
-
+enum ExecutableType { CUSTOM, SAPP, EXECUTABLE };
 class Command {
- public:
+ protected:
   string name;
   ExecutableType type;
   string value;
-  vector<Command> children;
+  CommandExecutor executor{};
+ public:
+  [[nodiscard]] const string &getName() const;
+  [[nodiscard]] ExecutableType getType() const;
+  [[nodiscard]] const string &getValue() const;
 
-  Command(string name, ExecutableType type, string path, vector<Command> children)
-      : name(std::move(name)), type(type), value(std::move(path)), children(std::move(children)) {}
+  virtual void run(const vector<std::string> &args) const;
 
-  Command(string name, ExecutableType type, vector<Command> children)
-      : name(std::move(name)), type(type), children(std::move(children)) {}
+  Command(string name, ExecutableType type, string value);
 
-  Command(string name, ExecutableType type, string value)
-      : name(std::move(name)), type(type), value(std::move(value)) {}
+  Command(string name, CommandExecutor executor);
 
-  Command(string name, ExecutableType type) : name(std::move(name)), type(type) {}
+  explicit Command(string name);
 };
 
-extern vector<Command> commands;
+class CommandData {
+ public:
+  string name;
+  string value;
+  ExecutableType type;
+};
+
+extern vector<unique_ptr<Command>> commands;
 
 void loadCommands();
 void inputCommand();
 
 Command findCommand(string &name);
+
 
 #endif //SHUFFLE_INCLUDE_COMMANDMGR_H_
