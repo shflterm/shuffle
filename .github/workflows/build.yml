@@ -45,6 +45,7 @@ jobs:
         prerelease: true
         files: |
           build/bin/shuffle
+          build/lib/libshuffle.so.25
           
   build-windows:
     permissions: write-all
@@ -81,6 +82,7 @@ jobs:
         prerelease: true
         files: |
           build/bin/${{env.BUILD_TYPE}}/shuffle.exe
+          build/bin/${{env.BUILD_TYPE}}/jsoncpp.dll
           
   build-macos:
     permissions: write-all
@@ -108,6 +110,8 @@ jobs:
 
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
+    - run: tree
+
     - name: Upload Release
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
@@ -117,3 +121,4 @@ jobs:
         prerelease: true
         files: |
           build/bin/shuffle
+          build/lib/libjsoncpp.dylib
