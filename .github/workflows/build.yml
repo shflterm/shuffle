@@ -43,7 +43,7 @@ jobs:
         prerelease: true
         files: |
           build/bin/shuffle
-          build/lib/libjsoncpp.so
+          build/lib/libjsoncpp.so.25
           
   build-windows:
     permissions: write-all
