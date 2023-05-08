@@ -19,7 +19,6 @@ string findSuggestion(const string &input, const vector<unique_ptr<Command>> &DI
 
 vector<string> createSuggestions(const string &str, const vector<unique_ptr<Command>> &DICTIONARY) {
   vector<string> res;
-  std::vector<std::string> result;
   for (const auto &item : DICTIONARY) {
     Command &command = *item;
     if (command.getName().substr(0, str.size()) == str) {

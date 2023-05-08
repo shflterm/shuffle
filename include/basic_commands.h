@@ -10,6 +10,7 @@
 
 #include "console.h"
 #include "i18n.h"
+#include "utils/utils.h"
 
 using namespace std;
 namespace fs = std::filesystem;

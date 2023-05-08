@@ -5,6 +5,7 @@
 #include "console.h"
 #include "i18n.h"
 #include "commandmgr.h"
+#include "version.h"
 
 using namespace std;
 
@@ -15,12 +16,12 @@ int main() {
 
   clear();
 
-  info("system.welcome", {"v1.0"});
-  info("system.copyrights");
+  info("Welcome to " + FG_YELLOW + "SHUFFLE " + SHUFFLE_VERSION + RESET);
+  info("(C) 2023. Shuffle Team All rights reserved.");
   white();
   info("system.help");
 
   while (true) {
-    inputCommand(false);
+    inputCommand(true);
   }
 }

@@ -19,12 +19,19 @@ class Command {
   ExecutableType type;
   string value;
   CommandExecutor executor{};
+  vector<Command> children;
+
  public:
   [[nodiscard]] const string &getName() const;
   [[nodiscard]] ExecutableType getType() const;
   [[nodiscard]] const string &getValue() const;
+  [[nodiscard]] vector<unique_ptr<Command>> getChildren() const;
 
   virtual void run(const vector<std::string> &args) const;
+
+  Command(string name, ExecutableType type, string value, vector<Command> children);
+
+  Command(string name, CommandExecutor executor, vector<Command> children);
 
   Command(string name, ExecutableType type, string value);
 
@@ -42,10 +49,15 @@ class CommandData {
 
 extern vector<unique_ptr<Command>> commands;
 
+void loadDefaultCommands();
+void loadCommand(const CommandData &data);
+void inputCommand(bool enableSuggestion);
+
+vector<CommandData> getRegisteredCommands();
+void addRegisteredCommand(const CommandData &data);
+
 void loadCommands();
-void inputCommand();
 
-Command findCommand(string &name);
-
+Command findCommand(const string& name);
 
 #endif //SHUFFLE_INCLUDE_COMMANDMGR_H_

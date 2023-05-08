@@ -10,84 +10,54 @@
 #include "utils/utils.h"
 #include "i18n.h"
 #include "commandmgr.h"
+#include "sapp/sapp.h"
 
 using namespace std;
 using std::filesystem::current_path;
 namespace fs = std::filesystem;
 
 #ifdef _WIN32
-string path = current_path().string();
+path dir = current_path();
 #elif __linux__
-string path = current_path();
+path dir = current_path();
 #endif
 
 void execute(const string &input) {
-  vector<string> cmd = split(input, regex(R"(\s+)"));
-  if (cmd.empty()) return;
+  vector<string> args = split(input, regex(R"(\s+)"));
+  if (args.empty()) return;
 
   bool isCommandFounded = false;
-  for (const Command &command : commands) {
-    if (command.name != cmd[0]) continue;
+  for (const auto &item : commands) {
+    Command &command = *item;
+    if (command.getName() != args[0]) continue;
     isCommandFounded = true;
 
-    if (command.type == CUSTOM) {
-      if (cmd[0] == "exit") {
-        info("exit.bye");
-        exit(0);
-      } else if (cmd[0] == "help") {
-        info("system.wip");
-      } else if (cmd[0] == "cd") {
-        if (cmd.size() != 2) {
-          too_many_arguments();
-          return;
-        }
-
-        string newPath = cmd[1][0] == '/' || cmd[1][0] == '\\' ? cmd[1] : path.append("/").append(cmd[1]);
-
-        struct stat sb{};
-        if (stat(newPath.c_str(), &sb) == 0)
-          path = newPath;
-        else error("cd.directory_not_found", {newPath});
-      } else if (cmd[0] == "list") {
-        if (cmd.size() != 1) {
-          too_many_arguments();
-          return;
-        }
-
-        for (const auto &entry : fs::directory_iterator(path)) {
-#ifdef _WIN32
-          print(INFO, replace(entry.path().string(), path, ""));
-#elif __linux__
-          print(INFO, replace(entry.path(), path, ""));
-#endif
-        }
-      } else if (cmd[0] == "lang") {
-        if (cmd.size() != 2) {
-          too_many_arguments();
-          return;
-        }
-
-        loadLanguageFile(cmd[1]);
-        info("lang.changed", {cmd[1]});
+    vector<string> newArgs;
+    for (int i = 1; i < args.size(); ++i) newArgs.push_back(args[i]);
+    if (command.getType() == CUSTOM) {
+      command.run(args);
+    } else if (command.getType() == SAPP) {
+      dynamic_cast<SAPPCommand &>(command).run(newArgs);
+    } else if (command.getType() == EXECUTABLE) {
+      string cmd = command.getValue();
+      for (const auto &arg : newArgs) {
+        cmd.append(" ").append(arg);
       }
-    } else if (command.type == EXECUTE_PROGRAM) {
-      system(command.value.c_str());
-    } else if (command.type == RUN_SHFL) {
-    } else if (command.type == RUN_SAPP) {
+      system(cmd.c_str());
     }
     break;
   }
 
   if (!isCommandFounded) {
-    error("system.command_not_found", {cmd[0]});
+    error("system.command_not_found", {args[0]});
     pair<int, Command> similarWord = {1000000000, {"", CUSTOM, ""}};
     for (const auto &item : commands) {
       Command &command = *item;
-      int dist = levenshteinDist(cmd[0], command.getName());
+      int dist = levenshteinDist(args[0], command.getName());
       if (dist < similarWord.first) similarWord = {dist, command};
     }
 
     if (similarWord.first > 1) warning("system.check_command");
-    else warning("system.similar_command", {similarWord.second.name});
+    else warning("system.similar_command", {similarWord.second.getName()});
   }
 }
