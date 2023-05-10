@@ -9,18 +9,10 @@ set(SOURCES src/executor.cpp src/suggestion.cpp src/utils/utils.cpp src/console.
 add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp)
 
 find_package(jsoncpp REQUIRED)
-
 include_directories(JsonCpp::JsonCpp)
-
 target_link_libraries(${PROJECT_NAME} JsonCpp::JsonCpp)
 
 target_link_directories(${PROJECT_NAME} PRIVATE build/lib)
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_link_directories(${PROJECT_NAME} PRIVATE build/lib/Debug)
-elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_link_directories(${PROJECT_NAME} PRIVATE build/lib/Release)
-endif()
-
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)

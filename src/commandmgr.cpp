@@ -11,6 +11,7 @@
 #include "basic_commands.h"
 #include "sapp/sapp.h"
 
+
 #define COMMANDS_JSON (DOT_SHUFFLE + "/commands.json")
 
 using namespace std;
@@ -37,7 +38,8 @@ void loadCommand(const CommandData &data) {
 }
 
 void inputCommand(bool enableSuggestion) {
-  cout << FG_GREEN << "(" << dir.root_name().string() << "/../" << dir.filename().string() << ") " << FG_BLUE << "\u2192 " << RESET;
+  cout << FG_CYAN << "(" << dir.root_name().string() << "/../" << dir.filename().string() << ") " << FG_YELLOW
+       << "\u2192 " << RESET;
   cout.flush();
 
   string input;
