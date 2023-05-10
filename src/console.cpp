@@ -7,6 +7,15 @@
 
 using namespace std;
 
+bool debugMode = fase;
+
+void debug(const string &text, const initializer_list<string> &args) {
+  if (debugMode) {
+    cout << "[90m" << translate(text, args) << RESET << "\n";
+    cout.flush();
+  }
+}
+
 void info(const string &text, const initializer_list<string> &args) {
   cout << RESET << translate(text, args) << RESET << "\n";
   cout.flush();
@@ -25,6 +34,10 @@ void warning(const string &text, const initializer_list<string> &args) {
 void error(const string &text, const initializer_list<string> &args) {
   cout << FG_RED << translate(text, args) << RESET << "\n";
   cout.flush();
+}
+
+void debug(const string &text) {
+  debug(text, {});
 }
 
 void info(const string &text) {
