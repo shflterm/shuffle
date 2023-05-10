@@ -7,7 +7,7 @@
 
 using namespace std;
 
-bool debugMode = fase;
+bool debugMode = false;
 
 void debug(const string &text, const initializer_list<string> &args) {
   if (debugMode) {
