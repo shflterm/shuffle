@@ -1,15 +1,16 @@
 #include "commandmgr.h"
 
 #include <iostream>
-#include <json/json.h>
 #include <memory>
 
+#include "json/json.h"
 #include "executor.h"
 #include "console.h"
 #include "suggestion.h"
 #include "utils/utils.h"
 #include "basic_commands.h"
 #include "sapp/sapp.h"
+#include "hash_suggestion.h"
 
 #define COMMANDS_JSON (DOT_SHUFFLE + "/commands.json")
 
@@ -60,6 +61,13 @@ void inputCommand(bool enableSuggestion) {
 
         input += suggestion;
         cout << "\033[0m" << suggestion;
+      } else if (c == '#' && input.empty()) {
+        cout << "# ";
+        string prompt;
+        getline(cin, prompt);
+
+        info(createHashSuggestion(prompt));
+        return;
       } else {
         cout << "\033[0m" << c;
         input += c;

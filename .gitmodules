@@ -1,0 +1,3 @@
+[submodule "liboai"]
+	path = liboai
+	url = https://github.com/shflterm/liboai

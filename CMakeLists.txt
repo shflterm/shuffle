@@ -2,15 +2,23 @@ cmake_minimum_required(VERSION 3.18)
 
 project(shuffle)
 
-set(SOURCES src/executor.cpp src/suggestion.cpp src/utils/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp src/sapp/sapp.cpp include/utils/cmdexecutor.h include/basic_commands.h src/utils/cmdexecutor.cpp)
+include(CMakePrintHelpers)
+
+set(SOURCES src/executor.cpp src/suggestion.cpp src/utils/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp src/sapp/sapp.cpp include/utils/cmdexecutor.h include/basic_commands.h src/utils/cmdexecutor.cpp include/hash_suggestion.h src/hash_suggestion.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp)
 
 find_package(jsoncpp REQUIRED)
+add_subdirectory(liboai)
 
-include_directories(${jsoncpp_INCLUDE_DIRS})
+add_dependencies(${PROJECT_NAME} oai)
 
-target_link_libraries(${PROJECT_NAME} ${jsoncpp_LIBRARIES})
+include_directories(JsonCpp::JsonCpp)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/liboai/include)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/liboai)
+
+target_link_libraries(${PROJECT_NAME} JsonCpp::JsonCpp)
+target_link_libraries(${PROJECT_NAME} oai)
 
 target_link_directories(${PROJECT_NAME} PRIVATE build/lib)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
