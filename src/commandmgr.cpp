@@ -36,7 +36,7 @@ void loadCommand(const CommandData &data) {
 }
 
 void inputCommand(bool enableSuggestion) {
-  cout << absolute(dir).string() << "> ";
+  cout << "(" << dir.root_name().string() << "/../" << dir.filename().string() << ") ";
   cout.flush();
 
   string input;
