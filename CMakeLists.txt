@@ -4,11 +4,13 @@ project(shuffle)
 
 set(SOURCES src/executor.cpp src/suggestion.cpp src/utils/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp src/sapp/sapp.cpp include/utils/cmdexecutor.h include/basic_commands.h src/utils/cmdexecutor.cpp)
 
-add_subdirectory(jsoncpp)
-
 add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp)
 
-add_dependencies(${PROJECT_NAME} jsoncpp_lib)
+find_package(jsoncpp REQUIRED)
+
+include_directories(${jsoncpp_INCLUDE_DIRS})
+
+target_link_libraries(${PROJECT_NAME} ${jsoncpp_LIBRARIES})
 
 target_link_directories(${PROJECT_NAME} PRIVATE build/lib)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -16,8 +18,6 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
 elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
     target_link_directories(${PROJECT_NAME} PRIVATE build/lib/Release)
 endif()
-
-target_link_libraries(${PROJECT_NAME} PRIVATE jsoncpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE include)
 
