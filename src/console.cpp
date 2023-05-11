@@ -69,7 +69,6 @@ void white() { cout << "\n"; }
 void too_many_arguments() { error("system.too_many_arguments"); }
 
 #ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <conio.h>
 #elif __linux__ || __APPLE__

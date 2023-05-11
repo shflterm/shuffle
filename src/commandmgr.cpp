@@ -3,8 +3,8 @@
 #include <iostream>
 #include <json/json.h>
 #include <memory>
+#include <utility>
 
-#include "executor.h"
 #include "console.h"
 #include "suggestion.h"
 #include "utils/utils.h"
@@ -103,13 +103,27 @@ const string &Command::getValue() const {
   return value;
 }
 
-void Command::run(const vector<std::string> &args) const {
-  executor(args);
+const string &Command::getDescription() const {
+  return description;
 }
 
-Command::Command(string name, ExecutableType type, string value)
-    : name(std::move(name)), type(type), value(std::move(value)), executor(emptyExecutor) {}
+void Command::run(Workspace ws, const vector<std::string> &args) const {
+  executor(std::move(ws), args);
+}
 
-Command::Command(string name, CommandExecutor executor) : name(std::move(name)), type(CUSTOM), executor(executor) {}
+Command::Command(string name, string description, ExecutableType type, string value)
+    : name(std::move(name)),
+      description(std::move(description)),
+      type(type),
+      value(std::move(value)),
+      executor(emptyExecutor) {}
 
-Command::Command(string name) : name(std::move(name)), type(SAPP) {}
+Command::Command(string name, string description, CommandExecutor executor)
+    : name(std::move(name)), description(std::move(description)), type(CUSTOM), executor(executor) {}
+
+Command::Command(string name, string description)
+    : name(std::move(name)), description(std::move(description)), type(SAPP) {}
+
+
+Command::Command(string name)
+    : name(std::move(name)), description("-"), type(SAPP) {}

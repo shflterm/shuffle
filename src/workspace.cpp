@@ -8,6 +8,7 @@
 #include "sapp/sapp.h"
 #include "utils/utils.h"
 #include "suggestion.h"
+#include "hash_suggestion.h"
 
 using namespace std;
 
@@ -77,6 +78,14 @@ void Workspace::inputCommand(bool enableSuggestion) {
 
         input += suggestion;
         cout << "\033[0m" << suggestion;
+      } else if (c == '#' && input.empty()) {
+        gotoxy(wherex() - 2, wherey());
+        cout << FG_YELLOW << "# " << RESET;
+        string prompt;
+        getline(cin, prompt);
+
+        info(createHashSuggestion(prompt));
+        return;
       } else {
         cout << "\033[0m" << c;
         input += c;
