@@ -4,9 +4,9 @@ project(shuffle)
 
 include(CMakePrintHelpers)
 
-set(SOURCES src/executor.cpp src/suggestion.cpp src/utils/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp src/sapp/sapp.cpp include/utils/cmdexecutor.h include/basic_commands.h src/utils/cmdexecutor.cpp)
+set(SOURCES src/suggestion.cpp src/utils/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp src/sapp/sapp.cpp src/workspace.cpp src/utils/cmdexecutor.cpp)
 
-add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp)
+add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp include/basic_commands.h)
 
 find_package(jsoncpp REQUIRED)
 include_directories(JsonCpp::JsonCpp)

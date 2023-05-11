@@ -1,15 +1,14 @@
 #include "commandmgr.h"
 
-#include <iostream>
 #include <json/json.h>
 #include <memory>
+#include <utility>
 
-#include "executor.h"
 #include "console.h"
-#include "suggestion.h"
 #include "utils/utils.h"
 #include "basic_commands.h"
 #include "sapp/sapp.h"
+#include "workspace.h"
 
 #define COMMANDS_JSON (DOT_SHUFFLE + "/commands.json")
 
@@ -36,50 +35,7 @@ void loadCommand(const CommandData &data) {
                                                     data.value)));
 }
 
-void inputCommand(bool enableSuggestion) {
-  cout << FG_CYAN << "(" << dir.root_name().string() << "/../" << dir.filename().string() << ")"
-       << FG_YELLOW << " \u2192 " << RESET;
-  cout.flush();
 
-  string input;
-  if (enableSuggestion) {
-    char c;
-    while (true) {
-      c = readChar();
-
-      if (c == '\b' || c == 127) {
-        if (!input.empty()) {
-          gotoxy(wherex() - 1, wherey());
-          cout << ' ';
-          gotoxy(wherex() - 1, wherey());
-          input = input.substr(0, input.length() - 1);
-        }
-      } else if (c == '\n' || c == '\r') {
-        break;
-      } else if (c == '\t') {
-        string suggestion = findSuggestion(input, commands);
-        if (suggestion.empty()) continue;
-
-        input += suggestion;
-        cout << "\033[0m" << suggestion;
-      } else {
-        cout << "\033[0m" << c;
-        input += c;
-      }
-
-      string suggestion = findSuggestion(input, commands);
-      if (suggestion.empty()) continue;
-
-      cout << "\033[90m" << suggestion;
-      gotoxy(wherex() - (int) suggestion.size(), wherey());
-    }
-    white();
-  } else {
-    getline(cin, input);
-  }
-
-  if (!input.empty()) execute(input);
-}
 
 vector<CommandData> getRegisteredCommands() {
   vector<CommandData> res;
@@ -152,8 +108,8 @@ const string &Command::getDescription() const {
   return description;
 }
 
-void Command::run(const vector<std::string> &args) const {
-  executor(args);
+void Command::run(Workspace ws, const vector<std::string> &args) const {
+  executor(std::move(ws), args);
 }
 
 Command::Command(string name, string description, ExecutableType type, string value)

@@ -21,7 +21,8 @@ int main() {
   white();
   info("system.help");
 
+  Workspace workspace;
   while (true) {
-    inputCommand(true);
+    workspace.inputCommand(true);
   }
 }

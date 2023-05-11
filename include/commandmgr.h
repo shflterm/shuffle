@@ -26,7 +26,7 @@ class Command {
   [[nodiscard]] const string &getValue() const;
   [[nodiscard]] const string &getDescription() const;
 
-  virtual void run(const vector<std::string> &args) const;
+  virtual void run(Workspace ws, const vector<std::string> &args) const;
 
   Command(string name, string description, ExecutableType type, string value);
 
@@ -34,7 +34,7 @@ class Command {
 
   Command(string name, string description);
 
-  Command(string name);
+  explicit Command(string name);
 };
 
 class CommandData {
@@ -49,7 +49,6 @@ extern vector<unique_ptr<Command>> commands;
 
 void loadDefaultCommands();
 void loadCommand(const CommandData &data);
-void inputCommand(bool enableSuggestion);
 
 vector<CommandData> getRegisteredCommands();
 void addRegisteredCommand(const CommandData &data);
