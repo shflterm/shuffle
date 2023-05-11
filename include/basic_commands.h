@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "performance-unnecessary-value-param"
 //
 // Created by winch on 5/6/2023.
 //
@@ -10,15 +12,32 @@
 
 #include "console.h"
 #include "i18n.h"
+#include "workspace.h"
 
 using namespace std;
 namespace fs = std::filesystem;
 
-void helpCmd(const vector<string> &args) {
-  info("system.wip");
+void helpCmd(Workspace workspace, const vector<string> &args) {
+  if (args.size() == 1) {
+    vector<string> helps;
+    for (const auto &item : commands) {
+      Command &command = *item;
+      string text = command.getName() + ": " + command.getDescription();
+      helps.push_back(text);
+    }
+
+    info("Only some commands are shown:");
+    info("\033[90m(Type shfl cmds to see all commands.)");
+    for (const auto &item : helps) info(item);
+  } else if (args.size() == 2) {
+    info("system.wip"); // TODO
+  } else {
+    too_many_arguments();
+    return;
+  }
 }
 
-void shflCmd(const vector<string> &args) {
+void shflCmd(Workspace workspace, const vector<string> &args) {
   if (args.size() < 2) {
     too_many_arguments();
     return;
@@ -42,11 +61,12 @@ void shflCmd(const vector<string> &args) {
   }
 }
 
-void cdCmd(const vector<string> &args) {
+void cdCmd(Workspace workspace, const vector<string> &args) {
   if (args.size() != 2) {
     too_many_arguments();
     return;
   }
+  path dir = workspace.dir;
 
   dir.append(args[1]);
 
@@ -54,13 +74,16 @@ void cdCmd(const vector<string> &args) {
     error("cd.directory_not_found", {dir.string()});
     dir = dir.parent_path();
   }
+
+  workspace.dir = dir;
 }
 
-void listCmd(const vector<string> &args) {
+void listCmd(Workspace workspace, const vector<string> &args) {
   if (args.size() != 1) {
     too_many_arguments();
     return;
   }
+  path dir = workspace.dir;
 
   for (const auto &entry : fs::directory_iterator(dir)) {
     string name = replace(absolute(entry.path()).string(), absolute(dir).string(), "");
@@ -73,7 +96,7 @@ void listCmd(const vector<string> &args) {
   }
 }
 
-void langCmd(const vector<string> &args) {
+void langCmd(Workspace workspace, const vector<string> &args) {
   if (args.size() != 2) {
     too_many_arguments();
     return;
@@ -84,13 +107,15 @@ void langCmd(const vector<string> &args) {
 
 }
 
-void exitCmd(const vector<string> &args) {
+void exitCmd(Workspace workspace, const vector<string> &args) {
   info("exit.bye");
   exit(0);
 }
 
-void clearCmd(const vector<string> &args) {
+void clearCmd(Workspace workspace, const vector<string> &args) {
   clear();
 }
 
 #endif //SHUFFLE_INCLUDE_BASIC_COMMANDS_H_
+
+#pragma clang diagnostic pop

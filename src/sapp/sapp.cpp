@@ -9,7 +9,7 @@
 
 using namespace std;
 
-void SAPPCommand::run(const vector<std::string> &args) const {
+void SAPPCommand::run(Workspace workspace, const vector<std::string> &args) const {
   system((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str());
 }
 

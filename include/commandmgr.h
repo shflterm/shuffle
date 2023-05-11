@@ -19,16 +19,20 @@ class Command {
   ExecutableType type;
   string value;
   CommandExecutor executor{};
+  string description;
  public:
   [[nodiscard]] const string &getName() const;
   [[nodiscard]] ExecutableType getType() const;
   [[nodiscard]] const string &getValue() const;
+  [[nodiscard]] const string &getDescription() const;
 
-  virtual void run(const vector<std::string> &args) const;
+  virtual void run(Workspace ws, const vector<std::string> &args) const;
 
-  Command(string name, ExecutableType type, string value);
+  Command(string name, string description, ExecutableType type, string value);
 
-  Command(string name, CommandExecutor executor);
+  Command(string name, string description, CommandExecutor executor);
+
+  Command(string name, string description);
 
   explicit Command(string name);
 };
@@ -36,6 +40,7 @@ class Command {
 class CommandData {
  public:
   string name;
+  string description;
   string value;
   ExecutableType type;
 };
@@ -44,7 +49,6 @@ extern vector<unique_ptr<Command>> commands;
 
 void loadDefaultCommands();
 void loadCommand(const CommandData &data);
-void inputCommand(bool enableSuggestion);
 
 vector<CommandData> getRegisteredCommands();
 void addRegisteredCommand(const CommandData &data);
