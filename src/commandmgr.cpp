@@ -17,9 +17,9 @@ using namespace std;
 vector<unique_ptr<Command>> commands;
 
 void loadDefaultCommands() {
-  commands.push_back(make_unique<Command>(Command("help", "Print a list of commands", helpCmd)));
+//  commands.push_back(make_unique<Command>(Command("help", "Print a list of commands", helpCmd)));
   commands.push_back(make_unique<Command>(Command("shfl", "Shuffle Command.", shflCmd)));
-  commands.push_back(make_unique<Command>(Command("cd", "Change directory", cdCmd)));
+//  commands.push_back(make_unique<Command>(Command("cd", "Change directory", cdCmd)));
   commands.push_back(make_unique<Command>(Command("list", "Print list file of current directory", listCmd)));
   commands.push_back(make_unique<Command>(Command("lang", "Change language", langCmd)));
   commands.push_back(make_unique<Command>(Command("exit", "Shut down Shuffle", exitCmd)));

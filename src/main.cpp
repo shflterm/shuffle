@@ -23,6 +23,6 @@ int main() {
 
   Workspace workspace;
   while (true) {
-    workspace.inputCommand(true);
+    workspace.inputCommand(false);
   }
 }
