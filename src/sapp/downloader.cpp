@@ -12,8 +12,8 @@
 using namespace std;
 using namespace std::filesystem;
 
-size_t writeText(void* ptr, size_t size, size_t nmemb, std::string* data) {
-  data->append((char*)ptr, size * nmemb);
+size_t writeText(void *ptr, size_t size, size_t nmemb, std::string *data) {
+  data->append((char *) ptr, size * nmemb);
   return size * nmemb;
 }
 
@@ -33,6 +33,10 @@ Json::Value getRepo() {
     curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
     curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
 
+    struct curl_slist *list = nullptr;
+    list = curl_slist_append(list, "Cache-Control: no-cache");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeText);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
@@ -50,13 +54,13 @@ Json::Value getRepo() {
   return root;
 }
 
-void downloadFile(const string& url, const string& file) {
+void downloadFile(const string &url, const string &file) {
   auto curl = curl_easy_init();
   FILE *fp;
   CURLcode res;
   curl = curl_easy_init();
   if (curl) {
-    fp = fopen(file.c_str(),"wb");
+    fp = fopen(file.c_str(), "wb");
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
@@ -68,11 +72,11 @@ void downloadFile(const string& url, const string& file) {
 }
 
 int onExtractEntry(const char *filename, void *arg) {
-  info("Extracted: " + absolute(path(filename)).string();
+  info("Extracted: " + absolute(path(filename)).string());
   return 0;
 }
 
-void addSAPP(const string& name) {
+void addSAPP(const string &name) {
   info("Downloading Repository information...");
 
   Json::Value repo = getRepo();
