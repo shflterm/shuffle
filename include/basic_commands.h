@@ -17,7 +17,7 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-void shflCmd(Workspace workspace, const vector<string> &args) {
+void shflCmd(Workspace &workspace, const vector<string> &args) {
   if (args.size() < 2) {
     too_many_arguments();
     return;
@@ -41,12 +41,12 @@ void shflCmd(Workspace workspace, const vector<string> &args) {
   }
 }
 
-void listCmd(Workspace workspace, const vector<string> &args) {
+void listCmd(Workspace &workspace, const vector<string> &args) {
   if (args.size() != 1) {
     too_many_arguments();
     return;
   }
-  path dir = workspace.dir;
+  path dir = workspace.currentDirectory();
 
   for (const auto &entry : fs::directory_iterator(dir)) {
     string name = replace(absolute(entry.path()).string(), absolute(dir).string(), "");
@@ -59,7 +59,7 @@ void listCmd(Workspace workspace, const vector<string> &args) {
   }
 }
 
-void langCmd(Workspace workspace, const vector<string> &args) {
+void langCmd(Workspace &workspace, const vector<string> &args) {
   if (args.size() != 2) {
     too_many_arguments();
     return;
@@ -70,12 +70,12 @@ void langCmd(Workspace workspace, const vector<string> &args) {
 
 }
 
-void exitCmd(Workspace workspace, const vector<string> &args) {
+void exitCmd(Workspace &workspace, const vector<string> &args) {
   info("exit.bye");
   exit(0);
 }
 
-void clearCmd(Workspace workspace, const vector<string> &args) {
+void clearCmd(Workspace &workspace, const vector<string> &args) {
   clear();
 }
 

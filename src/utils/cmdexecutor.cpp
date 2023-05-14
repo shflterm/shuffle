@@ -5,4 +5,4 @@
 
 using namespace std;
 
-void emptyExecutor(Workspace workspace, const vector<string>& args) {}
+void emptyExecutor(Workspace &workspace, const vector<string>& args) {}

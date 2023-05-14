@@ -16,7 +16,7 @@ using namespace std;
 class SAPPCommand : public Command {
  public:
   explicit SAPPCommand(const string &name);
-  void run(Workspace workspace, const vector<std::string> &args) const override;
+  void run(Workspace &workspace, const vector<std::string> &args) const override;
 };
 
 #endif //SHUFFLE_INCLUDE_LOADER_H_

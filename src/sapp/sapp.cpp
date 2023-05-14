@@ -14,13 +14,13 @@ using namespace std;
 #define byte win_byte_override
 
 #include <Windows.h>
-typedef void (*entrypoint_t)(Workspace workspace, const vector<std::string> &args);
+typedef void (*entrypoint_t)(Workspace &workspace, const vector<std::string> &args);
 #elif __linux__
 #include <dlfcn.h>
-typedef void (*entrypoint_t)(Workspace workspace, const vector<std::string> &args);
+typedef void (*entrypoint_t)(Workspace &workspace, const vector<std::string> &args);
 #endif
 
-void SAPPCommand::run(Workspace workspace, const vector<std::string> &args) const {
+void SAPPCommand::run(Workspace &workspace, const vector<std::string> &args) const {
 #ifdef _WIN32
   HINSTANCE lib = LoadLibrary((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str());
   if (!lib) return;

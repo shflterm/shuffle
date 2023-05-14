@@ -26,7 +26,7 @@ class Command {
   [[nodiscard]] const string &getValue() const;
   [[nodiscard]] const string &getDescription() const;
 
-  virtual void run(Workspace ws, const vector<std::string> &args) const;
+  virtual void run(Workspace &ws, const vector<std::string> &args) const;
 
   Command(string name, string description, ExecutableType type, string value);
 

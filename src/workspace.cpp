@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <regex>
+#include <utility>
 
 #include "console.h"
 #include "commandmgr.h"
@@ -10,6 +11,15 @@
 #include "suggestion.h"
 
 using namespace std;
+using namespace std::filesystem;
+
+path Workspace::currentDirectory() {
+  return dir;
+}
+
+void Workspace::moveDirectory(path newDir) {
+  dir = std::move(newDir);
+}
 
 void Workspace::execute(const string &input) {
   vector<string> args = split(input, regex(R"(\s+)"));
@@ -23,8 +33,10 @@ void Workspace::execute(const string &input) {
 
     vector<string> newArgs;
     for (int i = 1; i < args.size(); ++i) newArgs.push_back(args[i]);
+
+    Workspace &ws = (*this);
     if (command.getType() == CUSTOM) {
-      command.run(*this, args);
+      command.run(ws, args);
     } else if (command.getType() == SAPP) {
       dynamic_cast<SAPPCommand &>(command).run(*this, newArgs);
     } else if (command.getType() == EXECUTABLE) {

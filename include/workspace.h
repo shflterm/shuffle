@@ -12,12 +12,15 @@ using namespace std;
 using namespace std::filesystem;
 
 class Workspace {
- public:
 #ifdef _WIN32
   path dir = current_path();
 #elif __linux__ || __APPLE__
   path dir = current_path();
 #endif
+
+ public:
+  path currentDirectory();
+  void moveDirectory(path newDir);
 
   void execute(const string &input);
   void inputCommand(bool enableSuggestion);
