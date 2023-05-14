@@ -5,7 +5,7 @@
 extern "C" __declspec(dllexport) void entrypoint(Workspace &workspace, const vector<string> &args) {
   if (args.empty()) {
     vector<string> helps;
-    for (const auto &item : workspace.commands()) {
+    for (const auto &item : commands) {
       Command &command = *item;
       string text = command.getName() + ": " + command.getDescription();
       helps.push_back(text);
