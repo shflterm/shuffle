@@ -1,17 +1,17 @@
 #include "sapp/sapp.h"
-#include "json/value.h"
-#include "json/reader.h"
-#include "utils/utils.h"
-#include "console.h"
+
 
 #include <vector>
 #include <string>
+#include <json/json.h>
 
-using namespace std;
+#include "utils/utils.h"
 
 #ifdef _WIN32
 #define NOMINMAX 1
 #define byte win_byte_override
+#define WIN32_LEAN_AND_MEAN
+#define _HAS_STD_BYTE 0
 
 #include <Windows.h>
 typedef void (*entrypoint_t)(Workspace &workspace, const vector<std::string> &args);

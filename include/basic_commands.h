@@ -17,30 +17,6 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-void shflCmd(Workspace &workspace, const vector<string> &args) {
-  if (args.size() < 2) {
-    too_many_arguments();
-    return;
-  }
-
-  if (args[1] == "register") {
-    if (args.size() != 4) {
-      too_many_arguments();
-      return;
-    }
-
-    CommandData newData;
-    newData.name = args[2];
-    newData.value = args[3];
-    newData.type = EXECUTABLE;
-    addRegisteredCommand(newData);
-  } else if (args[1] == "reload") {
-    info("Reloading command...");
-    loadCommands();
-    success("Reloaded all commands!");
-  }
-}
-
 void listCmd(Workspace &workspace, const vector<string> &args) {
   if (args.size() != 1) {
     too_many_arguments();

@@ -69,7 +69,11 @@ void white() { cout << "\n"; }
 void too_many_arguments() { error("system.too_many_arguments"); }
 
 #ifdef _WIN32
+#define NOMINMAX 1
+#define byte win_byte_override
 #define WIN32_LEAN_AND_MEAN
+#define _HAS_STD_BYTE 0
+
 #include <Windows.h>
 #include <conio.h>
 #elif __linux__ || __APPLE__

@@ -6,9 +6,10 @@
 
 #include "console.h"
 #include "commandmgr.h"
-#include "sapp/sapp.h"
 #include "utils/utils.h"
 #include "suggestion.h"
+#include "sapp/downloader.h"
+#include "sapp/sapp.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -39,6 +40,45 @@ void Workspace::execute(const string &input) {
   vector<string> args = split(input, regex(R"(\s+)"));
   if (args.empty()) return;
 
+  if (args[0] == "shfl") {
+    if (args.size() < 2) {
+      too_many_arguments();
+      return;
+    }
+
+    if (args[1] == "register") {
+      if (args.size() != 4) {
+        too_many_arguments();
+        return;
+      }
+
+      CommandData newData;
+      newData.name = args[2];
+      newData.value = args[3];
+      newData.type = EXECUTABLE;
+      addRegisteredCommand(newData);
+    } else if (args[1] == "reload") {
+      info("Reloading command...");
+      loadCommands();
+      success("Reloaded all commands!");
+    } else if (args[1] == "apps") {
+      if (args.size() < 2) {
+        too_many_arguments();
+        return;
+      }
+      if (args[2] == "add") {
+        if (args.size() != 4) {
+          too_many_arguments();
+          return;
+        }
+
+        addSAPP(args[3]);
+      }
+    }
+
+    return;
+  }
+
   bool isCommandFounded = false;
   for (const auto &item : commands) {
     Command &command = *item;
@@ -61,7 +101,7 @@ void Workspace::execute(const string &input) {
       system(cmd.c_str());
     }
     break;
-  }
+  } // Find Commands
 
   if (!isCommandFounded) {
     error("system.command_not_found", {args[0]});
