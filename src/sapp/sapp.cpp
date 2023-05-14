@@ -28,7 +28,6 @@ void SAPPCommand::run(Workspace workspace, const vector<std::string> &args) cons
 
   if (entrypoint == nullptr) return;
 
-  info("asfd");
   entrypoint(workspace, args);
   ::FreeLibrary(lib);
 #elif __linux__
