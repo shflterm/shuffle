@@ -21,6 +21,20 @@ void Workspace::moveDirectory(path newDir) {
   dir = std::move(newDir);
 }
 
+void Workspace::addHistory(const string &s) {
+  history.push_back(s);
+  historyIndex = historyIndex - 1;
+}
+
+string Workspace::historyUp() {
+  if (0 > historyIndex - 1) return "";
+  return history[--historyIndex];
+}
+
+string Workspace::historyDown() {
+  if (history.size() <= historyIndex + 1) return "";
+  return history[++historyIndex];
+}
 void Workspace::execute(const string &input) {
   vector<string> args = split(input, regex(R"(\s+)"));
   if (args.empty()) return;
@@ -63,7 +77,7 @@ void Workspace::execute(const string &input) {
   }
 }
 
-void Workspace::inputCommand(bool enableSuggestion) {
+void Workspace::inputPrompt(bool enableSuggestion) {
   cout << FG_CYAN << "(" << dir.root_name().string() << "/../" << dir.filename().string() << ")"
        << FG_YELLOW << " \u2192 " << RESET;
   cout.flush();
@@ -89,6 +103,18 @@ void Workspace::inputCommand(bool enableSuggestion) {
 
         input += suggestion;
         cout << "\033[0m" << suggestion;
+      } else if (c == 38/*UP ARROW*/) {
+        gotoxy(wherex() - (int) input.size(), wherey());
+        for (int i = 0; i < input.size(); ++i) cout << " ";
+        gotoxy(wherex() - (int) input.size(), wherey());
+        input = historyUp();
+        cout << input;
+      } else if (c == 40/*DOWN ARROW*/) {
+        gotoxy(wherex() - (int) input.size(), wherey());
+        for (int i = 0; i < input.size(); ++i) cout << " ";
+        gotoxy(wherex() - (int) input.size(), wherey());
+        input = historyDown();
+        cout << input;
       } else {
         cout << "\033[0m" << c;
         input += c;
@@ -105,5 +131,8 @@ void Workspace::inputCommand(bool enableSuggestion) {
     getline(cin, input);
   }
 
-  if (!input.empty()) execute(input);
+  if (!input.empty()) {
+    execute(input);
+    addHistory(input);
+  }
 }
