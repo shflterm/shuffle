@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.18)
 
 project(shuffle)
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/commands)
+
 set(SOURCES src/suggestion.cpp src/utils/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp src/sapp/sapp.cpp src/workspace.cpp src/utils/cmdexecutor.cpp include/libsapp.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp include/basic_commands.h)
@@ -20,5 +22,3 @@ target_include_directories(${PROJECT_NAME}_lib PRIVATE include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 target_compile_features(${PROJECT_NAME}_lib PRIVATE cxx_std_17)
-
-add_subdirectory(${CMAKE_SOURCE_DIR}/commands)

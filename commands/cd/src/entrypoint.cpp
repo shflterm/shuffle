@@ -1,9 +1,8 @@
 #include "libsapp.h"
-#include "commandmgr.h"
 #include "console.h"
 
-ENTRYPOINT(Workspace workspace, const vector<string> &args) {
-  if (args.size() != 2) {
+extern "C" __declspec(dllexport) void entrypoint(Workspace workspace, const vector<string> &args) {
+  if (args.empty()) {
     too_many_arguments();
     return;
   }
