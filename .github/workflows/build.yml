@@ -8,15 +8,29 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build-ubuntu:
+  build:
     permissions: write-all
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        config:
+        - os: ubuntu-latest
+          vcpkg_triplet: x64-linux-release
+        - os: macos-latest
+          vcpkg_triplet: x64-osx-release
+        - os: windows-latest
+          vcpkg_triplet: x64-windows-release
 
     steps:
     - uses: actions/checkout@v3
     
     - name: Update Submodule
       run: "git submodule update --init --recursive"
+    
+    - name: Download Packages
+      uses: johnwason/vcpkg-action@v4
+      with:
+        pkgs: jsoncpp curl kubazip
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
@@ -32,7 +46,7 @@ jobs:
         file: "version.h"
         content: "#define SHUFFLE_VERSION \"Beta 2.0\""
 
-    - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+    - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake
 
     - name: Upload Release
       uses: "marvinpinto/action-automatic-releases@latest"
@@ -44,77 +58,7 @@ jobs:
         files: |
           build/bin/shuffle
           build/lib/libjsoncpp.so.25
-          
-  build-windows:
-    permissions: write-all
-    runs-on: windows-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Update Submodule
-      run: "git submodule update --init --recursive"
-
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-      
-    - name: Get current date
-      id: date
-      run: echo "::set-output name=date::$(date +'%Y%m%d%H%M')"
-      
-    - name: Create version.h
-      uses: 1arp/create-a-file-action@0.2
-      with:
-        path: "include"
-        file: "version.h"
-        content: "#define SHUFFLE_VERSION \"Beta 2.0\""
-
-    - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
-    - name: Upload Release
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        title: "Shuffle for Windows (${{ steps.date.outputs.date }})"
-        automatic_release_tag: "windows/${{ steps.date.outputs.date }}"
-        prerelease: true
-        files: |
           build/bin/${{env.BUILD_TYPE}}/shuffle.exe
           build/bin/${{env.BUILD_TYPE}}/jsoncpp.dll
-          
-  build-macos:
-    permissions: write-all
-    runs-on: macos-latest
-
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Update Submodule
-      run: "git submodule update --init --recursive"
-
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-      
-    - name: Get current date
-      id: date
-      run: echo "::set-output name=date::$(date +'%Y%m%d%H%M')"
-      
-    - name: Create version.h
-      uses: 1arp/create-a-file-action@0.2
-      with:
-        path: "include"
-        file: "version.h"
-        content: "#define SHUFFLE_VERSION \"${{ steps.date.outputs.date }}\""
-
-    - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
-    - name: Upload Release
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        title: "Shuffle for MacOS (${{ steps.date.outputs.date }})"
-        automatic_release_tag: "mac/${{ steps.date.outputs.date }}"
-        prerelease: true
-        files: |
           build/bin/shuffle
           build/lib/libjsoncpp.dylib
