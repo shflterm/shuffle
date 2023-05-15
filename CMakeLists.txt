@@ -12,17 +12,15 @@ add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 target_compile_definitions(${PROJECT_NAME}_lib PRIVATE _HAS_STD_BYTE=0)
 
-find_package(jsoncpp REQUIRED)
-include_directories(JsonCpp::JsonCpp)
-target_link_libraries(${PROJECT_NAME} JsonCpp::JsonCpp)
-target_link_libraries(${PROJECT_NAME}_lib JsonCpp::JsonCpp)
+find_package(jsoncpp CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME}  JsonCpp::JsonCpp)
+target_link_libraries(${PROJECT_NAME}_lib  JsonCpp::JsonCpp)
 
-find_package(CURL REQUIRED)
+find_package(CURL CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} CURL::libcurl)
 target_link_libraries(${PROJECT_NAME}_lib CURL::libcurl)
 
-find_package(kubazip REQUIRED)
-include_directories(kubazip::kubazip)
+find_package(kubazip CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} kubazip::kubazip)
 target_link_libraries(${PROJECT_NAME}_lib kubazip::kubazip)
 
