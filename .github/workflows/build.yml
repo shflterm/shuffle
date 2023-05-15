@@ -15,11 +15,11 @@ jobs:
       matrix:
         config:
         - os: ubuntu-latest
-          vcpkg_triplet: x64-linux-release
+          configure: ./vcpkg/bootstrap-vcpkg.sh
         - os: macos-latest
-          vcpkg_triplet: x64-osx-release
+          configure: ./vcpkg/bootstrap-vcpkg.sh
         - os: windows-latest
-          vcpkg_triplet: x64-windows-release
+          configure: .\vcpkg\bootstrap-vcpkg.bat
 
     steps:
     - uses: actions/checkout@v3
@@ -30,7 +30,7 @@ jobs:
     - name: Download vcpkg
       run: git clone https://github.com/Microsoft/vcpkg.git
     - name: Configure vcpkg
-      run: ./vcpkg/bootstrap-vcpkg
+      run: ${{ matrix.config.vcpkg_triplet }}
       
     - name: Install Packages
       run: "./vcpkg/vcpkg install jsoncpp curl kubazip"
