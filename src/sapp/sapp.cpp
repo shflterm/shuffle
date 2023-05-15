@@ -34,7 +34,7 @@ void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
   void *lib = dlopen((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str(), RTLD_LAZY);
   auto entrypoint = (entrypoint_t) dlsym(lib, "entrypoint");
 
-  entrypoint(workspace, args);
+  entrypoint(ws, args);
 
   dlclose(lib);
 #endif
