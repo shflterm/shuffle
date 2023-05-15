@@ -1,6 +1,7 @@
 #include "sapp/downloader.h"
 
 #include <string>
+#include <cstdio>
 #include <curl/curl.h>
 #include <json/json.h>
 #include <filesystem>
@@ -17,9 +18,19 @@ size_t writeText(void *ptr, size_t size, size_t nmemb, std::string *data) {
   return size * nmemb;
 }
 
-size_t writeFile(void *ptr, size_t size, size_t nmemb, FILE *stream) {
-  size_t written = fwrite(ptr, size, nmemb, stream);
-  return written;
+int lastPercent = -1;
+int progressCallback(void *clientp, curl_off_t dltotal,
+                     curl_off_t dlnow, curl_off_t ultotal,
+                     curl_off_t ulnow) {
+  if (dltotal == 0) return 0;
+
+  int percent = (int) (static_cast<float>(dlnow) / static_cast<float>(dltotal) * 100);
+  if (lastPercent == percent) return 0;
+
+  lastPercent = percent;
+  info("Downloading... (" + to_string(percent) + "%)");
+
+  return 0;
 }
 
 Json::Value getRepo() {
@@ -60,10 +71,13 @@ void downloadFile(const string &url, const string &file) {
   CURLcode res;
   curl = curl_easy_init();
   if (curl) {
+    lastPercent = -1;
+
     fp = fopen(file.c_str(), "wb");
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
+    curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progressCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
     res = curl_easy_perform(curl);
 
     curl_easy_cleanup(curl);
