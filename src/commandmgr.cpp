@@ -1,14 +1,15 @@
 #include "commandmgr.h"
 
+#include <iostream>
 #include <json/json.h>
 #include <memory>
-#include <utility>
 
+#include "executor.h"
 #include "console.h"
+#include "suggestion.h"
 #include "utils/utils.h"
 #include "basic_commands.h"
 #include "sapp/sapp.h"
-#include "workspace.h"
 
 #define COMMANDS_JSON (DOT_SHUFFLE + "/commands.json")
 
@@ -18,7 +19,8 @@ vector<unique_ptr<Command>> commands;
 
 void loadDefaultCommands() {
   commands.push_back(make_unique<Command>(Command("list", "Print list file of current directory", listCmd)));
-  commands.push_back(make_unique<Command>(Command("lang", "Change language", langCmd)));
+  commands.push_back(make_unique<Command>(Command("lang", langCmd, {Command("en_us", emptyExecutor),
+                                                                    Command("ko_kr", emptyExecutor)})));
   commands.push_back(make_unique<Command>(Command("exit", "Shut down Shuffle", exitCmd)));
   commands.push_back(make_unique<Command>(Command("clear", "Clear console", clearCmd)));
 }
@@ -27,12 +29,53 @@ void loadCommand(const CommandData &data) {
   if (data.type == SAPP) commands.push_back(make_unique<SAPPCommand>(SAPPCommand(data.name)));
   else if (data.type == EXECUTABLE)
     commands.push_back(make_unique<Command>(Command(data.name,
-                                                    data.description,
                                                     EXECUTABLE,
                                                     data.value)));
 }
 
+void inputCommand(bool enableSuggestion) {
+  cout << absolute(dir).string() << "> ";
+  cout.flush();
 
+  string input;
+  if (enableSuggestion) {
+    char c;
+    while (true) {
+      c = readChar();
+
+      if (c == '\b') {
+        if (!input.empty()) {
+          gotoxy(wherex() - 1, wherey());
+          cout << ' ';
+          gotoxy(wherex() - 1, wherey());
+          input = input.substr(0, input.length() - 1);
+        }
+      } else if (c == '\n' || c == '\r') {
+        break;
+      } else if (c == '\t') {
+        string suggestion = findSuggestion(input, commands);
+        if (suggestion.empty()) continue;
+
+        input += suggestion;
+        cout << "\033[0m" << suggestion;
+      } else {
+        cout << "\033[0m" << c;
+        input += c;
+      }
+
+      string suggestion = findSuggestion(input, commands);
+      if (suggestion.empty()) continue;
+
+      cout << "\033[90m" << suggestion;
+      gotoxy(wherex() - (int) suggestion.size(), wherey());
+    }
+    white();
+  } else {
+    getline(cin, input);
+  }
+
+  if (!input.empty()) execute(input);
+}
 
 vector<CommandData> getRegisteredCommands() {
   vector<CommandData> res;
@@ -101,25 +144,13 @@ const string &Command::getValue() const {
   return value;
 }
 
-const string &Command::getDescription() const {
-  return description;
+void Command::run(const vector<std::string> &args) const {
+  executor(args);
 }
 
-void Command::run(Workspace &ws, const vector<std::string> &args) const {
-  executor(ws, args);
-}
+Command::Command(string name, ExecutableType type, string value)
+    : name(std::move(name)), type(type), value(std::move(value)), executor(emptyExecutor) {}
 
-Command::Command(string name, string description, ExecutableType type, string value)
-    : name(std::move(name)),
-      description(std::move(description)),
-      type(type),
-      value(std::move(value)),
-      executor(emptyExecutor) {}
+Command::Command(string name, CommandExecutor executor) : name(std::move(name)), type(CUSTOM), executor(executor) {}
 
-Command::Command(string name, string description, CommandExecutor executor)
-    : name(std::move(name)), description(std::move(description)), type(CUSTOM), executor(executor) {}
-
-Command::Command(string name, string description)
-    : name(std::move(name)), description(std::move(description)), type(SAPP) {}
-
-Command::Command(string name) : name(std::move(name)), description("-"), type(SAPP) {}
+Command::Command(string name) : name(std::move(name)), type(SAPP) {}
