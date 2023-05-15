@@ -22,6 +22,6 @@ int main() {
 
   Workspace workspace;
   while (true) {
-    workspace.inputPrompt(false);
+    workspace.inputPrompt(true);
   }
 }

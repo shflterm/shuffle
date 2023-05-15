@@ -12,21 +12,20 @@
 
 using namespace std;
 
-enum ExecutableType { CUSTOM, SAPP, EXECUTABLE };
 class Command {
  protected:
   string name;
-  ExecutableType type;
+  string description;
   string value;
   CommandExecutor executor{};
   vector<Command> children;
+
  public:
   [[nodiscard]] const string &getName() const;
-  [[nodiscard]] ExecutableType getType() const;
   [[nodiscard]] const string &getValue() const;
   [[nodiscard]] vector<unique_ptr<Command>> getChildren() const;
 
-  virtual void run(const vector<std::string> &args) const;
+  virtual void run(Workspace &ws, const vector<std::string> &args) const;
 
   Command(string name, string description, CommandExecutor executor, vector<Command> children);
   Command(string name, string description, CommandExecutor executor);
@@ -43,7 +42,6 @@ class CommandData {
   string name;
   string description;
   string value;
-  ExecutableType type;
 };
 
 extern vector<unique_ptr<Command>> commands;
@@ -56,6 +54,7 @@ void addRegisteredCommand(const CommandData &data);
 
 void loadCommands();
 
-Command findCommand(const string& name);
+Command findCommand(const string &name, const vector<unique_ptr<Command>>& DICTIONARY);
+Command findCommand(const string &name);
 
 #endif //SHUFFLE_INCLUDE_COMMANDMGR_H_

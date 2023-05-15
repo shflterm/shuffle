@@ -20,7 +20,7 @@ typedef void (*entrypoint_t)(Workspace &workspace, const vector<std::string> &ar
 typedef void (*entrypoint_t)(Workspace &workspace, const vector<std::string> &args);
 #endif
 
-void SAPPCommand::run(Workspace &workspace, const vector<std::string> &args) const {
+void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
 #ifdef _WIN32
   HINSTANCE lib = LoadLibrary((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str());
   if (!lib) return;
@@ -28,7 +28,7 @@ void SAPPCommand::run(Workspace &workspace, const vector<std::string> &args) con
 
   if (entrypoint == nullptr) return;
 
-  entrypoint(workspace, args);
+  entrypoint(ws, args);
   ::FreeLibrary(lib);
 #elif __linux__
   void *lib = dlopen((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str(), RTLD_LAZY);
