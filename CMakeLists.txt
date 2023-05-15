@@ -5,6 +5,7 @@ project(shuffle)
 add_subdirectory(${CMAKE_SOURCE_DIR}/commands)
 
 set(SOURCES src/suggestion.cpp src/utils/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp src/sapp/sapp.cpp src/workspace.cpp src/utils/cmdexecutor.cpp include/libsapp.h src/sapp/downloader.cpp)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp include/basic_commands.h)
 add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
