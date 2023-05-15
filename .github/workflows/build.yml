@@ -26,16 +26,17 @@ jobs:
     
     - name: Update Submodule
       run: "git submodule update --init --recursive"
-    
-    - name: Download Packages
-      uses: johnwason/vcpkg-action@v4
-      with:
-        pkgs: jsoncpp curl kubazip
-        triplet: ${{ matrix.config.vcpkg_triplet }}
-        token: ${{ github.token }}
+        
+    - name: Download vcpkg
+      run: git clone https://github.com/Microsoft/vcpkg.git
+    - name: Configure vcpkg
+      run: ./vcpkg/bootstrap-vcpkg
+      
+    - name: Install Packages
+      run: "./vcpkg/vcpkg install jsoncpp curl kubazip"
 
     - name: Configure CMake
-      run: cmake -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
       
     - name: Get current date
       id: date
