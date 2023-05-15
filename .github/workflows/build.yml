@@ -30,7 +30,7 @@ jobs:
     - name: Download vcpkg
       run: git clone https://github.com/Microsoft/vcpkg.git
     - name: Configure vcpkg
-      run: ${{ matrix.config.vcpkg_triplet }}
+      run: ${{ matrix.config.configure }}
       
     - name: Install Packages
       run: "./vcpkg/vcpkg install jsoncpp curl kubazip"
