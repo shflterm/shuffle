@@ -1,5 +1,4 @@
 #include <iostream>
-#include <chrono>
 
 #include "console.h"
 #include "i18n.h"
@@ -17,12 +16,12 @@ int main() {
   clear();
 
   info("Welcome to " + FG_YELLOW + "SHUFFLE " + SHUFFLE_VERSION + RESET);
-  info("© 2023 Shuffle Team. All Rights Reserved.");
+  info("(C) 2023 Shuffle Team. All Rights Reserved.");
   white();
   info("system.help");
 
   Workspace workspace;
   while (true) {
-    workspace.inputCommand(true);
+    workspace.inputPrompt(true);
   }
 }
