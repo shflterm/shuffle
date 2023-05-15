@@ -35,7 +35,7 @@ jobs:
         token: ${{ github.token }}
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ${{ steps.vcpkg.outputs.vcpkg-cmake-config }}
       
     - name: Get current date
       id: date
@@ -48,7 +48,7 @@ jobs:
         file: "version.h"
         content: "#define SHUFFLE_VERSION \"Beta 2.0\""
 
-    - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -DCMAKE_TOOLCHAIN_FILE=~/vcpkg/scripts/buildsystems/vcpkg.cmake
+    - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Upload Release
       uses: "marvinpinto/action-automatic-releases@latest"
