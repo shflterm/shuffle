@@ -12,6 +12,10 @@
 
 using namespace std;
 
-#define ENTRYPOINT extern "C" void entrypoint
+#ifdef _WIN32
+#define SAPPENTRYPOINT extern "C" __declspec(dllexport)
+#else
+#define SAPPENTRYPOINT extern "C"
+#endif
 
 #endif //SHUFFLE_INCLUDE_LIBSAPP_H_

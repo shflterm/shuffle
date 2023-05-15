@@ -1,7 +1,7 @@
 #include "libsapp.h"
 #include "console.h"
 
-extern "C" __declspec(dllexport) void entrypoint(Workspace &workspace, const vector<string> &args) {
+SAPPENTRYPOINT void entrypoint(Workspace &workspace, const vector<string> &args) {
   if (args.empty()) {
     too_many_arguments();
     return;

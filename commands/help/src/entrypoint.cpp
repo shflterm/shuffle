@@ -2,7 +2,7 @@
 #include "commandmgr.h"
 #include "console.h"
 
-extern "C" __declspec(dllexport) void entrypoint(Workspace &workspace, const vector<string> &args) {
+SAPPENTRYPOINT void entrypoint(Workspace &workspace, const vector<string> &args) {
   if (args.empty()) {
     vector<string> helps;
     for (const auto &item : commands) {
