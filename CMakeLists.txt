@@ -4,7 +4,7 @@ project(shuffle)
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/commands)
 
-set(SOURCES src/suggestion.cpp src/utils/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp src/sapp/sapp.cpp src/workspace.cpp src/utils/cmdexecutor.cpp include/libsapp.h src/sapp/downloader.cpp)
+set(SOURCES src/suggestion.cpp src/utils/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp src/sapp/sapp.cpp src/workspace.cpp src/utils/cmdexecutor.cpp include/libsapp.h src/sapp/downloader.cpp src/hash_suggestion.cpp)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp include/basic_commands.h)
@@ -25,15 +25,10 @@ find_package(kubazip CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} kubazip::kubazip)
 target_link_libraries(${PROJECT_NAME}_lib kubazip::kubazip)
 
+add_subdirectory(liboai)
 add_dependencies(${PROJECT_NAME} oai)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/liboai)
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_link_directories(${PROJECT_NAME} PRIVATE build/lib/Debug)
-    target_link_directories(${PROJECT_NAME}_lib PRIVATE build/lib/Debug)
-elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_link_directories(${PROJECT_NAME} PRIVATE build/lib/Release)
-    target_link_directories(${PROJECT_NAME}_lib PRIVATE build/lib/Release)
-endif()
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/liboai/include)
+target_link_libraries(${PROJECT_NAME} oai)
 
 target_link_directories(${PROJECT_NAME} PRIVATE build/lib)
 target_link_directories(${PROJECT_NAME}_lib PRIVATE build/lib)
