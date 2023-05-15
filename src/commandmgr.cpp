@@ -102,6 +102,10 @@ const string &Command::getName() const {
   return name;
 }
 
+const string &Command::getDescription() const {
+  return description;
+}
+
 const string &Command::getValue() const {
   return value;
 }

@@ -22,6 +22,7 @@ class Command {
 
  public:
   [[nodiscard]] const string &getName() const;
+  [[nodiscard]] const string &getDescription() const;
   [[nodiscard]] const string &getValue() const;
   [[nodiscard]] vector<unique_ptr<Command>> getChildren() const;
 
