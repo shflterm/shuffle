@@ -10,15 +10,15 @@ env:
 jobs:
   build:
     permissions: write-all
-    runs-on: ${{ matrix.config.os }}
+    runs-on: ${{ matrix.config.os }}-latest
     strategy:
       matrix:
         config:
-        - os: ubuntu-latest
+        - os: ubuntu
           configure: ./vcpkg/bootstrap-vcpkg.sh
-        - os: macos-latest
+        - os: macos
           configure: ./vcpkg/bootstrap-vcpkg.sh
-        - os: windows-latest
+        - os: windows
           configure: .\vcpkg\bootstrap-vcpkg.bat
 
     steps:
@@ -36,7 +36,7 @@ jobs:
       run: "./vcpkg/vcpkg install jsoncpp curl kubazip"
 
     - name: Configure CMake
-      run: cmake -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
       
     - name: Get current date
       id: date
@@ -55,8 +55,8 @@ jobs:
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        title: "Shuffle for Linux (${{ steps.date.outputs.date }})"
-        automatic_release_tag: "linux/${{ steps.date.outputs.date }}"
+        title: "Shuffle for ${{ matrix.config.os }} (${{ steps.date.outputs.date }})"
+        automatic_release_tag: "${{ matrix.config.os }}"
         prerelease: true
         files: |
           build/bin/shuffle
