@@ -2,23 +2,35 @@ cmake_minimum_required(VERSION 3.18)
 
 project(shuffle)
 
-set(SOURCES src/executor.cpp src/suggestion.cpp src/utils/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp src/sapp/sapp.cpp include/utils/cmdexecutor.h include/basic_commands.h src/utils/cmdexecutor.cpp)
+add_subdirectory(${CMAKE_SOURCE_DIR}/commands)
 
-add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp)
+set(SOURCES src/suggestion.cpp src/utils/utils.cpp src/console.cpp src/i18n.cpp src/commandmgr.cpp src/sapp/sapp.cpp src/workspace.cpp src/utils/cmdexecutor.cpp include/libsapp.h src/sapp/downloader.cpp)
+
+add_executable(${PROJECT_NAME} ${SOURCES} src/main.cpp include/basic_commands.h)
+add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
+target_compile_definitions(${PROJECT_NAME}_lib PRIVATE _HAS_STD_BYTE=0)
 
 find_package(jsoncpp REQUIRED)
+include_directories(JsonCpp::JsonCpp)
+target_link_libraries(${PROJECT_NAME} JsonCpp::JsonCpp)
+target_link_libraries(${PROJECT_NAME}_lib JsonCpp::JsonCpp)
 
-include_directories(${jsoncpp_INCLUDE_DIRS})
+find_package(CURL REQUIRED)
+target_link_libraries(${PROJECT_NAME} CURL::libcurl)
+target_link_libraries(${PROJECT_NAME}_lib CURL::libcurl)
 
-target_link_libraries(${PROJECT_NAME} ${jsoncpp_LIBRARIES})
+find_package(kubazip REQUIRED)
+include_directories(kubazip::kubazip)
+target_link_libraries(${PROJECT_NAME} kubazip::kubazip)
+target_link_libraries(${PROJECT_NAME}_lib kubazip::kubazip)
 
 target_link_directories(${PROJECT_NAME} PRIVATE build/lib)
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_link_directories(${PROJECT_NAME} PRIVATE build/lib/Debug)
-elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_link_directories(${PROJECT_NAME} PRIVATE build/lib/Release)
-endif()
+target_link_directories(${PROJECT_NAME}_lib PRIVATE build/lib)
 
 target_include_directories(${PROJECT_NAME} PRIVATE include)
+target_include_directories(${PROJECT_NAME}_lib PRIVATE include)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+target_compile_features(${PROJECT_NAME}_lib PRIVATE cxx_std_17)

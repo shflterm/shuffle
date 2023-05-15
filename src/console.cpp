@@ -7,6 +7,15 @@
 
 using namespace std;
 
+bool debugMode = false;
+
+void debug(const string &text, const initializer_list<string> &args) {
+  if (debugMode) {
+    cout << "[90m" << translate(text, args) << RESET << "\n";
+    cout.flush();
+  }
+}
+
 void info(const string &text, const initializer_list<string> &args) {
   cout << RESET << translate(text, args) << RESET << "\n";
   cout.flush();
@@ -25,6 +34,10 @@ void warning(const string &text, const initializer_list<string> &args) {
 void error(const string &text, const initializer_list<string> &args) {
   cout << FG_RED << translate(text, args) << RESET << "\n";
   cout.flush();
+}
+
+void debug(const string &text) {
+  debug(text, {});
 }
 
 void info(const string &text) {
@@ -56,7 +69,11 @@ void white() { cout << "\n"; }
 void too_many_arguments() { error("system.too_many_arguments"); }
 
 #ifdef _WIN32
+#define NOMINMAX 1
+#define byte win_byte_override
 #define WIN32_LEAN_AND_MEAN
+#define _HAS_STD_BYTE 0
+
 #include <Windows.h>
 #include <conio.h>
 #elif __linux__ || __APPLE__

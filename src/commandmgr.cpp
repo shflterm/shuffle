@@ -3,8 +3,8 @@
 #include <iostream>
 #include <json/json.h>
 #include <memory>
+#include <utility>
 
-#include "executor.h"
 #include "console.h"
 #include "suggestion.h"
 #include "utils/utils.h"
@@ -18,65 +18,26 @@ using namespace std;
 vector<unique_ptr<Command>> commands;
 
 void loadDefaultCommands() {
-  commands.push_back(make_unique<Command>(Command("help", helpCmd)));
-  commands.push_back(make_unique<Command>(Command("shfl", shflCmd)));
-  commands.push_back(make_unique<Command>(Command("cd", cdCmd)));
-  commands.push_back(make_unique<Command>(Command("list", listCmd)));
-  commands.push_back(make_unique<Command>(Command("lang", langCmd)));
-  commands.push_back(make_unique<Command>(Command("exit", exitCmd)));
-  commands.push_back(make_unique<Command>(Command("clear", clearCmd)));
+  commands.push_back(make_unique<Command>(Command(
+      "shfl", "Shuffle Command",
+      {
+          Command("reload", "Reload all commands"),
+          Command("apps", "Manage SAPP",
+                  {Command("add", "Install SAPP"),
+                   Command("remove", "Delete SAPP")}),
+      })));
+
+  commands.push_back(make_unique<Command>(Command("list", "Print list file of current directory", listCmd)));
+  commands.push_back(make_unique<Command>(Command(
+      "lang", "Change Language", langCmd,
+      {Command("en_us"),
+       Command("ko_kr")})));
+  commands.push_back(make_unique<Command>(Command("exit", "Shut down Shuffle", exitCmd)));
+  commands.push_back(make_unique<Command>(Command("clear", "Clear console", clearCmd)));
 }
 
 void loadCommand(const CommandData &data) {
-  if (data.type == SAPP) commands.push_back(make_unique<SAPPCommand>(SAPPCommand(data.name)));
-  else if (data.type == EXECUTABLE)
-    commands.push_back(make_unique<Command>(Command(data.name,
-                                                    EXECUTABLE,
-                                                    data.value)));
-}
-
-void inputCommand(bool enableSuggestion) {
-  cout << absolute(dir).string() << "> ";
-  cout.flush();
-
-  string input;
-  if (enableSuggestion) {
-    char c;
-    while (true) {
-      c = readChar();
-
-      if (c == '\b' || c == 127) {
-        if (!input.empty()) {
-          gotoxy(wherex() - 1, wherey());
-          cout << ' ';
-          gotoxy(wherex() - 1, wherey());
-          input = input.substr(0, input.length() - 1);
-        }
-      } else if (c == '\n' || c == '\r') {
-        break;
-      } else if (c == '\t') {
-        string suggestion = findSuggestion(input, commands);
-        if (suggestion.empty()) continue;
-
-        input += suggestion;
-        cout << "\033[0m" << suggestion;
-      } else {
-        cout << "\033[0m" << c;
-        input += c;
-      }
-
-      string suggestion = findSuggestion(input, commands);
-      if (suggestion.empty()) continue;
-
-      cout << "\033[90m" << suggestion;
-      gotoxy(wherex() - (int) suggestion.size(), wherey());
-    }
-    white();
-  } else {
-    getline(cin, input);
-  }
-
-  if (!input.empty()) execute(input);
+  commands.push_back(make_unique<SAPPCommand>(SAPPCommand(data.name)));
 }
 
 vector<CommandData> getRegisteredCommands() {
@@ -90,12 +51,6 @@ vector<CommandData> getRegisteredCommands() {
   for (auto command : commandList) {
     CommandData data;
     data.name = command["name"].asString();
-    if (command["type"].asString() == "SAPP") {
-      data.type = SAPP;
-    } else if (command["type"].asString() == "EXECUTABLE") {
-      data.type = EXECUTABLE;
-      data.value = command["value"].asString();
-    }
     res.push_back(data);
   }
 
@@ -114,9 +69,6 @@ void addRegisteredCommand(const CommandData &data) {
   Json::Value value(Json::objectValue);
   value["name"] = data.name;
   value["value"] = data.value;
-  if (data.type == CUSTOM) value["type"] = "CUSTOM";
-  else if (data.type == SAPP) value["type"] = "SAPP";
-  else if (data.type == EXECUTABLE) value["type"] = "EXECUTABLE";
   commandList.append(value);
 
   root["commands"] = commandList;
@@ -134,25 +86,64 @@ void loadCommands() {
   }
 }
 
-const string &Command::getName() const {
-  return name;
+Command findCommand(const string &name, const vector<unique_ptr<Command>>& DICTIONARY) {
+  for (const auto &item : DICTIONARY) {
+    Command &command = *item;
+    if (command.getName() == name) return command;
+  }
+  return Command("");
 }
 
-ExecutableType Command::getType() const {
-  return type;
+Command findCommand(const string &name) {
+  return findCommand(name, commands);
+}
+
+const string &Command::getName() const {
+  return name;
 }
 
 const string &Command::getValue() const {
   return value;
 }
 
-void Command::run(const vector<std::string> &args) const {
-  executor(args);
+vector<unique_ptr<Command>> Command::getChildren() const {
+  vector<unique_ptr<Command>> newChildren;
+  newChildren.reserve(children.size());
+  for (const Command &item : children) {
+    newChildren.push_back(make_unique<Command>(item));
+  }
+  return newChildren;
 }
 
-Command::Command(string name, ExecutableType type, string value)
-    : name(std::move(name)), type(type), value(std::move(value)), executor(emptyExecutor) {}
+void Command::run(Workspace &ws, const vector<std::string> &args) const {
+  executor(ws, args);
+}
 
-Command::Command(string name, CommandExecutor executor) : name(std::move(name)), type(CUSTOM), executor(executor) {}
+Command::Command(string name, string description, CommandExecutor executor, vector<Command> children)
+    : name(std::move(name)),
+      description(std::move(description)),
+      executor(executor),
+      children(std::move(children)) {}
 
-Command::Command(string name) : name(std::move(name)), type(SAPP) {}
+Command::Command(string name, string description, CommandExecutor executor)
+    : name(std::move(name)),
+      description(std::move(description)),
+      executor(executor) {}
+
+Command::Command(string name, string description, vector<Command> children)
+    : name(std::move(name)),
+      description(std::move(description)),
+      children(std::move(children)) {}
+
+Command::Command(string name, string description)
+    : name(std::move(name)),
+      description(std::move(description)) {}
+
+Command::Command(string name, vector<Command> children)
+    : name(std::move(name)),
+      description("-"),
+      children(std::move(children)) {}
+
+Command::Command(string name)
+    : name(std::move(name)),
+      description("-") {}
