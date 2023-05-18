@@ -3,6 +3,7 @@
 #include <iostream>
 #include <regex>
 #include <utility>
+#include <sstream>
 
 #include "console.h"
 #include "commandmgr.h"
@@ -130,16 +131,22 @@ string getSuggestion(const string &input) {
   return suggestion;
 }
 
+string Workspace::prompt() {
+  stringstream ss;
+  ss << FG_CYAN << "(" << dir.root_name().string() << "/../" << dir.filename().string() << ")"
+     << FG_YELLOW << " \u2192 " << RESET;
+  return ss.str();
+}
+
 void Workspace::inputPrompt(bool enableSuggestion) {
-  cout << FG_CYAN << "(" << dir.root_name().string() << "/../" << dir.filename().string() << ")"
-       << FG_YELLOW << " \u2192 " << RESET;
-  cout.flush();
+  cout << prompt();
 
   string input;
   if (enableSuggestion) {
     char c;
     while (true) {
       c = readChar();
+      cout << "[0K";
 
       if (c == '\b' || c == 127) {
         if (!input.empty()) {

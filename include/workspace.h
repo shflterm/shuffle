@@ -21,10 +21,12 @@ class Workspace {
   vector<string> history;
   int historyIndex = 0;
 
+  string prompt();
+
  public:
   path currentDirectory();
   void moveDirectory(path newDir);
-  void addHistory(const string& s);
+  void addHistory(const string &s);
   string historyUp();
   string historyDown();
 
