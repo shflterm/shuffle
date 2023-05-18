@@ -22,7 +22,10 @@ vector<string> createSuggestions(const string &str, const vector<unique_ptr<Comm
   for (const auto &item : DICTIONARY) {
     Command &command = *item;
     if (command.getName().substr(0, str.size()) == str) {
-      res.push_back(command.getName());
+      Command *cmd = &command;
+      if (dynamic_cast<OptionSubCommand *>(cmd) == nullptr) {
+        res.push_back(command.getName());
+      }
     }
   }
 

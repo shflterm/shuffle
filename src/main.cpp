@@ -12,6 +12,7 @@ int main() {
   cout << "Loading Shuffle...";
   loadLanguageFile("en_us");
   loadCommands();
+  ios::sync_with_stdio(false); cin.tie(nullptr); cout.tie(nullptr);
 
   clear();
 

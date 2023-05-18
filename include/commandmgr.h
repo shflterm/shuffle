@@ -25,6 +25,7 @@ class Command {
   [[nodiscard]] const string &getDescription() const;
   [[nodiscard]] const string &getValue() const;
   [[nodiscard]] vector<unique_ptr<Command>> getChildren() const;
+  void addChild(const Command &command);
 
   virtual void run(Workspace &ws, const vector<std::string> &args) const;
 
@@ -36,6 +37,11 @@ class Command {
 
   Command(string name, vector<Command> children);
   explicit Command(string name);
+};
+
+class OptionSubCommand : public Command {
+ public:
+  OptionSubCommand(string name, string description);
 };
 
 class CommandData {
@@ -55,7 +61,7 @@ void addRegisteredCommand(const CommandData &data);
 
 void loadCommands();
 
-Command findCommand(const string &name, const vector<unique_ptr<Command>>& DICTIONARY);
+Command findCommand(const string &name, const vector<unique_ptr<Command>> &DICTIONARY);
 Command findCommand(const string &name);
 
 #endif //SHUFFLE_INCLUDE_COMMANDMGR_H_

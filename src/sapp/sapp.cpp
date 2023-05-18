@@ -1,6 +1,5 @@
 #include "sapp/sapp.h"
 
-
 #include <vector>
 #include <string>
 #include <json/json.h>
@@ -40,6 +39,20 @@ void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
 #endif
 }
 
+void addChildren(const Json::Value& json, Command *command) {
+  for (Json::Value item : json) {
+    if (item["type"] == "option") {
+      Command child = OptionSubCommand(item["name"].asString(), item["description"].asString());
+      command->addChild(child);
+    } else if (item["type"] == "subcommand") {
+      Command child = Command(item["name"].asString(), item["description"].asString());
+      if (item.isMember("children")) addChildren(item["children"], &child);
+
+      command->addChild(child);
+    }
+  }
+}
+
 SAPPCommand::SAPPCommand(const string &name) : Command(name) {
   string runDotShfl = DOT_SHUFFLE + "/apps/" + name + "/run.shfl";
 
@@ -56,4 +69,12 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
 #endif
 
   value = executable.asString();
+
+  //Read help.shfl
+  string helpDotShfl = DOT_SHUFFLE + "/apps/" + name + "/help.shfl";
+  Json::Value helpRoot;
+  Json::Reader helpReader;
+  helpReader.parse(readFile(helpDotShfl), helpRoot, false);
+  Json::Value children = helpRoot["children"];
+  addChildren(children, this);
 }

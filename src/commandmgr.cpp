@@ -86,7 +86,7 @@ void loadCommands() {
   }
 }
 
-Command findCommand(const string &name, const vector<unique_ptr<Command>>& DICTIONARY) {
+Command findCommand(const string &name, const vector<unique_ptr<Command>> &DICTIONARY) {
   for (const auto &item : DICTIONARY) {
     Command &command = *item;
     if (command.getName() == name) return command;
@@ -117,6 +117,10 @@ vector<unique_ptr<Command>> Command::getChildren() const {
     newChildren.push_back(make_unique<Command>(item));
   }
   return newChildren;
+}
+
+void Command::addChild(const Command &command) {
+  children.push_back(command);
 }
 
 void Command::run(Workspace &ws, const vector<std::string> &args) const {
@@ -151,3 +155,7 @@ Command::Command(string name, vector<Command> children)
 Command::Command(string name)
     : name(std::move(name)),
       description("-") {}
+
+OptionSubCommand::OptionSubCommand(string name, string description)
+    : Command(std::move(name),
+              std::move(description)) {}
