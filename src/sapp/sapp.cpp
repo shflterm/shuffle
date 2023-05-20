@@ -18,6 +18,9 @@
 #include <dlfcn.h>
 #endif
 
+typedef void (*entrypoint_t)(Workspace &workspace, const vector<string> &args);
+typedef vector<string> (*suggest_t)(Workspace &workspace, const string &suggestId);
+
 void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
   if (type == NORMAL) {
 #ifdef _WIN32
@@ -93,20 +96,20 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
   Json::Reader reader;
   reader.parse(readFile(runDotShfl), root, false);
 
-  type = root["type"].asString() == "script" ? SCRIPT : NORMAL;
+  type = root["libpath"].isString() ? SCRIPT : NORMAL;
+  Json::Value libPath = root["libpath"];
   if (type == NORMAL) {
-    Json::Value libPath = root["libpath"];
 #ifdef _WIN32
     Json::Value executable = libPath["windows"];
 #elif __linux__
     Json::Value executable = libPath["linux"];
 #elif __APPLE__
-  Json::Value executable = libPath["macos"];
+    Json::Value executable = libPath["macos"];
 #endif
 
     value = executable.asString();
   } else { // SCRIPT
-    string scriptPath = DOT_SHUFFLE + "/apps/" + name + "/" + root["libpath"].asString();
+    string scriptPath = DOT_SHUFFLE + "/apps/" + name + "/" + libPath.asString();
     L = luaL_newstate();
     luaL_openlibs(L);
     int err = luaL_loadfile(L, scriptPath.c_str());
@@ -126,22 +129,60 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
 }
 
 vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &suggestId) {
-  info("Loading library: " + DOT_SHUFFLE + "/apps/" + name + "/" + value);
-
+  if (type == NORMAL) {
 #ifdef _WIN32
-  HINSTANCE lib = LoadLibrary((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str());
-  if (!lib) return {};
-  auto suggest = (suggest_t) GetProcAddress(lib, "suggest");
+    HINSTANCE lib = LoadLibrary((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str());
+    if (!lib) return {};
+    auto suggest = (suggest_t) GetProcAddress(lib, "suggest");
 
-  if (suggest == nullptr) return {};
+    if (entrypoint == nullptr) return {};
 
-  return suggest(ws, suggestId);
+    return suggest(ws, suggestId);
+//    ::FreeLibrary(lib);
 #elif __linux__
-  void *lib = dlopen((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str(), RTLD_LAZY);
-  auto suggest = (suggest_t) dlsym(lib, "suggest");
+    void *lib = dlopen((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str(), RTLD_LAZY);
+    auto suggest = (suggest_t) dlsym(lib, "suggest");
+    return suggest(ws, suggestId);
 
-  return suggest(ws, suggestId);
-
-//  dlclose(lib);
+//    dlclose(lib);
 #endif
+  } else { // SCRIPT
+    // Create workspace table
+    lua_newtable(L);
+    {
+      lua_pushstring(L, ws.currentDirectory().string().c_str());
+      lua_setfield(L, -2, "dir");
+    } // ws.dir
+
+    lua_setglobal(L, "workspace");
+
+    // Create args list
+    lua_pushstring(L, suggestId.c_str());
+    lua_setglobal(L, "suggestId");
+
+    lua_getglobal(L, "suggest");
+    if (lua_type(L, -1) != LUA_TFUNCTION) {
+      error("Error: 'suggest' is not a function!");
+      return {};
+    }
+    int err = lua_pcall(L, 0, 1, 0);
+    if (err) error("Error: " + string(lua_tostring(L, -1)));
+
+    lua_Unsigned tableSize = lua_rawlen(L, -1);
+
+    if (lua_istable(L, -1)) {
+      vector<string> resultArray;
+      for (int i = 1; i <= tableSize; ++i) {
+        lua_rawgeti(L, -1, i);
+
+        if (lua_isstring(L, -1)) {
+          resultArray.emplace_back(lua_tostring(L, -1));
+        }
+
+        lua_pop(L, 1);
+      }
+      return resultArray;
+    }
+    return {};
+  }
 }
