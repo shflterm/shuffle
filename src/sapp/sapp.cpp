@@ -5,6 +5,7 @@
 #include <json/json.h>
 
 #include "utils/utils.h"
+#include "console.h"
 
 #ifdef _WIN32
 #define NOMINMAX 1
@@ -13,11 +14,12 @@
 #define _HAS_STD_BYTE 0
 
 #include <Windows.h>
-typedef void (*entrypoint_t)(Workspace &workspace, const vector<std::string> &args);
 #elif __linux__
 #include <dlfcn.h>
-typedef void (*entrypoint_t)(Workspace &workspace, const vector<std::string> &args);
 #endif
+
+typedef void (*entrypoint_t)(Workspace &workspace, const vector<string> &args);
+typedef vector<string> (*suggest_t)(Workspace &workspace, const string &suggestId);
 
 void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
 #ifdef _WIN32
@@ -39,10 +41,10 @@ void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
 #endif
 }
 
-void addChildren(const Json::Value& json, Command *command) {
+void addChildren(const Json::Value &json, Command *command) {
   for (Json::Value item : json) {
     if (item["type"] == "option") {
-      Command child = OptionSubCommand(item["name"].asString(), item["description"].asString());
+      OptionSubCommand child = OptionSubCommand(item["name"].asString(), item["description"].asString());
       command->addChild(child);
     } else if (item["type"] == "subcommand") {
       Command child = Command(item["name"].asString(), item["description"].asString());
@@ -77,4 +79,24 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
   helpReader.parse(readFile(helpDotShfl), helpRoot, false);
   Json::Value children = helpRoot["children"];
   addChildren(children, this);
+}
+vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &suggestId) {
+  info("Loading library: " + DOT_SHUFFLE + "/apps/" + name + "/" + value);
+
+#ifdef _WIN32
+  HINSTANCE lib = LoadLibrary((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str());
+  if (!lib) return {};
+  auto suggest = (suggest_t) GetProcAddress(lib, "suggest");
+
+  if (suggest == nullptr) return {};
+
+  return suggest(ws, suggestId);
+#elif __linux__
+  void *lib = dlopen((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str(), RTLD_LAZY);
+  auto suggest = (suggest_t) dlsym(lib, "suggest");
+
+  return suggest(ws, suggestId);
+
+//  dlclose(lib);
+#endif
 }

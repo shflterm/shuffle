@@ -17,6 +17,7 @@ class SAPPCommand : public Command {
  public:
   explicit SAPPCommand(const string &name);
   void run(Workspace &ws, const vector<std::string> &args) const override;
+  vector<string> makeDynamicSuggestion(Workspace &ws, const string& suggestId);
 };
 
 #endif //SHUFFLE_INCLUDE_LOADER_H_

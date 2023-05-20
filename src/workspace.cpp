@@ -109,22 +109,23 @@ void Workspace::execute(const string &input) {
   }
 }
 
-string getSuggestion(const string &input) {
+string getSuggestion(Workspace ws, const string &input) {
   vector<string> args = split(input, regex(R"(\s+)"));
   string suggestion;
   if (args.size() == 1) {
-    suggestion = findSuggestion(args[args.size() - 1], commands);
+    suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands);
   } else {
-    Command final = findCommand(args[0]);
-    if (final.getName().empty() && final.getValue().empty()) return "";
+    Command *final = findCommand(args[0]);
+    if (final->getName().empty() && final->getValue().empty()) return "";
 
     for (int i = 1; i < args.size() - 1; ++i) {
-      Command sub = findCommand(args[i], final.getChildren());
-      if (sub.getName().empty() && sub.getValue().empty()) return "";
+      Command *sub = findCommand(args[i], final->getChildren());
+      if (sub->getName().empty() && sub->getValue().empty()) return "";
       final = sub;
     }
 
-    suggestion = findSuggestion(args[args.size() - 1], final.getChildren());
+    cout << final << "\n";
+    suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren());
   }
   if (suggestion.empty()) return "";
 
@@ -158,7 +159,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
       } else if (c == '\n' || c == '\r') {
         break;
       } else if (c == '\t') {
-        string suggestion = getSuggestion(input);
+        string suggestion = getSuggestion(*this, input);
         input += suggestion;
         cout << "\033[0m" << suggestion;
       } else if (c == 38/*UP ARROW*/) {
@@ -178,7 +179,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
         input += c;
       }
 
-      string suggestion = getSuggestion(input);
+      string suggestion = getSuggestion(*this, input);
       cout << "\033[90m" << suggestion;
       gotoxy(wherex() - (int) suggestion.size(), wherey());
     }

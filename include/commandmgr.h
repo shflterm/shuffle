@@ -41,7 +41,7 @@ class Command {
 
 class OptionSubCommand : public Command {
  public:
-  OptionSubCommand(string name, string description);
+  OptionSubCommand(const string& name, string description);
 };
 
 class CommandData {
@@ -61,7 +61,7 @@ void addRegisteredCommand(const CommandData &data);
 
 void loadCommands();
 
-Command findCommand(const string &name, const vector<unique_ptr<Command>> &DICTIONARY);
-Command findCommand(const string &name);
+Command *findCommand(const string &name, const vector<unique_ptr<Command>> &DICTIONARY);
+Command *findCommand(const string &name);
 
 #endif //SHUFFLE_INCLUDE_COMMANDMGR_H_
