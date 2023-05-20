@@ -14,8 +14,14 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 target_compile_definitions(${PROJECT_NAME}_lib PRIVATE _HAS_STD_BYTE=0)
 
 find_package(jsoncpp CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME}  JsonCpp::JsonCpp)
-target_link_libraries(${PROJECT_NAME}_lib  JsonCpp::JsonCpp)
+target_link_libraries(${PROJECT_NAME} JsonCpp::JsonCpp)
+target_link_libraries(${PROJECT_NAME}_lib JsonCpp::JsonCpp)
+
+find_package(Lua CONFIG REQUIRED)
+target_include_directories(${PROJECT_NAME} PRIVATE ${LUA_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME}_lib PRIVATE ${LUA_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} ${LUA_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_lib ${LUA_LIBRARIES})
 
 find_package(CURL CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} CURL::libcurl)

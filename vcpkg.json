@@ -1,0 +1,24 @@
+{
+  "name" : "shuffle",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "40619a55c3e76dc4005c8d1b7395071471bb8b96",
+  "dependencies" : [ {
+    "name" : "lua",
+    "version>=" : "5.4.4#7"
+  }, {
+    "name" : "curl",
+    "version>=" : "8.0.1"
+  }, {
+    "name" : "jsoncpp",
+    "version>=" : "1.9.5"
+  }, {
+    "name" : "kubazip",
+    "version>=" : "0.2.4"
+  }, {
+    "name" : "nlohmann-json",
+    "version>=" : "3.11.2"
+  }, {
+    "name" : "zlib",
+    "version>=" : "1.2.13"
+  } ]
+}
