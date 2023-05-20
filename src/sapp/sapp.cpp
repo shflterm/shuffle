@@ -1,11 +1,11 @@
 #include "sapp/sapp.h"
 
+#include "utils/utils.h"
+#include "console.h"
 
 #include <vector>
 #include <string>
 #include <json/json.h>
-
-#include "utils/utils.h"
 
 #ifdef _WIN32
 #define NOMINMAX 1
@@ -20,24 +20,58 @@ typedef void (*entrypoint_t)(Workspace &workspace, const vector<std::string> &ar
 typedef void (*entrypoint_t)(Workspace &workspace, const vector<std::string> &args);
 #endif
 
-void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
+void SAPPCommand::run(Workspace &ws, const vector<string> &args) const {
+  if (type == NORMAL) {
 #ifdef _WIN32
-  HINSTANCE lib = LoadLibrary((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str());
-  if (!lib) return;
-  auto entrypoint = (entrypoint_t) GetProcAddress(lib, "entrypoint");
+    HINSTANCE lib = LoadLibrary((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str());
+    if (!lib) return;
+    auto entrypoint = (entrypoint_t) GetProcAddress(lib, "entrypoint");
 
-  if (entrypoint == nullptr) return;
+    if (entrypoint == nullptr) return;
 
-  entrypoint(ws, args);
-  ::FreeLibrary(lib);
+    entrypoint(ws, args);
+    ::FreeLibrary(lib);
 #elif __linux__
-  void *lib = dlopen((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str(), RTLD_LAZY);
-  auto entrypoint = (entrypoint_t) dlsym(lib, "entrypoint");
+    void *lib = dlopen((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str(), RTLD_LAZY);
+    auto entrypoint = (entrypoint_t) dlsym(lib, "entrypoint");
 
-  entrypoint(ws, args);
+    entrypoint(ws, args);
 
-  dlclose(lib);
+    dlclose(lib);
 #endif
+  } else { // SCRIPT
+    // Create workspace table
+    lua_newtable(L);
+    {
+      lua_pushstring(L, ws.currentDirectory().string().c_str());
+      lua_setfield(L, -2, "dir");
+    } // ws.dir
+
+    lua_setglobal(L, "workspace");
+
+    // Create args list
+    lua_newtable(L);
+    for (int i = 0; i < args.size(); ++i) {
+      lua_pushstring(L, args[i].c_str());
+      lua_rawseti(L, -2, i + 1);
+    }
+    lua_setglobal(L, "args");
+
+    lua_getglobal(L, "entrypoint");
+    if (lua_type(L, -1) != LUA_TFUNCTION) {
+      error("Error: 'entrypoint' is not a function!");
+      return;
+    }
+    int err = lua_pcall(L, 0, 0, 0);
+    if (err) error("Error: " + string(lua_tostring(L, -1)));
+
+    // Update workspace
+    lua_getglobal(L, "workspace");
+    lua_getfield(L, -1, "dir");
+    string dir = lua_tostring(L, -1);
+
+    ws.moveDirectory(path(dir));
+  }
 }
 
 SAPPCommand::SAPPCommand(const string &name) : Command(name) {
@@ -47,13 +81,26 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
   Json::Reader reader;
   reader.parse(readFile(runDotShfl), root, false);
 
+  type = root["type"].asString() == "script" ? SCRIPT : NORMAL;
+  if (type == NORMAL) {
+    Json::Value libPath = root["libpath"];
 #ifdef _WIN32
-  Json::Value executable = root["windows"];
+    Json::Value executable = libPath["windows"];
 #elif __linux__
-  Json::Value executable = root["linux"];
+    Json::Value executable = libPath["linux"];
 #elif __APPLE__
-  Json::Value executable = root["macos"];
+  Json::Value executable = libPath["macos"];
 #endif
 
-  value = executable.asString();
+    value = executable.asString();
+  } else { // SCRIPT
+    string scriptPath = DOT_SHUFFLE + "/apps/" + name + "/" + root["libpath"].asString();
+    L = luaL_newstate();
+    luaL_openlibs(L);
+    int err = luaL_loadfile(L, scriptPath.c_str());
+    if (err) error("Error: " + string(lua_tostring(L, -1)));
+
+    err = lua_pcall(L, 0, 0, 0);
+    if (err) error("Error: " + string(lua_tostring(L, -1)));
+  }
 }
