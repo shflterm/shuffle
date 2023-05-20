@@ -7,16 +7,25 @@
 
 #include "commandmgr.h"
 #include "utils/cmdexecutor.h"
+#include "lua.hpp"
 
 #include <vector>
 #include <string>
 
 using namespace std;
 
+enum SAPPType {
+  NORMAL, SCRIPT
+};
+
 class SAPPCommand : public Command {
+ protected:
+  SAPPType type;
+  lua_State *L;
+
  public:
   explicit SAPPCommand(const string &name);
-  void run(Workspace &ws, const vector<std::string> &args) const override;
+  void run(Workspace &ws, const vector<string> &args) const override;
   vector<string> makeDynamicSuggestion(Workspace &ws, const string& suggestId);
 };
 
