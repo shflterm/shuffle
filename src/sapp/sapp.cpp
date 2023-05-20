@@ -1,12 +1,5 @@
 #include "sapp/sapp.h"
 
-#include "utils/utils.h"
-#include "console.h"
-
-#include <vector>
-#include <string>
-#include <json/json.h>
-
 #ifdef _WIN32
 #define NOMINMAX 1
 #define byte win_byte_override
@@ -14,13 +7,14 @@
 #define _HAS_STD_BYTE 0
 
 #include <Windows.h>
-typedef void (*entrypoint_t)(Workspace &workspace, const vector<std::string> &args);
 #elif __linux__
 #include <dlfcn.h>
-typedef void (*entrypoint_t)(Workspace &workspace, const vector<std::string> &args);
 #endif
 
-void SAPPCommand::run(Workspace &ws, const vector<string> &args) const {
+typedef void (*entrypoint_t)(Workspace &workspace, const vector<string> &args);
+typedef vector<string> (*suggest_t)(Workspace &workspace, const string &suggestId);
+
+void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
   if (type == NORMAL) {
 #ifdef _WIN32
     HINSTANCE lib = LoadLibrary((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str());
@@ -70,18 +64,12 @@ void SAPPCommand::run(Workspace &ws, const vector<string> &args) const {
     lua_getfield(L, -1, "dir");
     string dir = lua_tostring(L, -1);
 
-    ws.moveDirectory(path(dir));
+    ws.moveDirectory(absolute(path(dir)));
   }
 }
 
-SAPPCommand::SAPPCommand(const string &name) : Command(name) {
-  string runDotShfl = DOT_SHUFFLE + "/apps/" + name + "/run.shfl";
-
-  Json::Value root;
-  Json::Reader reader;
-  reader.parse(readFile(runDotShfl), root, false);
-
-  type = root["type"].asString() == "script" ? SCRIPT : NORMAL;
+void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
+  type = root["libpath"].isString() ? SCRIPT : NORMAL;
   if (type == NORMAL) {
     Json::Value libPath = root["libpath"];
 #ifdef _WIN32
@@ -89,7 +77,7 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
 #elif __linux__
     Json::Value executable = libPath["linux"];
 #elif __APPLE__
-  Json::Value executable = libPath["macos"];
+    Json::Value executable = libPath["macos"];
 #endif
 
     value = executable.asString();
@@ -102,5 +90,18 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
 
     err = lua_pcall(L, 0, 0, 0);
     if (err) error("Error: " + string(lua_tostring(L, -1)));
+  }
+}
+
+SAPPCommand::SAPPCommand(const string &name) : Command(name) {
+  string runDotShfl = DOT_SHUFFLE + "/apps/" + name + "/run.shfl";
+
+  Json::Value root;
+  Json::Reader reader;
+  reader.parse(readFile(runDotShfl), root, false);
+  if (root["version"].asInt() == 2) {
+    loadVersion2(root, name);
+  } else {
+    error("Error: Invalid version number in run.shfl");
   }
 }
