@@ -1,7 +1,7 @@
 #include "libsapp.h"
 #include "console.h"
 
-SAPPENTRYPOINT void entrypoint(Workspace &workspace, const vector<string> &args) {
+SAPPENTRYPOINT entrypoint(Workspace &workspace, const vector<string> &args) {
   if (args.empty()) {
     too_many_arguments();
     return;

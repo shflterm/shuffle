@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.18)
 project(cdCmd)
 
 add_library(${PROJECT_NAME} SHARED
-        entrypoint.cpp)
+        entrypoint.cpp
+        suggest.cpp)
 
 add_dependencies(${PROJECT_NAME} shuffle_lib)
 target_include_directories(${PROJECT_NAME} PRIVATE ../../../include)

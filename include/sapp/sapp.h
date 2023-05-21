@@ -30,6 +30,7 @@ class SAPPCommand : public Command {
   explicit SAPPCommand(const string &name);
   void SAPPCommand::loadVersion2(Json::Value root, const string &name);
   void run(Workspace &ws, const vector<string> &args) const override;
+  vector<string> makeDynamicSuggestion(Workspace &ws, const string& suggestId);
 };
 
 #endif //SHUFFLE_INCLUDE_LOADER_H_

@@ -1,5 +1,13 @@
 #include "sapp/sapp.h"
 
+#include <vector>
+#include <string>
+#include <json/json.h>
+
+#include "utils/utils.h"
+#include "console.h"
+#include "utils/luaapi.h"
+
 #ifdef _WIN32
 #define NOMINMAX 1
 #define byte win_byte_override
@@ -68,10 +76,84 @@ void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
   }
 }
 
+void addChildren(const Json::Value &json, Command *command) {
+  for (Json::Value item : json) {
+    if (item["type"] == "option") {
+      OptionSubCommand child = OptionSubCommand(item["name"].asString(), item["description"].asString());
+      command->addChild(child);
+    } else if (item["type"] == "subcommand") {
+      Command child = Command(item["name"].asString(), item["description"].asString());
+      if (item.isMember("children")) addChildren(item["children"], &child);
+
+      command->addChild(child);
+    }
+  }
+}
+
+vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &suggestId) {
+  if (type == NORMAL) {
+#ifdef _WIN32
+    HINSTANCE lib = LoadLibrary((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str());
+    if (!lib) return {};
+    auto suggest = (suggest_t) GetProcAddress(lib, "suggest");
+
+    if (suggest == nullptr) return {};
+
+    return suggest(ws, suggestId);
+//    ::FreeLibrary(lib);
+#elif __linux__
+    void *lib = dlopen((DOT_SHUFFLE + "/apps/" + name + "/" + value).c_str(), RTLD_LAZY);
+    auto suggest = (suggest_t) dlsym(lib, "suggest");
+    return suggest(ws, suggestId);
+
+//    dlclose(lib);
+#endif
+  } else { // SCRIPT
+    // Create workspace table
+    lua_newtable(L);
+    {
+      lua_pushstring(L, ws.currentDirectory().string().c_str());
+      lua_setfield(L, -2, "dir");
+    } // ws.dir
+
+    lua_setglobal(L, "workspace");
+
+    // Create args list
+    lua_pushstring(L, suggestId.c_str());
+    lua_setglobal(L, "suggestId");
+
+    lua_getglobal(L, "suggest");
+    if (lua_type(L, -1) != LUA_TFUNCTION) {
+      error("Error: 'suggest' is not a function!");
+      return {};
+    }
+    int err = lua_pcall(L, 0, 1, 0);
+    if (err) {
+      error("\nAn error occurred while generating suggestion.\n\n" + string(lua_tostring(L, -1)));
+    }
+
+    lua_Unsigned tableSize = lua_rawlen(L, -1);
+
+    if (lua_istable(L, -1)) {
+      vector<string> resultArray;
+      for (int i = 1; i <= tableSize; ++i) {
+        lua_rawgeti(L, -1, i);
+
+        if (lua_isstring(L, -1)) {
+          resultArray.emplace_back(lua_tostring(L, -1));
+        }
+
+        lua_pop(L, 1);
+      }
+      return resultArray;
+    }
+    return {};
+  }
+}
+
 void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
   type = root["libpath"].isString() ? SCRIPT : NORMAL;
   if (type == NORMAL) {
-    Json::Value libPath = root["libpath"];
 #ifdef _WIN32
     Json::Value executable = libPath["windows"];
 #elif __linux__
@@ -82,15 +164,24 @@ void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
 
     value = executable.asString();
   } else { // SCRIPT
-    string scriptPath = DOT_SHUFFLE + "/apps/" + name + "/" + root["libpath"].asString();
+    value = DOT_SHUFFLE + "/apps/" + name + "/" + libPath.asString();
     L = luaL_newstate();
     luaL_openlibs(L);
-    int err = luaL_loadfile(L, scriptPath.c_str());
+    initLua(L);
+    int err = luaL_loadfile(L, value.c_str());
     if (err) error("Error: " + string(lua_tostring(L, -1)));
 
     err = lua_pcall(L, 0, 0, 0);
     if (err) error("Error: " + string(lua_tostring(L, -1)));
   }
+
+  //Read help.shfl
+  string helpDotShfl = DOT_SHUFFLE + "/apps/" + name + "/help.shfl";
+  Json::Value helpRoot;
+  Json::Reader helpReader;
+  helpReader.parse(readFile(helpDotShfl), helpRoot, false);
+  Json::Value children = helpRoot["children"];
+  addChildren(children, this);
 }
 
 SAPPCommand::SAPPCommand(const string &name) : Command(name) {

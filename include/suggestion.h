@@ -12,7 +12,14 @@
 
 using namespace std;
 
-string findSuggestion(const string &input, const vector<unique_ptr<Command>> &DICTIONARY);
-vector<string> createSuggestions(const string &str, const vector<unique_ptr<Command>>& DICTIONARY);
+string findSuggestion(Workspace ws,
+                      const string &input,
+                      Command *rootCommand,
+                      const vector<unique_ptr<Command>> &DICTIONARY);
+
+vector<string> createSuggestions(Workspace ws,
+                                 const string &str,
+                                 Command *rootCommand,
+                                 const vector<unique_ptr<Command>> &DICTIONARY);
 
 #endif //SHUFFLE_INCLUDE_SUGGESTION_H_
