@@ -125,5 +125,7 @@ void addSAPP(const string &name) {
   commandData["name"] = name;
   commands["commands"].append(commandData);
 
+  writeFile(DOT_SHUFFLE + "/commands.json", commands.toStyledString());
+
   success("Done!");
 }
