@@ -50,18 +50,3 @@ jobs:
         content: "#define SHUFFLE_VERSION \"Beta 2.0\""
 
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
-    - name: Upload Release
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        title: "Shuffle for ${{ matrix.config.os }} (${{ steps.date.outputs.date }})"
-        automatic_release_tag: "${{ matrix.config.os }}"
-        prerelease: true
-        files: |
-          build/bin/shuffle
-          build/lib/libjsoncpp.so.25
-          build/bin/${{env.BUILD_TYPE}}/shuffle.exe
-          build/bin/${{env.BUILD_TYPE}}/jsoncpp.dll
-          build/bin/shuffle
-          build/lib/libjsoncpp.dylib
