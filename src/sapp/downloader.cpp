@@ -69,7 +69,6 @@ void downloadFile(const string &url, const string &file) {
   auto curl = curl_easy_init();
   FILE *fp;
   CURLcode res;
-  curl = curl_easy_init();
   if (curl) {
     lastPercent = -1;
 
@@ -116,7 +115,15 @@ void addSAPP(const string &name) {
   int arg = 2;
   zip_extract(downloadTo.c_str(), (DOT_SHUFFLE + "/apps/" + name).c_str(), onExtractEntry, &arg);
 
-  info("Extracted!");
+  info("Adding to config...");
+
+  Json::Value commands;
+  Json::Reader reader;
+  reader.parse(readFile(DOT_SHUFFLE + "/commands.json"), commands, false);
+
+  Json::Value commandData;
+  commandData["name"] = name;
+  commands["commands"].append(commandData);
 
   success("Done!");
 }
