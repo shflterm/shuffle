@@ -1,4 +1,5 @@
 #include "utils/utils.h"
+#include "console.h"
 
 #include <iostream>
 #include <vector>
@@ -7,6 +8,7 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
 
 using namespace std;
 
@@ -45,7 +47,7 @@ int levenshteinDist(const string &str1, const string &str2) {
       } else if (str1[i - 1] == str2[j - 1]) {
         dp[i][j] = dp[i - 1][j - 1];
       } else {
-        dp[i][j] = 1 + std::min({dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]});
+        dp[i][j] = 1 + min({dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]});
       }
     }
   }
@@ -70,8 +72,30 @@ string readFile(const string &path) {
   return content_stream.str();
 }
 
-void writeFile(const string &path, const string& value) {
+void writeFile(const string &path, const string &value) {
   ofstream file(path);
   file << value;
   file.close();
+}
+
+#include <windows.h>
+#include <shellapi.h>
+
+void report(const string& title, const string& content) {
+  stringstream ss;
+  ss << "https://github.com/shflterm/shuffle/issues/new";
+
+  ss << "?labels=bug,auto-generated,os/";
+#ifdef _WIN32
+  ss << "windows";
+#elif __linux__
+  ss << "linux";
+#elif __APPLE__
+  ss << "mac";
+#endif
+
+  ss << "&title=[Auto Generated] " << title;
+  ss << "&body=" << replace(content, "\n", "%0A");
+
+  ShellExecute(0, 0, ss.str().c_str(), 0, 0 , SW_SHOW );
 }

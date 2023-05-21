@@ -6,6 +6,7 @@
 
 #include "utils/utils.h"
 #include "console.h"
+#include "utils/luaapi.h"
 
 #ifdef _WIN32
 #define NOMINMAX 1
@@ -89,45 +90,6 @@ void addChildren(const Json::Value &json, Command *command) {
   }
 }
 
-SAPPCommand::SAPPCommand(const string &name) : Command(name) {
-  string runDotShfl = DOT_SHUFFLE + "/apps/" + name + "/run.shfl";
-
-  Json::Value root;
-  Json::Reader reader;
-  reader.parse(readFile(runDotShfl), root, false);
-
-  type = root["libpath"].isString() ? SCRIPT : NORMAL;
-  Json::Value libPath = root["libpath"];
-  if (type == NORMAL) {
-#ifdef _WIN32
-    Json::Value executable = libPath["windows"];
-#elif __linux__
-    Json::Value executable = libPath["linux"];
-#elif __APPLE__
-    Json::Value executable = libPath["macos"];
-#endif
-
-    value = executable.asString();
-  } else { // SCRIPT
-    string scriptPath = DOT_SHUFFLE + "/apps/" + name + "/" + libPath.asString();
-    L = luaL_newstate();
-    luaL_openlibs(L);
-    int err = luaL_loadfile(L, scriptPath.c_str());
-    if (err) error("Error: " + string(lua_tostring(L, -1)));
-
-    err = lua_pcall(L, 0, 0, 0);
-    if (err) error("Error: " + string(lua_tostring(L, -1)));
-  }
-
-  //Read help.shfl
-  string helpDotShfl = DOT_SHUFFLE + "/apps/" + name + "/help.shfl";
-  Json::Value helpRoot;
-  Json::Reader helpReader;
-  helpReader.parse(readFile(helpDotShfl), helpRoot, false);
-  Json::Value children = helpRoot["children"];
-  addChildren(children, this);
-}
-
 vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &suggestId) {
   if (type == NORMAL) {
 #ifdef _WIN32
@@ -135,7 +97,7 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
     if (!lib) return {};
     auto suggest = (suggest_t) GetProcAddress(lib, "suggest");
 
-    if (entrypoint == nullptr) return {};
+    if (suggest == nullptr) return {};
 
     return suggest(ws, suggestId);
 //    ::FreeLibrary(lib);
@@ -166,7 +128,16 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
       return {};
     }
     int err = lua_pcall(L, 0, 1, 0);
-    if (err) error("Error: " + string(lua_tostring(L, -1)));
+    if (err) {
+      error("\nAn error occurred while generating suggestion.\n\n" + string(lua_tostring(L, -1)));
+      string content = "An error occurred while generating suggestion.\n";
+      content += string(lua_tostring(L, -1)) += "\n\n";
+      content += "Lua source code:\n";
+      content += "```lua\n";
+      content += readFile(value);
+      content += "```";
+      report(string(lua_tostring(L, -1)), content);
+    }
 
     lua_Unsigned tableSize = lua_rawlen(L, -1);
 
@@ -185,4 +156,44 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
     }
     return {};
   }
+}
+
+SAPPCommand::SAPPCommand(const string &name) : Command(name) {
+  string runDotShfl = DOT_SHUFFLE + "/apps/" + name + "/run.shfl";
+
+  Json::Value root;
+  Json::Reader reader;
+  reader.parse(readFile(runDotShfl), root, false);
+
+  type = root["libpath"].isString() ? SCRIPT : NORMAL;
+  Json::Value libPath = root["libpath"];
+  if (type == NORMAL) {
+#ifdef _WIN32
+    Json::Value executable = libPath["windows"];
+#elif __linux__
+    Json::Value executable = libPath["linux"];
+#elif __APPLE__
+    Json::Value executable = libPath["macos"];
+#endif
+
+    value = executable.asString();
+  } else { // SCRIPT
+    value = DOT_SHUFFLE + "/apps/" + name + "/" + libPath.asString();
+    L = luaL_newstate();
+    luaL_openlibs(L);
+    initLua(L);
+    int err = luaL_loadfile(L, value.c_str());
+    if (err) error("Error: " + string(lua_tostring(L, -1)));
+
+    err = lua_pcall(L, 0, 0, 0);
+    if (err) error("Error: " + string(lua_tostring(L, -1)));
+  }
+
+  //Read help.shfl
+  string helpDotShfl = DOT_SHUFFLE + "/apps/" + name + "/help.shfl";
+  Json::Value helpRoot;
+  Json::Reader helpReader;
+  helpReader.parse(readFile(helpDotShfl), helpRoot, false);
+  Json::Value children = helpRoot["children"];
+  addChildren(children, this);
 }

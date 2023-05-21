@@ -9,7 +9,7 @@
 using namespace std;
 
 int main() {
-  cout << "Loading Shuffle...";
+  cout << "Loading Shuffle...\n";
   loadLanguageFile("en_us");
   loadCommands();
   ios::sync_with_stdio(false); cin.tie(nullptr); cout.tie(nullptr);

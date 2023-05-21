@@ -35,13 +35,14 @@ vector<string> createSuggestions(Workspace ws,
 
     Command *cmd = &command;
     if (cmd->getName().rfind("option.", 0) == 0) {
-      cout << "\n" << cmd->getName();
-//      if (dynamic_cast<SAPPCommand *>(rootCommand) == nullptr) continue;
-      cout << "!";
+      auto *sappCmd = dynamic_cast<SAPPCommand *>(rootCommand);
+      if (sappCmd == nullptr) continue;
 
-      for (const auto &item2 : dynamic_cast<SAPPCommand *>(rootCommand)->makeDynamicSuggestion(ws, str.substr(7))) {
-        res.push_back(item2);
-      }
+      vector<string> suggestions = sappCmd->makeDynamicSuggestion(ws, cmd->getName().substr(7));
+      for (const auto &item2 : suggestions)
+        if (item2.substr(0, str.size()) == str)
+          res.push_back(item2);
+
     } else {
       if (command.getName().substr(0, str.size()) != str) continue;
 

@@ -20,6 +20,11 @@ path Workspace::currentDirectory() {
 }
 
 void Workspace::moveDirectory(path newDir) {
+  newDir = absolute(newDir);
+  if (!is_directory(newDir)) {
+    error("cd.directory_not_found", {newDir.string()});
+    return;
+  }
   dir = std::move(newDir);
 }
 
@@ -109,7 +114,7 @@ void Workspace::execute(const string &input) {
   }
 }
 
-string getSuggestion(Workspace ws, const string &input) {
+string getSuggestion(const Workspace& ws, const string &input) {
   vector<string> args = split(input, regex(R"(\s+)"));
   string suggestion;
   if (args.size() == 1) {
@@ -124,7 +129,6 @@ string getSuggestion(Workspace ws, const string &input) {
       final = sub;
     }
 
-    cout << final << "\n";
     suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren());
   }
   if (suggestion.empty()) return "";
@@ -180,7 +184,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
       }
 
       string suggestion = getSuggestion(*this, input);
-      cout << "\033[90m" << suggestion;
+      cout << "\033[90m" << suggestion << RESET;
       gotoxy(wherex() - (int) suggestion.size(), wherey());
     }
     white();
