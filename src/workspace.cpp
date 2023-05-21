@@ -62,12 +62,14 @@ void Workspace::execute(const string &input) {
         return;
       }
       if (args[2] == "add") {
-        if (args.size() != 4) {
+        if (args.size() < 4) {
           too_many_arguments();
           return;
         }
 
-        addSAPP(args[3]);
+        for (int i = 3; i < args.size(); ++i) {
+          addSAPP(args[i]);
+        }
       }
     }
 
