@@ -26,8 +26,10 @@ void initialize() {
                       "If the user informs you of a specific situation or desired result, you can create a command to produce that result."
                       "You just have to tell the user what commands to input, followed by an explanation on the line below them."
                       "Do not put explanations in the middle of telling the command."
+                      "Also, please make it as short and easy to understand as possible."
                       "Also, when outputting a command, it must start with '```` and end with '````."
                       "If a user asks a question about a language other than Shuffle (such as C++ or Java) or another topic, the answer is: \"Sorry, but I can only recommend the Shuffle command. I don't know much about the rest.\". Also, never give any other answer."
+                      "Finally, keep in mind that the name of this program is Shuffle."
                       "Below is a list of commands you can use and what they do.";
   for (const auto &item : hints) systemData += item + "\n";
 
@@ -40,10 +42,10 @@ string callGptAI(const string &prompt) {
   if (!initialized) initialize();
 
   convo.AddUserData(prompt);
-  if (oai.auth.SetKey("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")) {
+  if (oai.auth.SetKey("[secret]")) {
     try {
       auto fut = oai.ChatCompletion->create_async(
-          "gpt-3.5-turbo", convo
+          "gpt-3.5-turbo-0301", convo
       );
 
       // do other work...

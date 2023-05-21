@@ -17,7 +17,7 @@ vector<unique_ptr<Command>> commands;
 
 void loadDefaultCommands() {
   commands.push_back(make_unique<Command>(Command(
-      "shfl", "Shuffle Command",
+      "shfl", "Manage Shuffle. (reload commands or install/remove apps)",
       {
           Command("reload", "Reload all commands"),
           Command("apps", "Manage SAPP",

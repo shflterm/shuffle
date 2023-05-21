@@ -190,6 +190,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
         getline(cin, prompt);
 
         info(createHashSuggestion(prompt));
+        warning("This answer may not be accurate. You are responsible for executing this command.");
         return;
       } else {
         cout << "\033[0m" << c;
