@@ -1,6 +1,6 @@
 #include "utils/luaapi.h"
 
-void pushStringArray(lua_State *L, const std::vector<std::string> &strings) {
+void pushStringArray(lua_State *L, const vector<std::string> &strings) {
   lua_newtable(L);
 
   int index = 1;

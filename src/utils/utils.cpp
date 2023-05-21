@@ -77,25 +77,3 @@ void writeFile(const string &path, const string &value) {
   file << value;
   file.close();
 }
-
-#include <windows.h>
-#include <shellapi.h>
-
-void report(const string& title, const string& content) {
-  stringstream ss;
-  ss << "https://github.com/shflterm/shuffle/issues/new";
-
-  ss << "?labels=bug,auto-generated,os/";
-#ifdef _WIN32
-  ss << "windows";
-#elif __linux__
-  ss << "linux";
-#elif __APPLE__
-  ss << "mac";
-#endif
-
-  ss << "&title=[Auto Generated] " << title;
-  ss << "&body=" << replace(content, "\n", "%0A");
-
-  ShellExecute(0, 0, ss.str().c_str(), 0, 0 , SW_SHOW );
-}

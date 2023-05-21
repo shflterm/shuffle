@@ -145,6 +145,7 @@ string Workspace::prompt() {
 
 void Workspace::inputPrompt(bool enableSuggestion) {
   cout << prompt();
+  cout.flush();
 
   string input;
   if (enableSuggestion) {
@@ -152,6 +153,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
     while (true) {
       c = readChar();
       cout << "[0K";
+      cout.flush();
 
       if (c == '\b' || c == 127) {
         if (!input.empty()) {
@@ -185,6 +187,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
 
       string suggestion = getSuggestion(*this, input);
       cout << "\033[90m" << suggestion << RESET;
+      cout.flush();
       gotoxy(wherex() - (int) suggestion.size(), wherey());
     }
     white();

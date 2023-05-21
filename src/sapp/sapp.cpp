@@ -130,13 +130,6 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
     int err = lua_pcall(L, 0, 1, 0);
     if (err) {
       error("\nAn error occurred while generating suggestion.\n\n" + string(lua_tostring(L, -1)));
-      string content = "An error occurred while generating suggestion.\n";
-      content += string(lua_tostring(L, -1)) += "\n\n";
-      content += "Lua source code:\n";
-      content += "```lua\n";
-      content += readFile(value);
-      content += "```";
-      report(string(lua_tostring(L, -1)), content);
     }
 
     lua_Unsigned tableSize = lua_rawlen(L, -1);

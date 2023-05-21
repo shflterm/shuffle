@@ -24,6 +24,5 @@ int levenshteinDist(const string &str1, const string &str2);
 string replace(string str, const string &from, const string &to);
 string readFile(const string &path);
 void writeFile(const string &path, const string& value);
-void report(const string& title, const string& content);
 
 #endif //SHUFFLE_INCLUDE_UTILS_H_
