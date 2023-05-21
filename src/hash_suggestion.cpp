@@ -31,7 +31,7 @@ void initialize() {
                       "If a user asks a question about a language other than Shuffle (such as C++ or Java) or another topic, the answer is: \"Sorry, but I can only recommend the Shuffle command. I don't know much about the rest.\". Also, never give any other answer."
                       "Finally, keep in mind that the name of this program is Shuffle."
                       "Below is a list of commands you can use and what they do.";
-  for (const auto &item : hints) systemData += item + "\n";
+  for (const auto &item : hints) systemData += "\n" + item;
 
   convo.SetSystemData(systemData);
 
@@ -45,7 +45,7 @@ string callGptAI(const string &prompt) {
   if (oai.auth.SetKey("[secret]")) {
     try {
       auto fut = oai.ChatCompletion->create_async(
-          "gpt-3.5-turbo-0301", convo
+          "gpt-3.5-turbo", convo
       );
 
       // do other work...
