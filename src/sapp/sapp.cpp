@@ -194,6 +194,7 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
   if (root["version"].asInt() == 2) {
     loadVersion2(root, name);
   } else {
-    error("Error: Invalid version number in run.shfl");
+    warning("Error: Invalid version number in " + name + ". Load with version 2.");
+    loadVersion2(root, name);
   }
 }
