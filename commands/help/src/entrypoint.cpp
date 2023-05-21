@@ -2,7 +2,7 @@
 #include "commandmgr.h"
 #include "console.h"
 
-SAPPENTRYPOINT void entrypoint(Workspace &workspace, const vector<string> &args) {
+SAPPENTRYPOINT entrypoint(Workspace &workspace, const vector<string> &args) {
   if (args.empty()) {
     vector<string> helps;
     for (const auto &item : commands) {

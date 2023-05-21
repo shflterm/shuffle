@@ -33,15 +33,11 @@ jobs:
       run: ${{ matrix.config.configure }}
       
     - name: Install Packages
-      run: "./vcpkg/vcpkg install jsoncpp curl kubazip"
+      run: "./vcpkg/vcpkg install"
 
     - name: Configure CMake
       run: cmake -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-      
-    - name: Get current date
-      id: date
-      run: echo "::set-output name=date::$(date +'%Y%m%d%H%M')"
-      
+
     - name: Create version.h
       uses: 1arp/create-a-file-action@0.2
       with:
@@ -50,18 +46,3 @@ jobs:
         content: "#define SHUFFLE_VERSION \"Beta 2.0\""
 
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
-
-    - name: Upload Release
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        title: "Shuffle for ${{ matrix.config.os }} (${{ steps.date.outputs.date }})"
-        automatic_release_tag: "${{ matrix.config.os }}"
-        prerelease: true
-        files: |
-          build/bin/shuffle
-          build/lib/libjsoncpp.so.25
-          build/bin/${{env.BUILD_TYPE}}/shuffle.exe
-          build/bin/${{env.BUILD_TYPE}}/jsoncpp.dll
-          build/bin/shuffle
-          build/lib/libjsoncpp.dylib
