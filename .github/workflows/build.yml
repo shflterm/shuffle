@@ -37,11 +37,7 @@ jobs:
 
     - name: Configure CMake
       run: cmake -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-      
-    - name: Get current date
-      id: date
-      run: echo "::set-output name=date::$(date +'%Y%m%d%H%M')"
-      
+
     - name: Create version.h
       uses: 1arp/create-a-file-action@0.2
       with:
