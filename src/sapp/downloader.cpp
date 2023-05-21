@@ -118,15 +118,7 @@ void addSAPP(const string &name) {
 
   info("Adding to config...");
 
-  Json::Value commandsJson;
-  Json::Reader reader;
-  reader.parse(readFile(COMMANDS_JSON), commandsJson, false);
-
-  Json::Value commandData;
-  commandData["name"] = name;
-  commandsJson["commands"].append(commandData);
-
-  writeFile(COMMANDS_JSON, commandsJson.toStyledString());
+  addRegisteredCommand({name, name});
 
   success("Done!");
 }
