@@ -152,7 +152,8 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
 }
 
 void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
-  type = root["libpath"].isString() ? SCRIPT : NORMAL;
+  Json::Value libPath = root["libpath"];
+  type = libPath.isString() ? SCRIPT : NORMAL;
   if (type == NORMAL) {
 #ifdef _WIN32
     Json::Value executable = libPath["windows"];
