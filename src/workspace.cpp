@@ -121,7 +121,7 @@ string getSuggestion(const Workspace& ws, const string &input) {
     suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands);
   } else {
     Command *final = findCommand(args[0]);
-    if (final->getName().empty() && final->getValue().empty()) return "";
+    if (final == nullptr || (final->getName().empty() && final->getValue().empty())) return "";
 
     for (int i = 1; i < args.size() - 1; ++i) {
       Command *sub = findCommand(args[i], final->getChildren());
