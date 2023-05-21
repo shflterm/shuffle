@@ -9,6 +9,7 @@
 
 #include "console.h"
 #include "utils/utils.h"
+#include "commandmgr.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -117,15 +118,15 @@ void addSAPP(const string &name) {
 
   info("Adding to config...");
 
-  Json::Value commands;
+  Json::Value commandsJson;
   Json::Reader reader;
-  reader.parse(readFile(DOT_SHUFFLE + "/commands.json"), commands, false);
+  reader.parse(readFile(COMMANDS_JSON), commandsJson, false);
 
   Json::Value commandData;
   commandData["name"] = name;
-  commands["commands"].append(commandData);
+  commandsJson["commands"].append(commandData);
 
-  writeFile(DOT_SHUFFLE + "/commands.json", commands.toStyledString());
+  writeFile(COMMANDS_JSON, commandsJson.toStyledString());
 
   success("Done!");
 }

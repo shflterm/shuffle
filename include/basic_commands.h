@@ -35,17 +35,6 @@ void listCmd(Workspace &workspace, const vector<string> &args) {
   }
 }
 
-void langCmd(Workspace &workspace, const vector<string> &args) {
-  if (args.size() != 2) {
-    too_many_arguments();
-    return;
-  }
-
-  loadLanguageFile(args[1]);
-  info("lang.changed", {args[1]});
-
-}
-
 void exitCmd(Workspace &workspace, const vector<string> &args) {
   info("exit.bye");
   exit(0);
