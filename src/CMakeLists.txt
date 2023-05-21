@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.18)
 project(shuffle)
 
-set(SOURCES suggestion.cpp utils/utils.cpp console.cpp i18n.cpp commandmgr.cpp sapp/sapp.cpp workspace.cpp utils/cmdexecutor.cpp ../include/libsapp.h sapp/downloader.cpp utils/luaapi.cpp)
+set(SOURCES
+        suggestion.cpp hash_suggestion.cpp # Suggestions
+        console.cpp i18n.cpp commandmgr.cpp workspace.cpp # Features
+        sapp/sapp.cpp sapp/downloader.cpp ../include/libsapp.h # APP
+        utils/cmdexecutor.cpp utils/utils.cpp utils/luaapi.cpp # utils
+        )
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_executable(${PROJECT_NAME} ${SOURCES} main.cpp ../include/basic_commands.h)
@@ -27,6 +32,10 @@ target_link_libraries(${PROJECT_NAME}_lib CURL::libcurl)
 find_package(kubazip CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} kubazip::kubazip)
 target_link_libraries(${PROJECT_NAME}_lib kubazip::kubazip)
+
+add_dependencies(${PROJECT_NAME} oai)
+include_directories(../liboai/include)
+target_link_libraries(${PROJECT_NAME} oai)
 
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 target_link_directories(${PROJECT_NAME}_lib PRIVATE ../build/lib)
