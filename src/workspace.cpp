@@ -22,7 +22,7 @@ path Workspace::currentDirectory() {
 void Workspace::moveDirectory(path newDir) {
   newDir = absolute(newDir);
   if (!is_directory(newDir)) {
-    error("cd.directory_not_found", {newDir.string()});
+    error("Directory '$0' not found.", {newDir.string()});
     return;
   }
   dir = std::move(newDir);
@@ -101,7 +101,7 @@ void Workspace::execute(const string &input) {
   } // Find Commands
 
   if (!isCommandFounded) {
-    error("system.command_not_found", {args[0]});
+    error("Sorry. Command '$0' not found.", {args[0]});
     pair<int, Command> similarWord = {1000000000, Command("")};
     for (const auto &item : commands) {
       Command &command = *item;
@@ -109,8 +109,8 @@ void Workspace::execute(const string &input) {
       if (dist < similarWord.first) similarWord = {dist, command};
     }
 
-    if (similarWord.first > 1) warning("system.check_command");
-    else warning("system.similar_command", {similarWord.second.getName()});
+    if (similarWord.first > 1) warning("Please make sure you entered the correct command.");
+    else warning("Did you mean '$0'?", {similarWord.second.getName()});
   }
 }
 

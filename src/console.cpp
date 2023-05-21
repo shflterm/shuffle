@@ -66,7 +66,7 @@ void clear() {
 
 void white() { cout << "\n"; }
 
-void too_many_arguments() { error("system.too_many_arguments"); }
+void too_many_arguments() { error("There are too many or too few arguments."); }
 
 #ifdef _WIN32
 #define NOMINMAX 1

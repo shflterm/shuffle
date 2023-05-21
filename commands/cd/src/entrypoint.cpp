@@ -12,7 +12,7 @@ SAPPENTRYPOINT entrypoint(Workspace &workspace, const vector<string> &args) {
   else dir.append(args[0]);
 
   if (!is_directory(dir) || !exists(dir)) {
-    error("cd.directory_not_found", {dir.string()});
+    error("Directory '$0' not found.", {dir.string()});
     dir = dir.parent_path();
   }
 

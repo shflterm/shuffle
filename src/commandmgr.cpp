@@ -11,8 +11,6 @@
 #include "basic_commands.h"
 #include "sapp/sapp.h"
 
-#define COMMANDS_JSON (DOT_SHUFFLE + "/commands.json")
-
 using namespace std;
 
 vector<unique_ptr<Command>> commands;
@@ -28,10 +26,6 @@ void loadDefaultCommands() {
       })));
 
   commands.push_back(make_unique<Command>(Command("list", "Print list file of current directory", listCmd)));
-  commands.push_back(make_unique<Command>(Command(
-      "lang", "Change Language", langCmd,
-      {Command("en_us"),
-       Command("ko_kr")})));
   commands.push_back(make_unique<Command>(Command("exit", "Shut down Shuffle", exitCmd)));
   commands.push_back(make_unique<Command>(Command("clear", "Clear console", clearCmd)));
 }
@@ -42,6 +36,10 @@ void loadCommand(const CommandData &data) {
 
 vector<CommandData> getRegisteredCommands() {
   vector<CommandData> res;
+
+  if (!exists(path(COMMANDS_JSON))) {
+    writeFile(COMMANDS_JSON, "{\"commands\":[]}");
+  }
 
   Json::Value root;
   Json::Reader reader;

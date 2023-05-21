@@ -24,7 +24,7 @@ enum SAPPType {
 class SAPPCommand : public Command {
  protected:
   SAPPType type;
-  lua_State *L;
+  lua_State *L{};
 
  public:
   explicit SAPPCommand(const string &name);

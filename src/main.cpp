@@ -19,7 +19,7 @@ int main() {
   info("Welcome to " + FG_YELLOW + "SHUFFLE " + SHUFFLE_VERSION + RESET);
   info("(C) 2023 Shuffle Team. All Rights Reserved.");
   white();
-  info("system.help");
+  info("Type 'help' to get help!");
 
   Workspace workspace;
   while (true) {
