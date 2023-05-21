@@ -72,7 +72,7 @@ void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
     lua_getfield(L, -1, "dir");
     string dir = lua_tostring(L, -1);
 
-    ws.moveDirectory(path(dir));
+    ws.moveDirectory(absolute(path(dir)));
   }
 }
 
@@ -151,15 +151,8 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
   }
 }
 
-SAPPCommand::SAPPCommand(const string &name) : Command(name) {
-  string runDotShfl = DOT_SHUFFLE + "/apps/" + name + "/run.shfl";
-
-  Json::Value root;
-  Json::Reader reader;
-  reader.parse(readFile(runDotShfl), root, false);
-
+void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
   type = root["libpath"].isString() ? SCRIPT : NORMAL;
-  Json::Value libPath = root["libpath"];
   if (type == NORMAL) {
 #ifdef _WIN32
     Json::Value executable = libPath["windows"];
@@ -189,4 +182,17 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
   helpReader.parse(readFile(helpDotShfl), helpRoot, false);
   Json::Value children = helpRoot["children"];
   addChildren(children, this);
+}
+
+SAPPCommand::SAPPCommand(const string &name) : Command(name) {
+  string runDotShfl = DOT_SHUFFLE + "/apps/" + name + "/run.shfl";
+
+  Json::Value root;
+  Json::Reader reader;
+  reader.parse(readFile(runDotShfl), root, false);
+  if (root["version"].asInt() == 2) {
+    loadVersion2(root, name);
+  } else {
+    error("Error: Invalid version number in run.shfl");
+  }
 }

@@ -8,9 +8,12 @@
 #include "commandmgr.h"
 #include "utils/cmdexecutor.h"
 #include "lua.hpp"
+#include "utils/utils.h"
+#include "console.h"
 
 #include <vector>
 #include <string>
+#include <json/json.h>
 
 using namespace std;
 
@@ -25,6 +28,7 @@ class SAPPCommand : public Command {
 
  public:
   explicit SAPPCommand(const string &name);
+  void SAPPCommand::loadVersion2(Json::Value root, const string &name);
   void run(Workspace &ws, const vector<string> &args) const override;
   vector<string> makeDynamicSuggestion(Workspace &ws, const string& suggestId);
 };
