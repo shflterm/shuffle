@@ -12,6 +12,8 @@
 
 using namespace std;
 
+#define COMMANDS_JSON (DOT_SHUFFLE + "/commands.json")
+
 class Command {
  protected:
   string name;

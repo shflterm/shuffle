@@ -9,6 +9,7 @@
 
 #include "console.h"
 #include "utils/utils.h"
+#include "commandmgr.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -69,7 +70,6 @@ void downloadFile(const string &url, const string &file) {
   auto curl = curl_easy_init();
   FILE *fp;
   CURLcode res;
-  curl = curl_easy_init();
   if (curl) {
     lastPercent = -1;
 
@@ -116,7 +116,17 @@ void addSAPP(const string &name) {
   int arg = 2;
   zip_extract(downloadTo.c_str(), (DOT_SHUFFLE + "/apps/" + name).c_str(), onExtractEntry, &arg);
 
-  info("Extracted!");
+  info("Adding to config...");
+
+  Json::Value commandsJson;
+  Json::Reader reader;
+  reader.parse(readFile(COMMANDS_JSON), commandsJson, false);
+
+  Json::Value commandData;
+  commandData["name"] = name;
+  commandsJson["commands"].append(commandData);
+
+  writeFile(COMMANDS_JSON, commandsJson.toStyledString());
 
   success("Done!");
 }
