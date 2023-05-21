@@ -33,7 +33,7 @@ jobs:
       run: ${{ matrix.config.configure }}
       
     - name: Install Packages
-      run: "./vcpkg/vcpkg install jsoncpp curl kubazip"
+      run: "./vcpkg/vcpkg install"
 
     - name: Configure CMake
       run: cmake -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
