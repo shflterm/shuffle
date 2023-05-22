@@ -5,7 +5,7 @@
 #ifndef SHFL_INCLUDE_UTILS_LUAAPI_H_
 #define SHFL_INCLUDE_UTILS_LUAAPI_H_
 
-#include <lua.hpp>
+#include "lua.hpp"
 #include <filesystem>
 #include <fstream>
 #include <vector>

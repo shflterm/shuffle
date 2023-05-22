@@ -1,6 +1,13 @@
-#include "utils/luaapi.h"
+#include "lua.hpp"
+#include <filesystem>
+#include <fstream>
+#include <vector>
 
-void pushStringArray(lua_State *L, const vector<std::string> &strings) {
+#include "utils/utils.h"
+
+using namespace std;
+
+void pushStringArray(lua_State *L, const vector<string> &strings) {
   lua_newtable(L);
 
   int index = 1;
@@ -45,6 +52,18 @@ int lua_isFile(lua_State *L) {
   return 1;
 }
 
+int lua_mkDir(lua_State *L) {
+  path directory(luaL_checkstring(L, 1));
+  create_directory(directory);
+  return 1;
+}
+
+int lua_readFile(lua_State *L) {
+  path file(luaL_checkstring(L, 1));
+  lua_pushstring(L, readFile(file.string()).c_str());
+  return 1;
+}
+
 void initFileSystem(lua_State *L) {
   lua_newtable(L);
 
@@ -60,9 +79,11 @@ void initFileSystem(lua_State *L) {
   lua_pushcfunction(L, lua_isFile);
   lua_setfield(L, -2, "isFile");
 
-  lua_setglobal(L, "fs");
-}
+  lua_pushcfunction(L, lua_mkDir);
+  lua_setfield(L, -2, "mkDir");
 
-void initLua(lua_State *L) {
-  initFileSystem(L);
+  lua_pushcfunction(L, lua_readFile);
+  lua_setfield(L, -2, "readFile");
+
+  lua_setglobal(L, "fs");
 }

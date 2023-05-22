@@ -6,7 +6,7 @@
 
 #include "utils/utils.h"
 #include "console.h"
-#include "utils/luaapi.h"
+#include "utils/lua/luaapi.h"
 
 #ifdef _WIN32
 #define NOMINMAX 1

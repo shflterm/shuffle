@@ -1,10 +1,10 @@
 #include <iostream>
 
 #include "console.h"
-#include "i18n.h"
 #include "commandmgr.h"
 
 #include "version.h"
+#include "sapp/sapp.h"
 
 using namespace std;
 
