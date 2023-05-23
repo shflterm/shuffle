@@ -116,22 +116,24 @@ void Workspace::execute(const string &input) {
   }
 }
 
-string getSuggestion(const Workspace& ws, const string &input) {
+string getSuggestion(const Workspace &ws, const string &input) {
   vector<string> args = split(input, regex(R"(\s+)"));
   string suggestion;
   if (args.size() == 1) {
     suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands);
   } else {
     Command *final = findCommand(args[0]);
-    if (final == nullptr || (final->getName().empty() && final->getValue().empty())) return "";
+    if (final == nullptr) return "";
 
-    for (int i = 1; i < args.size() - 1; ++i) {
+    for (int i = 1; i < args.size() - 1; i++) {
       Command *sub = findCommand(args[i], final->getChildren());
-      if (sub->getName().empty() && sub->getValue().empty()) return "";
+      if (sub == nullptr) return "";
       final = sub;
     }
 
     suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren());
+
+    delete final;
   }
   if (suggestion.empty()) return "";
 

@@ -43,7 +43,7 @@ class Command {
 
 class OptionSubCommand : public Command {
  public:
-  OptionSubCommand(const string& name, string description);
+  OptionSubCommand(const string &name, string description);
 };
 
 class CommandData {
