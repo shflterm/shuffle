@@ -85,11 +85,12 @@ void loadCommands() {
 }
 
 Command *findCommand(const string &name, const vector<unique_ptr<Command>> &DICTIONARY) {
-  for (const auto &item : DICTIONARY) {
-    Command &command = *item;
-    if (command.getName() == name) return &command;
+  for (auto &item : DICTIONARY) {
+    if (item->getName() == name) {
+      return new Command(*item.get());
+    }
   }
-  return {};
+  return nullptr;
 }
 
 Command *findCommand(const string &name) {
@@ -154,6 +155,6 @@ Command::Command(string name)
     : name(std::move(name)),
       description("-") {}
 
-OptionSubCommand::OptionSubCommand(const string& name, string description)
+OptionSubCommand::OptionSubCommand(const string &name, string description)
     : Command("option." + name,
               std::move(description)) {}
