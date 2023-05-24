@@ -149,3 +149,11 @@ int wherey() {
   return ly;
 #endif
 }
+
+void eraseFromCursor() {
+  cout << "[1K";
+}
+
+void eraseLine() {
+  cout << "[2K";
+}

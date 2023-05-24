@@ -71,6 +71,8 @@ void Workspace::execute(const string &input) {
           addSAPP(args[i]);
         }
       }
+    } else if (args[1] == "update") {
+      updateShuffle();
     }
 
     return;
@@ -116,7 +118,7 @@ void Workspace::execute(const string &input) {
   }
 }
 
-string getSuggestion(const Workspace& ws, const string &input) {
+string getSuggestion(const Workspace &ws, const string &input) {
   vector<string> args = split(input, regex(R"(\s+)"));
   string suggestion;
   if (args.size() == 1) {
@@ -154,8 +156,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
     char c;
     while (true) {
       c = readChar();
-      cout << "[0K";
-      cout.flush();
+      eraseFromCursor();
 
       if (c == '\b' || c == 127) {
         if (!input.empty()) {

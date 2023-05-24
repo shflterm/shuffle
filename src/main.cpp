@@ -4,7 +4,6 @@
 #include "commandmgr.h"
 
 #include "version.h"
-#include "sapp/sapp.h"
 
 using namespace std;
 
@@ -15,7 +14,7 @@ int main(int argc, char *argv[]) {
   if (argc > 1) {
     string arg = argv[1];
     if (arg == "--version" || arg == "-v") {
-      cout << "Shuffle " << SHUFFLE_VERSION << endl;
+      cout << "Shuffle " << SHUFFLE_VERSION.to_string() << endl;
       return 0;
     }
 
@@ -30,13 +29,13 @@ int main(int argc, char *argv[]) {
   }
 
   clear();
-  info("Welcome to " + FG_YELLOW + "SHUFFLE " + SHUFFLE_VERSION + RESET);
+  info("Welcome to " + FG_YELLOW + "SHUFFLE " + SHUFFLE_VERSION.to_string() + RESET);
   info("(C) 2023 Shuffle Team. All Rights Reserved.");
   white();
   info("Type 'help' to get help!");
 
   Workspace workspace;
   while (true) {
-    workspace.inputPrompt(true);
+    workspace.inputPrompt(false);
   }
 }

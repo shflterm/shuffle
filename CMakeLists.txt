@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 project(shfl)
 
 add_subdirectory(src)
+add_subdirectory(updater)
 add_subdirectory(${CMAKE_SOURCE_DIR}/commands)
 add_subdirectory(tests)
 

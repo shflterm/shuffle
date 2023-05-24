@@ -23,6 +23,7 @@ void loadDefaultCommands() {
           Command("apps", "Manage SAPP",
                   {Command("add", "Install SAPP"),
                    Command("remove", "Delete SAPP")}),
+          Command("update", "Update Shuffle"),
       })));
 
   commands.push_back(make_unique<Command>(Command("list", "Print list file of current directory", listCmd)));

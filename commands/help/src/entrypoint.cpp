@@ -12,7 +12,7 @@ SAPPENTRYPOINT entrypoint(Workspace &workspace, const vector<string> &args) {
     }
 
     info("Only some commands are shown:");
-    info("\033[90m(Type shfl cmds to see all commands.)");
+    info("\033[90m(Type sapp cmds to see all commands.)");
     for (const auto &item : helps) info(item);
   } else if (args.size() == 1) {
     info("system.wip"); // TODO
