@@ -24,7 +24,12 @@ int main(int argc, char *argv[]) {
   string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin.zip";
 
   path updatePath(DOT_SHUFFLE + "/bin");
-  remove(updatePath.string() + "/shuffle.exe");
+  if (exists(updatePath.string() + "/shuffle.exe")) {
+    remove(updatePath.string() + "/shuffle.exe");
+  }
+  if (exists(updatePath.string() + "/shuffle")) {
+    remove(updatePath.string() + "/shuffle");
+  }
   create_directories(updatePath);
 
   path temp = temp_directory_path().append("shfl.zip");
