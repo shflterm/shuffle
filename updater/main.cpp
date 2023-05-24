@@ -20,8 +20,7 @@ int onExtractEntry(const char *filename, void *arg) {
 }
 
 int main(int argc, char *argv[]) {
-//  string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
-  string latest = "";
+  string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
   if (latest != SHUFFLE_VERSION.to_string()) {
     cout << "New version available: " << SHUFFLE_VERSION.to_string() << " -> " << latest << endl;
     cout << "Updating..." << endl;
