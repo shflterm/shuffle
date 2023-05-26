@@ -176,7 +176,7 @@ void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
     if (err) error("Error: " + string(lua_tostring(L, -1)));
   }
 
-  //Read help.shfl
+  //Read help.sapp
   string helpDotShfl = DOT_SHUFFLE + "/apps/" + name + "/help.shfl";
   Json::Value helpRoot;
   Json::Reader helpReader;

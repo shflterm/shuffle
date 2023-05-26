@@ -11,6 +11,7 @@
 #include "suggestion.h"
 #include "sapp/downloader.h"
 #include "sapp/sapp.h"
+#include "version.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -70,6 +71,14 @@ void Workspace::execute(const string &input) {
         for (int i = 3; i < args.size(); ++i) {
           addSAPP(args[i]);
         }
+      }
+    } else if (args[1] == "update") {
+      string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
+      if (latest != SHUFFLE_VERSION.to_string()) {
+        cout << "New version available: " << SHUFFLE_VERSION.to_string() << " -> " << latest << endl;
+        updateShuffle();
+      } else {
+        cout << "You are using the latest version of Shuffle." << endl;
       }
     }
 
@@ -156,8 +165,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
     char c;
     while (true) {
       c = readChar();
-      cout << "[0K";
-      cout.flush();
+      eraseFromCursor();
 
       if (c == '\b' || c == 127) {
         if (!input.empty()) {
