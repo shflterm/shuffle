@@ -151,8 +151,10 @@ string getSuggestion(const Workspace &ws, const string &input) {
 
 string Workspace::prompt() {
   stringstream ss;
-  ss << FG_CYAN << "(" << dir.root_name().string() << "/../" << dir.filename().string() << ")"
-     << FG_YELLOW << " \u2192 " << RESET;
+  if (!name.empty())
+    ss << FG_YELLOW << "[" << name << "] ";
+  ss << FG_CYAN << "(" << dir.root_name().string() << "/../" << dir.filename().string() << ")";
+  ss << FG_YELLOW << " \u2192 " << RESET;
   return ss.str();
 }
 
@@ -182,16 +184,22 @@ void Workspace::inputPrompt(bool enableSuggestion) {
         cout << "\033[0m" << suggestion;
       } else if (c == 38/*UP ARROW*/) {
         gotoxy(wherex() - (int) input.size(), wherey());
-        for (int i = 0; i < input.size(); ++i) cout << " ";
-        gotoxy(wherex() - (int) input.size(), wherey());
+        eraseFromCursor();
         input = historyUp();
         cout << input;
       } else if (c == 40/*DOWN ARROW*/) {
         gotoxy(wherex() - (int) input.size(), wherey());
-        for (int i = 0; i < input.size(); ++i) cout << " ";
-        gotoxy(wherex() - (int) input.size(), wherey());
+        eraseFromCursor();
         input = historyDown();
         cout << input;
+      } else if (c == '@') {
+        gotoxy(wherex() - (int) input.size() - 2, wherey());
+        eraseFromCursor();
+        cout << FG_YELLOW <<"@ " << RESET;
+        string wsName;
+        cin >> wsName;
+
+        return;
       } else {
         cout << "\033[0m" << c;
         input += c;
@@ -212,3 +220,6 @@ void Workspace::inputPrompt(bool enableSuggestion) {
     addHistory(input);
   }
 }
+
+Workspace::Workspace(string name) : name(std::move(name)) {}
+Workspace::Workspace() = default;
