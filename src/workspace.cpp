@@ -24,11 +24,11 @@ path Workspace::currentDirectory() {
 }
 
 void Workspace::moveDirectory(path newDir) {
-  newDir = absolute(newDir);
   if (!is_directory(newDir)) {
     error("Directory '$0' not found.", {newDir.string()});
     return;
   }
+  cout << dir.string() << endl;
   dir = std::move(newDir);
 }
 
@@ -156,7 +156,16 @@ string Workspace::prompt() {
   stringstream ss;
   if (!name.empty())
     ss << FG_YELLOW << "[" << name << "] ";
-  ss << FG_CYAN << "(" << dir.root_name().string() << "/../" << dir.filename().string() << ")";
+
+  ss << FG_CYAN << "(";
+  if (dir == dir.root_path())
+    ss << dir.root_name().string();
+  else if (dir.parent_path() == dir.root_path())
+    ss << dir.root_name().string() << "/" << dir.filename().string();
+  else
+    ss << dir.root_name().string() << "/../" << dir.filename().string();
+  ss << ")";
+
   ss << FG_YELLOW << " \u2192 " << RESET;
   return ss.str();
 }

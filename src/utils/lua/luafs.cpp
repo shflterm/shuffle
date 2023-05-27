@@ -64,6 +64,12 @@ int lua_readFile(lua_State *L) {
   return 1;
 }
 
+int lua_parentDir(lua_State *L) {
+  path file(luaL_checkstring(L, 1));
+  lua_pushstring(L, file.parent_path().string().c_str());
+  return 1;
+}
+
 void initFileSystem(lua_State *L) {
   lua_newtable(L);
 
@@ -84,6 +90,9 @@ void initFileSystem(lua_State *L) {
 
   lua_pushcfunction(L, lua_readFile);
   lua_setfield(L, -2, "readFile");
+
+  lua_pushcfunction(L, lua_parentDir);
+  lua_setfield(L, -2, "parentDir");
 
   lua_setglobal(L, "fs");
 }
