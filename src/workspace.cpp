@@ -4,6 +4,7 @@
 #include <regex>
 #include <utility>
 #include <sstream>
+#include <map>
 
 #include "console.h"
 #include "commandmgr.h"
@@ -15,6 +16,8 @@
 
 using namespace std;
 using namespace std::filesystem;
+
+map<string, Workspace> wsMap;
 
 path Workspace::currentDirectory() {
   return dir;
@@ -195,10 +198,17 @@ void Workspace::inputPrompt(bool enableSuggestion) {
       } else if (c == '@') {
         gotoxy(wherex() - (int) input.size() - 2, wherey());
         eraseFromCursor();
-        cout << FG_YELLOW <<"@ " << RESET;
+        cout << FG_YELLOW << "@ " << RESET;
         string wsName;
         cin >> wsName;
 
+        Workspace ws;
+        if (wsMap.find(wsName) != wsMap.end()) {
+          ws = wsMap[wsName];
+        } else {
+          ws = Workspace(wsName);
+        }
+        currentWorkspace = ws;
         return;
       } else {
         cout << "\033[0m" << c;
@@ -221,5 +231,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
   }
 }
 
-Workspace::Workspace(string name) : name(std::move(name)) {}
+Workspace::Workspace(string name) : name(std::move(name)) {
+  wsMap["name"] = *this;
+}
 Workspace::Workspace() = default;
