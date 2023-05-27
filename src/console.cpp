@@ -151,7 +151,7 @@ int wherey() {
 }
 
 void eraseFromCursor() {
-  cout << "[1K";
+  cout << "[0K";
 }
 
 void eraseLine() {
