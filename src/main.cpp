@@ -38,6 +38,6 @@ int main(int argc, char *argv[]) {
 
   currentWorkspace = new Workspace("main");
   while (true) {
-    currentWorkspace->inputPrompt(true);
+    currentWorkspace->inputPrompt(false);
   }
 }
