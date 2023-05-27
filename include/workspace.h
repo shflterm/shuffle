@@ -20,6 +20,7 @@ class Workspace {
 #endif
   vector<string> history;
   int historyIndex = 0;
+  string name;
 
   string prompt();
 
@@ -32,6 +33,9 @@ class Workspace {
 
   void execute(const string &input);
   void inputPrompt(bool enableSuggestion);
+
+  explicit Workspace(const string& name);
+  Workspace();
 };
 
 #endif //SHUFFLE_INCLUDE_WORKSPACE_H_

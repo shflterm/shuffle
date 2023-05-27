@@ -9,6 +9,8 @@ using namespace std;
 
 bool debugMode = false;
 
+Workspace *currentWorkspace;
+
 void debug(const string &text, const initializer_list<string> &args) {
   if (debugMode) {
     cout << "[90m" << translate(text, args) << RESET << "\n";
@@ -151,7 +153,7 @@ int wherey() {
 }
 
 void eraseFromCursor() {
-  cout << "[1K";
+  cout << "[0K";
 }
 
 void eraseLine() {

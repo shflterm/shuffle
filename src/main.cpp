@@ -9,7 +9,9 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
   loadCommands();
-  ios::sync_with_stdio(false); cin.tie(nullptr); cout.tie(nullptr);
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
+  cout.tie(nullptr);
 
   if (argc > 1) {
     string arg = argv[1];
@@ -34,8 +36,8 @@ int main(int argc, char *argv[]) {
   white();
   info("Type 'help' to get help!");
 
-  Workspace workspace;
+  currentWorkspace = new Workspace("main");
   while (true) {
-    workspace.inputPrompt(false);
+    currentWorkspace->inputPrompt(true);
   }
 }

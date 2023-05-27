@@ -8,6 +8,8 @@
 #include <string>
 #include <initializer_list>
 
+#include "workspace.h"
+
 #define RESET      string("[0m")
 #define BOLD       string("[1m")
 #define ITALIC     string("[3m")
@@ -32,6 +34,8 @@
 #define BG_WHITE   string("[47m")
 
 using namespace std;
+
+extern Workspace *currentWorkspace;
 
 void debug(const string &text, const initializer_list<string> &args);
 void info(const string &text, const initializer_list<string> &args);
