@@ -200,7 +200,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
         eraseFromCursor();
         cout << FG_YELLOW << "@ " << RESET;
         string wsName;
-        cin >> wsName;
+        getline(cin, wsName);
 
         white();
         if (wsMap.find(wsName) != wsMap.end()) {
