@@ -34,8 +34,8 @@ int main(int argc, char *argv[]) {
   white();
   info("Type 'help' to get help!");
 
-  Workspace workspace;
+  Workspace workspace("main");
   while (true) {
-    workspace.inputPrompt(false);
+    workspace.inputPrompt(true);
   }
 }
