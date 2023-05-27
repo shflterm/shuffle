@@ -48,7 +48,9 @@ string translate(const string &translate_code, const initializer_list<string> &a
     i++;
   }
 
-  str = replace(str, "{FG_Y}", "\n");
+  for (const auto &item : colorMap) {
+    str = replace(str, "{" + item.first + "}", item.second);
+  }
 
   return str;
 }
