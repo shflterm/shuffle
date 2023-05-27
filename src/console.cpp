@@ -9,7 +9,7 @@ using namespace std;
 
 bool debugMode = false;
 
-Workspace currentWorkspace;
+Workspace *currentWorkspace;
 
 void debug(const string &text, const initializer_list<string> &args) {
   if (debugMode) {

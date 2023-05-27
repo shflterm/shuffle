@@ -34,7 +34,7 @@ class Workspace {
   void execute(const string &input);
   void inputPrompt(bool enableSuggestion);
 
-  explicit Workspace(string name);
+  explicit Workspace(const string& name);
   Workspace();
 };
 

@@ -202,13 +202,13 @@ void Workspace::inputPrompt(bool enableSuggestion) {
         string wsName;
         cin >> wsName;
 
-        Workspace ws;
+        white();
         if (wsMap.find(wsName) != wsMap.end()) {
-          ws = wsMap[wsName];
+          currentWorkspace = &wsMap[wsName];
         } else {
-          ws = Workspace(wsName);
+          info("{FG_Y}New workspace created: $0", {wsName});
+          currentWorkspace = new Workspace(wsName);
         }
-        currentWorkspace = ws;
         return;
       } else {
         cout << "\033[0m" << c;
@@ -231,7 +231,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
   }
 }
 
-Workspace::Workspace(string name) : name(std::move(name)) {
-  wsMap["name"] = *this;
+Workspace::Workspace(const string &name) : name(name) {
+  wsMap[name] = *this;
 }
 Workspace::Workspace() = default;

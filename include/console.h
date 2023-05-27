@@ -35,7 +35,7 @@
 
 using namespace std;
 
-extern Workspace currentWorkspace;
+extern Workspace *currentWorkspace;
 
 void debug(const string &text, const initializer_list<string> &args);
 void info(const string &text, const initializer_list<string> &args);
