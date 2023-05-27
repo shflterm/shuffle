@@ -206,7 +206,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
         if (wsMap.find(wsName) != wsMap.end()) {
           currentWorkspace = &wsMap[wsName];
         } else {
-          info("{FG_Y}New workspace created: $0", {wsName});
+          info("{FG_YELLOW}New workspace created: $0", {wsName});
           currentWorkspace = new Workspace(wsName);
         }
         return;
