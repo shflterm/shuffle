@@ -3,7 +3,7 @@ project(shfl)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_subdirectory(term.cpp)
+add_subdirectory(termcpp)
 
 add_subdirectory(src)
 add_subdirectory(updater)
