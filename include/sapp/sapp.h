@@ -17,13 +17,8 @@
 
 using namespace std;
 
-enum SAPPType {
-  NORMAL, SCRIPT
-};
-
 class SAPPCommand : public Command {
  protected:
-  SAPPType type;
   lua_State *L{};
 
  public:

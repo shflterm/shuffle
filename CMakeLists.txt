@@ -3,7 +3,6 @@ project(shfl)
 
 add_subdirectory(src)
 add_subdirectory(updater)
-add_subdirectory(${CMAKE_SOURCE_DIR}/commands)
 add_subdirectory(tests)
 
 include(CTest)
