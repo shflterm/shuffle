@@ -12,7 +12,7 @@
 
 using namespace std;
 
-string findSuggestion(Workspace ws,
+vector<string> findSuggestion(Workspace ws,
                       const string &input,
                       Command *rootCommand,
                       const vector<unique_ptr<Command>> &DICTIONARY);
