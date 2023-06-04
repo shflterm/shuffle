@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <term.h>
 
 #include "i18n.h"
 
@@ -13,29 +14,24 @@ Workspace *currentWorkspace;
 
 void debug(const string &text, const initializer_list<string> &args) {
   if (debugMode) {
-    cout << "[90m" << translate(text, args) << RESET << "\n";
-    cout.flush();
+    term << "[90m" << translate(text, args) << resetColor << "\n";
   }
 }
 
 void info(const string &text, const initializer_list<string> &args) {
-  cout << RESET << translate(text, args) << RESET << "\n";
-  cout.flush();
+  term << resetColor << translate(text, args) << resetColor << "\n";
 }
 
 void success(const string &text, const initializer_list<string> &args) {
-  cout << FG_GREEN << translate(text, args) << RESET << "\n";
-  cout.flush();
+  term << color(FOREGROUND, Green) << translate(text, args) << resetColor << "\n";
 }
 
 void warning(const string &text, const initializer_list<string> &args) {
-  cout << FG_YELLOW << translate(text, args) << RESET << "\n";
-  cout.flush();
+  term << color(FOREGROUND, Yellow) << translate(text, args) << resetColor << "\n";
 }
 
 void error(const string &text, const initializer_list<string> &args) {
-  cout << FG_RED << translate(text, args) << RESET << "\n";
-  cout.flush();
+  term << color(FOREGROUND, Red) << translate(text, args) << resetColor << "\n";
 }
 
 void debug(const string &text) {
@@ -57,16 +53,6 @@ void warning(const string &text) {
 void error(const string &text) {
   error(text, {});
 }
-
-void clear() {
-#ifdef _WIN32
-  system("cls");
-#elif __linux__ || __APPLE__
-  system("clear");
-#endif
-}
-
-void white() { cout << "\n"; }
 
 void too_many_arguments() { error("There are too many or too few arguments."); }
 
@@ -150,12 +136,4 @@ int wherey() {
     lx = lx * 10 + in - '0';
   return ly;
 #endif
-}
-
-void eraseFromCursor() {
-  cout << "[0K";
-}
-
-void eraseLine() {
-  cout << "[2K";
 }

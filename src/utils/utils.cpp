@@ -1,10 +1,5 @@
 #define NOMINMAX
 
-#include "utils/utils.h"
-#include "console.h"
-#include "version.h"
-
-#include <iostream>
 #include <vector>
 #include <string>
 #include <regex>
@@ -13,9 +8,11 @@
 #include <sstream>
 #include <cstdlib>
 #include <curl/curl.h>
-#include <utility>
 #include <kubazip/zip/zip.h>
-#include <filesystem>
+#include <term.h>
+
+#include "utils/utils.h"
+#include "console.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -125,7 +122,7 @@ int progressCallback(void *clientp, curl_off_t dltotal,
   if (lastPercent == percent) return 0;
 
   lastPercent = percent;
-  eraseLine();
+  term << eraseLine;
   info("Downloading... (" + to_string(percent) + "%)");
   gotoxy(wherex(), wherey() - 1);
 

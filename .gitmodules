@@ -1,0 +1,3 @@
+[submodule "term.cpp"]
+	path = term.cpp
+	url = https://github.com/shflterm/term.cpp

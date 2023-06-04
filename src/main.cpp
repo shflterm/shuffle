@@ -1,4 +1,5 @@
 #include <iostream>
+#include <term.h>
 
 #include "console.h"
 #include "commandmgr.h"
@@ -16,7 +17,7 @@ int main(int argc, char *argv[]) {
   if (argc > 1) {
     string arg = argv[1];
     if (arg == "--version" || arg == "-v") {
-      cout << "Shuffle " << SHUFFLE_VERSION.to_string() << endl;
+      term << "Shuffle " << SHUFFLE_VERSION.str() << newLine;
       return 0;
     }
 
@@ -30,11 +31,11 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  clear();
-  info("Welcome to " + FG_YELLOW + "SHUFFLE " + SHUFFLE_VERSION.to_string() + RESET);
-  info("(C) 2023 Shuffle Team. All Rights Reserved.");
-  white();
-  info("Type 'help' to get help!");
+  term << eraseAll
+       << "Welcome to" << color(FOREGROUND, Yellow) << " SHUFFLE " << SHUFFLE_VERSION.str() << resetColor << "!"
+       << newLine
+       << "(C) 2023 Shuffle Team. All Rights Reserved." << newLine << newLine
+       << "Type 'help' to get help!" << newLine;
 
   currentWorkspace = new Workspace("main");
   while (true) {
