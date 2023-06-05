@@ -46,6 +46,7 @@ string Workspace::historyDown() {
   if (history.size() <= historyIndex + 1) return "";
   return history[++historyIndex];
 }
+
 void Workspace::execute(const string &input) {
   vector<string> args = split(input, regex(R"(\s+)"));
   if (args.empty()) return;
@@ -131,26 +132,26 @@ void Workspace::execute(const string &input) {
   }
 }
 
-vector<string> getSuggestion(const Workspace &ws, const string &input) {
+string getSuggestion(const Workspace &ws, const string &input) {
   vector<string> args = split(input, regex(R"(\s+)"));
-  vector<string> suggestion;
+  string suggestion;
   if (args.size() == 1) {
-    suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands);
+    suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands)[0];
   } else {
     Command *final = findCommand(args[0]);
-    if (final == nullptr) return {""};
+    if (final == nullptr) return "";
 
     for (int i = 1; i < args.size() - 1; i++) {
       Command *sub = findCommand(args[i], final->getChildren());
-      if (sub == nullptr) return {""};
+      if (sub == nullptr) return "";
       final = sub;
     }
 
-    suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren());
+    suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren())[0];
 
     delete final;
   }
-  if (suggestion.empty()) return {""};
+  if (suggestion.empty()) return "";
 
   return suggestion;
 }
@@ -177,7 +178,6 @@ void Workspace::inputPrompt(bool enableSuggestion) {
   cout << prompt();
   cout.flush();
 
-  int suggestionIndex = 0;
   string input;
   if (enableSuggestion) {
     char c;
@@ -195,12 +195,9 @@ void Workspace::inputPrompt(bool enableSuggestion) {
       } else if (c == '\n' || c == '\r') {
         break;
       } else if (c == '\t') {
-        size_t suggestions = getSuggestion(*this, input).size();
-        if (++suggestionIndex >= suggestions) suggestionIndex = 0;
-      }  else if (c == ' ') {
-        string suggestion = getSuggestion(*this, input)[suggestionIndex];
-        input += suggestion + " ";
-        cout << "\033[0m" << suggestion << " ";
+        string suggestion = getSuggestion(*this, input);
+        input += suggestion;
+        cout << "\033[0m" << suggestion;
       } else if (c == 38/*UP ARROW*/) {
         gotoxy(wherex() - (int) input.size(), wherey());
         eraseFromCursor();
@@ -229,10 +226,9 @@ void Workspace::inputPrompt(bool enableSuggestion) {
       } else {
         cout << "\033[0m" << c;
         input += c;
-        suggestionIndex = 0;
       }
 
-      string suggestion = getSuggestion(*this, input)[suggestionIndex];
+      string suggestion = getSuggestion(*this, input);
       cout << "\033[90m" << suggestion << RESET;
       cout.flush();
       gotoxy(wherex() - (int) suggestion.length(), wherey());

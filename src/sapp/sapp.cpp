@@ -112,9 +112,10 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
   return {};
 }
 
-void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
-  Json::Value libPath = root["libpath"];
-  value = DOT_SHUFFLE + "/apps/" + name + "/" + libPath.asString();
+void SAPPCommand::loadVersion1(Json::Value root, const string &name) {
+  string appPath = DOT_SHUFFLE + "/apps/" + name + ".app/";
+
+  value = appPath + "/lib/entrypoint.lua";
   L = luaL_newstate();
   luaL_openlibs(L);
   initLua(L);
@@ -125,7 +126,7 @@ void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
   if (err) error("Error: " + string(lua_tostring(L, -1)));
 
   //Read help.shfl
-  string helpDotShfl = DOT_SHUFFLE + "/apps/" + name + "/help.shfl";
+  string helpDotShfl = appPath + "/help.shfl";
   Json::Value helpRoot;
   Json::Reader helpReader;
   helpReader.parse(readFile(helpDotShfl), helpRoot, false);
@@ -139,10 +140,10 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
   Json::Value root;
   Json::Reader reader;
   reader.parse(readFile(runDotShfl), root, false);
-  if (root["version"].asInt() == 2) {
-    loadVersion2(root, name);
+  if (root["version"].asInt() == 1) {
+    loadVersion1(root, name);
   } else {
     warning("Error: Invalid version number in " + name + ". Load with version 2.");
-    loadVersion2(root, name);
+    loadVersion1(root, name);
   }
 }
