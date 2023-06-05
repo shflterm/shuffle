@@ -9,9 +9,9 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-  ios::sync_with_stdio(false);
-  cin.tie(nullptr);
-  cout.tie(nullptr);
+//  ios::sync_with_stdio(false);
+//  cin.tie(nullptr);
+//  cout.tie(nullptr);
 
   if (argc > 1) {
     string arg = argv[1];
