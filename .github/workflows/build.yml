@@ -38,11 +38,4 @@ jobs:
     - name: Configure CMake
       run: cmake -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
-    - name: Create version.h
-      uses: 1arp/create-a-file-action@0.2
-      with:
-        path: "include"
-        file: "version.h"
-        content: "#define SHUFFLE_VERSION \"Beta 2.0\""
-
     - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
