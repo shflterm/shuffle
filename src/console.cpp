@@ -69,7 +69,7 @@ void too_many_arguments() { error("There are too many or too few arguments."); }
 #include <termios.h>
 #endif
 
-char readChar() {
+int readChar() {
 #ifdef _WIN32
   while (!_kbhit()) {}
   return _getch();

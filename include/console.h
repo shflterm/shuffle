@@ -25,7 +25,7 @@ void success(const string &text);
 void warning(const string &text);
 void error(const string &text);
 void too_many_arguments();
-char readChar();
+int readChar();
 void gotoxy(int x, int y);
 int wherex();
 int wherey();
