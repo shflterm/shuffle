@@ -155,6 +155,29 @@ string getSuggestion(const Workspace &ws, const string &input) {
   return suggestion;
 }
 
+string getHint(const Workspace &ws, const string &input) {
+  vector<string> args = split(input, regex(R"(\s+)"));
+
+  if (args.size() == 1) {
+    Command *command = findCommand(args[0]);
+    if (command == nullptr) return "";
+    else return command->getDescription();
+  } else {
+    Command *final = findCommand(args[0]);
+    if (final == nullptr) return "";
+
+    for (int i = 1; i < args.size(); i++) {
+      Command *sub = findCommand(args[i], final->getChildren());
+      if (sub == nullptr) {
+        return final->getDescription();
+      }
+      final = sub;
+    }
+
+    return final->getDescription();
+  }
+}
+
 string Workspace::prompt() {
   stringstream ss;
   if (!name.empty())
@@ -250,6 +273,12 @@ void Workspace::inputPrompt(bool enableSuggestion) {
       string suggestion = getSuggestion(*this, input);
       term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
       gotoxy(wherex() - (int) suggestion.size(), wherey());
+
+      term << saveCursorPosition
+           << teleport(wherex() - (int) input.size() + 1, wherey() + 2)
+           << eraseFromCursorToLineEnd
+           << color(FOREGROUND_BRIGHT, Black) << getHint(*this, input)
+           << loadCursorPosition;
     }
     term << newLine;
   } else {
