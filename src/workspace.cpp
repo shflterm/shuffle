@@ -37,16 +37,16 @@ void Workspace::moveDirectory(path newDir) {
 
 void Workspace::addHistory(const string &s) {
   history.push_back(s);
-  historyIndex = historyIndex - 1;
+  historyIndex = historyIndex + 1;
 }
 
 string Workspace::historyUp() {
-  if (0 > historyIndex - 1) return "";
+  if (0 > historyIndex - 1) return history[historyIndex];
   return history[--historyIndex];
 }
 
 string Workspace::historyDown() {
-  if (history.size() <= historyIndex + 1) return "";
+  if (history.size() <= historyIndex + 1) return history[historyIndex];
   return history[++historyIndex];
 }
 
@@ -181,7 +181,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
 
   string input;
   if (enableSuggestion) {
-    char c;
+    int c;
     while (true) {
       c = readChar();
       term << eraseFromCursorToLineEnd;
@@ -199,16 +199,27 @@ void Workspace::inputPrompt(bool enableSuggestion) {
         string suggestion = getSuggestion(*this, input);
         input += suggestion;
         term << "\033[0m" << suggestion;
-      } else if (c == 38/*UP ARROW*/) {
-        gotoxy(wherex() - (int) input.size(), wherey());
-        term << eraseFromCursorToLineEnd;
-        input = historyUp();
-        term << input;
-      } else if (c == 40/*DOWN ARROW*/) {
-        gotoxy(wherex() - (int) input.size(), wherey());
-        term << eraseFromCursorToLineEnd;
-        input = historyDown();
-        term << input;
+      } else if (c == 224) {
+        int i = readChar();
+        int mv = (int) input.size();
+        mv *= -1;
+        switch (i) {
+          case 72: {
+            gotoxy(wherex() - (int) input.size(), wherey());
+            term << eraseFromCursorToLineEnd;
+            input = historyUp();
+            term << input;
+            break;
+          }
+          case 80: {
+            gotoxy(wherex() - (int) input.size(), wherey());
+            term << eraseFromCursorToLineEnd;
+            input = historyDown();
+            term << input;
+            break;
+          }
+          default:break;
+        }
       } else if (c == '@') {
         gotoxy(wherex() - (int) input.size() - 2, wherey());
         term << eraseFromCursorToLineEnd;
@@ -225,14 +236,14 @@ void Workspace::inputPrompt(bool enableSuggestion) {
         }
         return;
       } else {
-        term << resetColor;
-        cout << c;
-        input += c;
+        string character(1, (char) c);
+        term << resetColor << character;
+        input += character;
       }
 
-      string suggestion = getSuggestion(*this, input);
-      term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
-      gotoxy(wherex() - (int) suggestion.size(), wherey());
+//      string suggestion = getSuggestion(*this, input);
+//      term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
+//      gotoxy(wherex() - (int) suggestion.size(), wherey());
     }
     term << newLine;
   } else {
@@ -240,8 +251,8 @@ void Workspace::inputPrompt(bool enableSuggestion) {
   }
 
   if (!input.empty()) {
-    execute(input);
     addHistory(input);
+    execute(input);
   }
 }
 
