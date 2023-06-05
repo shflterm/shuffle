@@ -11,10 +11,12 @@
 #define HOME string(getenv("HOME"))
 #endif
 #define DOT_SHUFFLE (HOME + "/.shuffle")
+#define SHFL_JSON (DOT_SHUFFLE + "/shfl.json")
 
 #include <string>
 #include <vector>
 #include <regex>
+#include <json/json.h>
 
 using namespace std;
 
@@ -27,5 +29,8 @@ void writeFile(const string &path, const string &value);
 string readTextFromWeb(const string &url);
 void downloadFile(const string &url, const string &file);
 void updateShuffle();
+void initShflJson();
+Json::Value getShflJson(const string& part);
+void setShflJson(const string& part, Json::Value value);
 
 #endif //SHUFFLE_INCLUDE_UTILS_H_

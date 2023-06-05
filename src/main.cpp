@@ -2,7 +2,7 @@
 
 #include "console.h"
 #include "commandmgr.h"
-
+#include "utils/utils.h"
 #include "version.h"
 
 using namespace std;
@@ -30,6 +30,8 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  initShflJson();
+
   clear();
   info("Welcome to " + FG_YELLOW + "SHUFFLE " + SHUFFLE_VERSION.to_string() + RESET);
   info("(C) 2023 Shuffle Team. All Rights Reserved.");
@@ -38,6 +40,6 @@ int main(int argc, char *argv[]) {
 
   currentWorkspace = new Workspace("main");
   while (true) {
-    currentWorkspace->inputPrompt(true);
+    currentWorkspace->inputPrompt(false);
   }
 }

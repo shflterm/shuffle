@@ -117,6 +117,7 @@ void SAPPCommand::loadVersion1(Json::Value root, const string &name) {
 
   value = appPath + "/lib/entrypoint.lua";
   L = luaL_newstate();
+
   luaL_openlibs(L);
   initLua(L);
   int err = luaL_loadfile(L, value.c_str());
@@ -135,7 +136,7 @@ void SAPPCommand::loadVersion1(Json::Value root, const string &name) {
 }
 
 SAPPCommand::SAPPCommand(const string &name) : Command(name) {
-  string runDotShfl = DOT_SHUFFLE + "/apps/" + name + "/run.shfl";
+  string runDotShfl = DOT_SHUFFLE + "/apps/" + name + ".app/run.shfl";
 
   Json::Value root;
   Json::Reader reader;
@@ -143,7 +144,7 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
   if (root["version"].asInt() == 1) {
     loadVersion1(root, name);
   } else {
-    warning("Error: Invalid version number in " + name + ". Load with version 2.");
+    warning("Error: Invalid version number in " + name + ". Load with version 1.");
     loadVersion1(root, name);
   }
 }

@@ -13,6 +13,7 @@
 using namespace std;
 using namespace std::filesystem;
 
+void pushStringArray(lua_State *L, const vector<string> &strings);
 void initLua(lua_State *L);
 
 #endif //SHFL_INCLUDE_UTILS_LUAAPI_H_

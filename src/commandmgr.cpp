@@ -33,15 +33,7 @@ void loadCommand(const CommandData &data) {
 vector<CommandData> getRegisteredCommands() {
   vector<CommandData> res;
 
-  if (!exists(path(COMMANDS_JSON))) {
-    writeFile(COMMANDS_JSON, "{\"commands\":[]}");
-  }
-
-  Json::Value root;
-  Json::Reader reader;
-  reader.parse(readFile(COMMANDS_JSON), root, false);
-
-  Json::Value commandList = root["commands"];
+  Json::Value commandList = getShflJson("commands");
   for (auto command : commandList) {
     CommandData data;
     data.name = command["name"].asString();
@@ -54,20 +46,14 @@ vector<CommandData> getRegisteredCommands() {
 void addRegisteredCommand(const CommandData &data) {
   vector<CommandData> res;
 
-  Json::Value root;
-  Json::Reader reader;
-  reader.parse(readFile(COMMANDS_JSON), root, false);
-
-  Json::Value commandList = root["commands"];
+  Json::Value commandList = getShflJson("commands");
 
   Json::Value value(Json::objectValue);
   value["name"] = data.name;
   value["value"] = data.value;
   commandList.append(value);
 
-  root["commands"] = commandList;
-
-  writeFile(COMMANDS_JSON, root.toStyledString());
+  setShflJson("commands", commandList);
 }
 
 void loadCommands() {

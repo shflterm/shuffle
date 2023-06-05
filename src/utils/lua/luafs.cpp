@@ -4,18 +4,9 @@
 #include <vector>
 
 #include "utils/utils.h"
+#include "utils/lua/luaapi.h"
 
 using namespace std;
-
-void pushStringArray(lua_State *L, const vector<string> &strings) {
-  lua_newtable(L);
-
-  int index = 1;
-  for (const auto &str : strings) {
-    lua_pushstring(L, str.c_str());
-    lua_rawseti(L, -2, index++);
-  }
-}
 
 int lua_exists(lua_State *L) {
   path p = path(luaL_checkstring(L, 1));
