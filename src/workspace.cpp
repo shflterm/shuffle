@@ -217,6 +217,14 @@ void Workspace::inputPrompt(bool enableSuggestion) {
           }
           default:break;
         }
+      } else if (c == 70) {
+        term << saveCursorPosition;
+        term << teleport(0, 0)
+             << color(FOREGROUND, Yellow) << "Search: " << color(BACKGROUND, Black) << color(FOREGROUND, Green);
+        string search;
+        cin >> search;
+        term << resetColor;
+        term << loadCursorPosition;
       } else if (c == '@') {
         gotoxy(wherex() - (int) input.size() - 2, wherey());
         term << eraseFromCursorToLineEnd;
