@@ -135,6 +135,8 @@ void Workspace::execute(const string &input) {
 string getSuggestion(const Workspace &ws, const string &input) {
   vector<string> args = split(input, regex(R"(\s+)"));
   string suggestion;
+  if (input[input.length() - 1] == ' ') args.emplace_back("");
+
   if (args.size() == 1) {
     suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands)[0];
   } else {
