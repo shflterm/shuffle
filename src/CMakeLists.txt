@@ -10,6 +10,11 @@ add_library(${PROJECT_NAME}_lib STATIC ${SOURCES})
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 target_compile_definitions(${PROJECT_NAME}_lib PRIVATE _HAS_STD_BYTE=0)
 
+target_link_libraries(${PROJECT_NAME} term_cpp)
+target_link_libraries(${PROJECT_NAME}_lib term_cpp)
+target_include_directories(${PROJECT_NAME} PRIVATE ../term.cpp/include)
+target_include_directories(${PROJECT_NAME}_lib PRIVATE ../term.cpp/include)
+
 find_package(jsoncpp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} JsonCpp::JsonCpp)
 target_link_libraries(${PROJECT_NAME}_lib JsonCpp::JsonCpp)
@@ -33,6 +38,3 @@ target_link_directories(${PROJECT_NAME}_lib PRIVATE ../build/lib)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ../include)
 target_include_directories(${PROJECT_NAME}_lib PRIVATE ../include)
-
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
-target_compile_features(${PROJECT_NAME}_lib PRIVATE cxx_std_17)

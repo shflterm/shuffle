@@ -19,27 +19,27 @@ int main() {
   } else {
     Command *final = findCommand(args[0]);
     if (final->getName().empty() && final->getValue().empty()) {
-      cout << "Both name and value is empty!" << endl;
+      term << "Both name and value is empty!" << endl;
       return 0;
     }
 
     for (int i = 1; i < args.size() - 1; ++i) {
       Command *sub = findCommand(args[i], final->getChildren());
       if (sub->getName().empty() && sub->getValue().empty()) {
-        cout << "Both name and value is empty!" << endl;
+        term << "Both name and value is empty!" << endl;
         return 0;
       }
       final = sub;
     }
 
-    cout << final << "\n";
+    term << final << "\n";
     suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren());
   }
   if (suggestion.empty()) {
-    cout << "Suggestion is empty!" << endl;
+    term << "Suggestion is empty!" << endl;
     return 0;
   }
 
-  cout << suggestion;
+  term << suggestion;
   return 0;
 }

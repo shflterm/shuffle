@@ -1,37 +1,37 @@
 #include <string>
 #include <initializer_list>
+#include <term.h>
 
 #include "json/json.h"
 #include "utils/utils.h"
-#include "console.h"
 
 using namespace std;
 
 string langJson;
 map<string, string> colorMap = {
-    {"RESET",      RESET},
-    {"BOLD",       BOLD},
-    {"ITALIC",     ITALIC},
-    {"UNDERLINE",  UNDERLINE},
-    {"FG_BLACK",   FG_BLACK},
-    {"FG_RED",     FG_RED},
-    {"FG_GREEN",   FG_GREEN},
-    {"FG_YELLOW",  FG_YELLOW},
-    {"FG_BLUE",    FG_BLUE},
-    {"FG_MAGENTA", FG_MAGENTA},
-    {"FG_CYAN",    FG_CYAN},
-    {"FG_WHITE",   FG_WHITE},
-    {"BG_BLACK",   BG_BLACK},
-    {"BG_RED",     BG_RED},
-    {"BG_GREEN",   BG_GREEN},
-    {"BG_YELLOW",  BG_YELLOW},
-    {"BG_BLUE",    BG_BLUE},
-    {"BG_MAGENTA", BG_MAGENTA},
-    {"BG_CYAN",    BG_CYAN},
-    {"BG_WHITE",   BG_WHITE}
+    {"RESET", resetColor},
+//    {"BOLD", bold},
+//    {"ITALIC", italic},
+//    {"UNDERLINE", underline},
+    {"FG_BLACK", color(FOREGROUND, Black)},
+    {"FG_RED", color(FOREGROUND, Red)},
+    {"FG_GREEN", color(FOREGROUND, Green)},
+    {"FG_YELLOW", color(FOREGROUND, Yellow)},
+    {"FG_BLUE", color(FOREGROUND, Blue)},
+    {"FG_MAGENTA", color(FOREGROUND, Magenta)},
+    {"FG_CYAN", color(FOREGROUND, Cyan)},
+    {"FG_WHITE", color(FOREGROUND, White)},
+    {"BG_BLACK", color(BACKGROUND, Black)},
+    {"BG_RED", color(BACKGROUND, Red)},
+    {"BG_GREEN", color(BACKGROUND, Green)},
+    {"BG_YELLOW", color(BACKGROUND, Yellow)},
+    {"BG_BLUE", color(BACKGROUND, Blue)},
+    {"BG_MAGENTA", color(BACKGROUND, Magenta)},
+    {"BG_CYAN", color(BACKGROUND, Cyan)},
+    {"BG_WHITE", color(BACKGROUND, White)},
 };
 
-void loadLanguageFile(const string& region) {
+void loadLanguageFile(const string &region) {
   langJson = readFile(DOT_SHUFFLE + "/lang/" + region + ".json");
 }
 
