@@ -223,7 +223,8 @@ void Workspace::inputPrompt(bool enableSuggestion) {
         }
         return;
       } else {
-        term << "\033[0m" << to_string(c);
+        term << resetColor;
+        cout << c;
         input += c;
       }
 
