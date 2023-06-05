@@ -8,7 +8,7 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include "utils/cmdexecutor.h"
+#include "workspace.h"
 
 using namespace std;
 
@@ -19,7 +19,6 @@ class Command {
   string name;
   string description;
   string value;
-  CommandExecutor executor{};
   vector<Command> children;
 
  public:
@@ -30,9 +29,6 @@ class Command {
   void addChild(const Command &command);
 
   virtual void run(Workspace &ws, const vector<std::string> &args) const;
-
-  Command(string name, string description, CommandExecutor executor, vector<Command> children);
-  Command(string name, string description, CommandExecutor executor);
 
   Command(string name, string description, vector<Command> children);
   Command(string name, string description);

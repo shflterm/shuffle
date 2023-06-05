@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "console.h"
-#include "suggestion.h"
 #include "utils/utils.h"
 #include "basic_commands.h"
 #include "sapp/sapp.h"
@@ -25,10 +24,6 @@ void loadDefaultCommands() {
                    Command("remove", "Delete SAPP")}),
           Command("update", "Update Shuffle"),
       })));
-
-  commands.push_back(make_unique<Command>(Command("list", "Print list file of current directory", listCmd)));
-  commands.push_back(make_unique<Command>(Command("exit", "Shut down Shuffle", exitCmd)));
-  commands.push_back(make_unique<Command>(Command("clear", "Clear console", clearCmd)));
 }
 
 void loadCommand(const CommandData &data) {
@@ -123,20 +118,7 @@ void Command::addChild(const Command &command) {
   children.push_back(command);
 }
 
-void Command::run(Workspace &ws, const vector<std::string> &args) const {
-  executor(ws, args);
-}
-
-Command::Command(string name, string description, CommandExecutor executor, vector<Command> children)
-    : name(std::move(name)),
-      description(std::move(description)),
-      executor(executor),
-      children(std::move(children)) {}
-
-Command::Command(string name, string description, CommandExecutor executor)
-    : name(std::move(name)),
-      description(std::move(description)),
-      executor(executor) {}
+void Command::run(Workspace &ws, const vector<std::string> &args) const { }
 
 Command::Command(string name, string description, vector<Command> children)
     : name(std::move(name)),

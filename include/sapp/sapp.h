@@ -6,7 +6,6 @@
 #define SHUFFLE_INCLUDE_LOADER_H_
 
 #include "commandmgr.h"
-#include "utils/cmdexecutor.h"
 #include "lua.hpp"
 #include "utils/utils.h"
 #include "console.h"
