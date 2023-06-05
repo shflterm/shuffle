@@ -41,11 +41,15 @@ void Workspace::addHistory(const string &s) {
 }
 
 string Workspace::historyUp() {
+  if (history.empty()) return "";
+
   if (0 > historyIndex - 1) return history[historyIndex];
   return history[--historyIndex];
 }
 
 string Workspace::historyDown() {
+  if (history.empty()) return "";
+
   if (history.size() <= historyIndex + 1) return history[historyIndex];
   return history[++historyIndex];
 }
@@ -108,13 +112,6 @@ void Workspace::execute(const string &input) {
     } else {
       command->run(ws, args);
     }
-//    } else if (command.getType() == EXECUTABLE) {
-//      string cmd = command.getValue();
-//      for (const auto &arg : newArgs) {
-//        cmd.append(" ").append(arg);
-//      }
-//      system(cmd.c_str());
-//    }
     break;
   } // Find Commands
 
@@ -241,9 +238,9 @@ void Workspace::inputPrompt(bool enableSuggestion) {
         input += character;
       }
 
-//      string suggestion = getSuggestion(*this, input);
-//      term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
-//      gotoxy(wherex() - (int) suggestion.size(), wherey());
+      string suggestion = getSuggestion(*this, input);
+      term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
+      gotoxy(wherex() - (int) suggestion.size(), wherey());
     }
     term << newLine;
   } else {
