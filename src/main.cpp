@@ -3,7 +3,7 @@
 
 #include "console.h"
 #include "commandmgr.h"
-
+#include "utils/utils.h"
 #include "version.h"
 
 using namespace std;
@@ -31,6 +31,8 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  initShflJson();
+  
   term << eraseAll
        << "Welcome to" << color(FOREGROUND, Yellow) << " SHUFFLE " << SHUFFLE_VERSION.str() << resetColor << "!"
        << newLine

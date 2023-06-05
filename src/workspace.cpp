@@ -29,8 +29,10 @@ void Workspace::moveDirectory(path newDir) {
     error("Directory '$0' not found.", {newDir.string()});
     return;
   }
-  term << dir.string() << newLine;
   dir = std::move(newDir);
+
+  if (dir.string()[dir.string().length() - 1] == '\\' || dir.string()[dir.string().length() - 1] == '/')
+    dir = dir.parent_path();
 }
 
 void Workspace::addHistory(const string &s) {
@@ -47,6 +49,7 @@ string Workspace::historyDown() {
   if (history.size() <= historyIndex + 1) return "";
   return history[++historyIndex];
 }
+
 void Workspace::execute(const string &input) {
   vector<string> args = split(input, regex(R"(\s+)"));
   if (args.empty()) return;
@@ -133,7 +136,7 @@ string getSuggestion(const Workspace &ws, const string &input) {
   vector<string> args = split(input, regex(R"(\s+)"));
   string suggestion;
   if (args.size() == 1) {
-    suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands);
+    suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands)[0];
   } else {
     Command *final = findCommand(args[0]);
     if (final == nullptr) return "";
@@ -144,7 +147,7 @@ string getSuggestion(const Workspace &ws, const string &input) {
       final = sub;
     }
 
-    suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren());
+    suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren())[0];
 
     delete final;
   }

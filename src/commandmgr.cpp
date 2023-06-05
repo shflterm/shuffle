@@ -6,7 +6,6 @@
 #include <utility>
 
 #include "console.h"
-#include "suggestion.h"
 #include "utils/utils.h"
 #include "basic_commands.h"
 #include "sapp/sapp.h"
@@ -25,10 +24,6 @@ void loadDefaultCommands() {
                    Command("remove", "Delete SAPP")}),
           Command("update", "Update Shuffle"),
       })));
-
-  commands.push_back(make_unique<Command>(Command("list", "Print list file of current directory", listCmd)));
-  commands.push_back(make_unique<Command>(Command("exit", "Shut down Shuffle", exitCmd)));
-  commands.push_back(make_unique<Command>(Command("clear", "Clear console", clearCmd)));
 }
 
 void loadCommand(const CommandData &data) {
@@ -38,15 +33,7 @@ void loadCommand(const CommandData &data) {
 vector<CommandData> getRegisteredCommands() {
   vector<CommandData> res;
 
-  if (!exists(path(COMMANDS_JSON))) {
-    writeFile(COMMANDS_JSON, "{\"commands\":[]}");
-  }
-
-  Json::Value root;
-  Json::Reader reader;
-  reader.parse(readFile(COMMANDS_JSON), root, false);
-
-  Json::Value commandList = root["commands"];
+  Json::Value commandList = getShflJson("commands");
   for (auto command : commandList) {
     CommandData data;
     data.name = command["name"].asString();
@@ -59,20 +46,14 @@ vector<CommandData> getRegisteredCommands() {
 void addRegisteredCommand(const CommandData &data) {
   vector<CommandData> res;
 
-  Json::Value root;
-  Json::Reader reader;
-  reader.parse(readFile(COMMANDS_JSON), root, false);
-
-  Json::Value commandList = root["commands"];
+  Json::Value commandList = getShflJson("commands");
 
   Json::Value value(Json::objectValue);
   value["name"] = data.name;
   value["value"] = data.value;
   commandList.append(value);
 
-  root["commands"] = commandList;
-
-  writeFile(COMMANDS_JSON, root.toStyledString());
+  setShflJson("commands", commandList);
 }
 
 void loadCommands() {
@@ -123,20 +104,7 @@ void Command::addChild(const Command &command) {
   children.push_back(command);
 }
 
-void Command::run(Workspace &ws, const vector<std::string> &args) const {
-  executor(ws, args);
-}
-
-Command::Command(string name, string description, CommandExecutor executor, vector<Command> children)
-    : name(std::move(name)),
-      description(std::move(description)),
-      executor(executor),
-      children(std::move(children)) {}
-
-Command::Command(string name, string description, CommandExecutor executor)
-    : name(std::move(name)),
-      description(std::move(description)),
-      executor(executor) {}
+void Command::run(Workspace &ws, const vector<std::string> &args) const { }
 
 Command::Command(string name, string description, vector<Command> children)
     : name(std::move(name)),

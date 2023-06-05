@@ -11,18 +11,21 @@
 
 using namespace std;
 
-string findSuggestion(Workspace ws,
+vector<string> findSuggestion(Workspace ws,
                       const string &input,
                       Command *rootCommand,
                       const vector<unique_ptr<Command>> &DICTIONARY) {
   vector<string> suggestions = createSuggestions(std::move(ws), input, rootCommand, DICTIONARY);
-  if (suggestions.empty()) return "";
+  if (suggestions.empty()) return {""};
 
-  string suggestion = suggestions[0];
-  if (suggestion.size() < input.length() + 1) return "";
+  vector<string> res;
+  for (const auto &item : suggestions)  {
+    string suggestion = suggestions[0];
+    if (suggestion.size() < input.length() + 1) return {""};
 
-  suggestion = suggestion.substr(input.length());
-  return suggestion;
+    res.push_back(suggestion.substr(input.length()));
+  }
+  return res;
 }
 
 vector<string> createSuggestions(Workspace ws,

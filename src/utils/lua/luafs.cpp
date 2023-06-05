@@ -7,32 +7,23 @@
 
 using namespace std;
 
-void pushStringArray(lua_State *L, const vector<string> &strings) {
-  lua_newtable(L);
-
-  int index = 1;
-  for (const auto &str : strings) {
-    lua_pushstring(L, str.c_str());
-    lua_rawseti(L, -2, index++);
-  }
-}
-
 int lua_exists(lua_State *L) {
-  path p = path(luaL_checkstring(L, 1));
+  path p = lua_getPath(L, luaL_checkstring(L, 1));
 
   lua_pushboolean(L, exists(p));
   return 1;
 }
 
 int lua_list(lua_State *L) {
-  path directoryPath(luaL_checkstring(L, 1));
-  if (!exists(directoryPath) || !is_directory(directoryPath)) {
+  path p = lua_getPath(L, luaL_checkstring(L, 1));
+
+  if (!exists(p) || !is_directory(p)) {
     luaL_error(L, "Invalid directory path");
     return 0;
   }
 
   std::vector<std::string> files;
-  for (const auto &entry : directory_iterator(directoryPath)) {
+  for (const auto &entry : directory_iterator(p)) {
     files.push_back(entry.path().filename().string());
   }
 
@@ -41,32 +32,34 @@ int lua_list(lua_State *L) {
 }
 
 int lua_isDir(lua_State *L) {
-  path directoryPath(luaL_checkstring(L, 1));
-  lua_pushboolean(L, is_directory(directoryPath));
+  path p = lua_getPath(L, luaL_checkstring(L, 1));
+  lua_pushboolean(L, is_directory(p));
   return 1;
 }
 
 int lua_isFile(lua_State *L) {
-  path directoryPath(luaL_checkstring(L, 1));
-  lua_pushboolean(L, is_regular_file(directoryPath));
+  path p = lua_getPath(L, luaL_checkstring(L, 1));
+  lua_pushboolean(L, is_regular_file(p));
   return 1;
 }
 
 int lua_mkDir(lua_State *L) {
-  path directory(luaL_checkstring(L, 1));
-  create_directory(directory);
+  path p = lua_getPath(L, luaL_checkstring(L, 1));
+  create_directory(p);
   return 1;
 }
 
 int lua_readFile(lua_State *L) {
-  path file(luaL_checkstring(L, 1));
-  lua_pushstring(L, readFile(file.string()).c_str());
+  path p = lua_getPath(L, luaL_checkstring(L, 1));
+  lua_pushstring(L, readFile(p.string()).c_str());
   return 1;
 }
 
 int lua_parentDir(lua_State *L) {
-  path file(luaL_checkstring(L, 1));
-  lua_pushstring(L, file.parent_path().string().c_str());
+  path p = lua_getPath(L, luaL_checkstring(L, 1));
+  if (p.string()[p.string().length() - 1] == '\\' || p.string()[p.string().length() - 1] == '/')
+    p = p.parent_path();
+  lua_pushstring(L, p.parent_path().string().c_str());
   return 1;
 }
 

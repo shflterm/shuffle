@@ -164,8 +164,40 @@ void updateShuffle() {
 
   string command = DOT_SHUFFLE + "/bin/updater.exe";
 
-  CreateProcess(nullptr, const_cast<LPSTR>(command.c_str()), nullptr, nullptr, FALSE, CREATE_NEW_CONSOLE, nullptr, nullptr, &si, &pi);
+  CreateProcess(nullptr,
+                const_cast<LPSTR>(command.c_str()),
+                nullptr,
+                nullptr,
+                FALSE,
+                CREATE_NEW_CONSOLE,
+                nullptr,
+                nullptr,
+                &si,
+                &pi);
 #else
 #endif
   exit(0);
+}
+
+void initShflJson() {
+  if (!exists(path(SHFL_JSON))) {
+    writeFile(SHFL_JSON, R"({"commands": [], "libs": []})");
+  }
+}
+
+Json::Value getShflJson(const string& part) {
+  Json::Value root;
+  Json::Reader reader;
+  reader.parse(readFile(SHFL_JSON), root, false);
+  return root[part];
+}
+
+void setShflJson(const string& part, Json::Value value) {
+  Json::Value root;
+  Json::Reader reader;
+  reader.parse(readFile(SHFL_JSON), root, false);
+
+  root[part] = value;
+
+  writeFile(SHFL_JSON, root.toStyledString());
 }
