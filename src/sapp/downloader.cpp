@@ -53,7 +53,7 @@ void addSAPP(const string &name) {
   info("Start Extracting..");
 
   int arg = 2;
-  zip_extract(downloadTo.c_str(), (DOT_SHUFFLE + "/apps/" + name).c_str(), _onExtractEntry, &arg);
+  zip_extract(downloadTo.c_str(), (DOT_SHUFFLE + "/apps/" + name + ".app").c_str(), _onExtractEntry, &arg);
 
   info("Adding to config...");
 

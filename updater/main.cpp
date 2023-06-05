@@ -4,6 +4,7 @@
 
 #include "utils/utils.h"
 #include "console.h"
+#include "term.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -11,15 +12,14 @@ using namespace std::filesystem;
 int onExtractEntry(const char *filename, void *arg) {
   string name = path(filename).filename().string();
   if (!name.empty()) {
-    eraseLine();
-    info("Extracting... (" + name + ")");
-    gotoxy(wherex(), wherey() - 1);
+    term << eraseLine << "Extracting... (" << name << ")"
+         << moveVertical(1);
   }
   return 0;
 }
 
 int main(int argc, char *argv[]) {
-  info("Updating...");
+  term << "Updating...";
   string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
   string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin.zip";
 
@@ -37,8 +37,6 @@ int main(int argc, char *argv[]) {
   int arg = 0;
   zip_extract(temp.string().c_str(), updatePath.string().c_str(), onExtractEntry, &arg);
 
-  eraseLine();
-  info("Completed!");
-
-  system("./shuffle");
+  term << eraseLine;
+  term << "Completed!";
 }
