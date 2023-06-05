@@ -274,10 +274,11 @@ void Workspace::inputPrompt(bool enableSuggestion) {
       term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
       gotoxy(wherex() - (int) suggestion.size(), wherey());
 
+      string hint = getHint(*this, input);
       term << saveCursorPosition
-           << teleport(wherex() - (int) input.size() + 1, wherey() + 2)
-           << eraseFromCursorToLineEnd
-           << color(FOREGROUND_BRIGHT, Black) << getHint(*this, input)
+           << teleport(wherex() - ((int) hint.size() / 2), wherey() + 2)
+           << eraseLine
+           << color(FOREGROUND_BRIGHT, Black) << hint
            << loadCursorPosition;
     }
     term << newLine;
