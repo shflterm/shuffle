@@ -21,6 +21,17 @@ void pushStringArray(lua_State *L, const vector<string> &strings) {
   }
 }
 
+path lua_getPath(lua_State *L, const string &s) {
+  path p = path(s);
+  if (p.is_relative()) {
+    lua_getglobal(L, "workspace");
+    lua_getfield(L, -1, "dir");
+    p = path(lua_tostring(L, -1)) / p;
+  }
+
+  return p;
+};
+
 void initLua(lua_State *L) {
   initFileSystem(L);
 

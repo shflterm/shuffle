@@ -30,6 +30,9 @@ void Workspace::moveDirectory(path newDir) {
     return;
   }
   dir = std::move(newDir);
+
+  if (dir.string()[dir.string().length() - 1] == '\\' || dir.string()[dir.string().length() - 1] == '/')
+    dir = dir.parent_path();
 }
 
 void Workspace::addHistory(const string &s) {

@@ -51,9 +51,10 @@ void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
   // Update workspace
   lua_getglobal(L, "workspace");
   lua_getfield(L, -1, "dir");
-  string dir = lua_tostring(L, -1);
 
-  ws.moveDirectory(absolute(path(dir)));
+  path newDir = lua_tostring(L, -1);
+  if (newDir.is_relative()) newDir = ws.currentDirectory() / newDir;
+  ws.moveDirectory(newDir);
 }
 
 void addChildren(const Json::Value &json, Command *command) {

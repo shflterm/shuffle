@@ -4,21 +4,8 @@
 #include <vector>
 
 #include "utils/utils.h"
-#include "utils/lua/luaapi.h"
-#include "console.h"
 
 using namespace std;
-
-path lua_getPath(lua_State *L, const string &s) {
-  path p = path();
-  if (p.is_relative()) {
-    lua_getglobal(L, "workspace");
-    lua_getfield(L, -1, "dir");
-    p = path(lua_tostring(L, -1)) / p;
-  }
-
-  return p;
-};
 
 int lua_exists(lua_State *L) {
   path p = lua_getPath(L, luaL_checkstring(L, 1));
