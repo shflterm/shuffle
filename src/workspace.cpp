@@ -69,7 +69,7 @@ void Workspace::execute(const string &input) {
       loadCommands();
       success("Reloaded all commands!");
     } else if (args[1] == "apps") {
-      if (args.size() < 2) {
+      if (args.size() < 3) {
         too_many_arguments();
         return;
       }
@@ -81,6 +81,15 @@ void Workspace::execute(const string &input) {
 
         for (int i = 3; i < args.size(); ++i) {
           addSAPP(args[i]);
+        }
+      } else if (args[2] == "remove") {
+        if (args.size() < 4) {
+          too_many_arguments();
+          return;
+        }
+
+        for (int i = 3; i < args.size(); ++i) {
+          removeSAPP(args[i]);
         }
       }
     } else if (args[1] == "update") {
