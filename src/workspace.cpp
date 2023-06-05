@@ -28,7 +28,6 @@ void Workspace::moveDirectory(path newDir) {
     error("Directory '$0' not found.", {newDir.string()});
     return;
   }
-  cout << dir.string() << endl;
   dir = std::move(newDir);
 }
 
@@ -52,9 +51,6 @@ void Workspace::execute(const string &input) {
   if (args.empty()) return;
 
   if (args[0] == "shfl") {
-    for (const auto &item : commands) {
-      cout << item.get()->getName() << "\n";
-    }
     if (args.size() < 2) {
       too_many_arguments();
       return;
