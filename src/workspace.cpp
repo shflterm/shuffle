@@ -5,6 +5,7 @@
 #include <utility>
 #include <sstream>
 #include <map>
+#include <term.h>
 
 #include "console.h"
 #include "commandmgr.h"
@@ -77,11 +78,11 @@ void Workspace::execute(const string &input) {
       }
     } else if (args[1] == "update") {
       string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
-      if (latest != SHUFFLE_VERSION.to_string()) {
-        cout << "New version available: " << SHUFFLE_VERSION.to_string() << " -> " << latest << endl;
+      if (latest != SHUFFLE_VERSION.str()) {
+        term << "New version available: " << SHUFFLE_VERSION.str() << " -> " << latest << newLine;
         updateShuffle();
       } else {
-        cout << "You are using the latest version of Shuffle." << endl;
+        term << "You are using the latest version of Shuffle." << newLine;
       }
     }
 
@@ -155,9 +156,9 @@ string getSuggestion(const Workspace &ws, const string &input) {
 string Workspace::prompt() {
   stringstream ss;
   if (!name.empty())
-    ss << FG_YELLOW << "[" << name << "] ";
+    ss << color(FOREGROUND, Yellow) << "[" << name << "] ";
 
-  ss << FG_CYAN << "(";
+  ss << color(FOREGROUND, Cyan) << "(";
   if (dir == dir.root_path())
     ss << dir.root_name().string();
   else if (dir.parent_path() == dir.root_path())
@@ -166,25 +167,24 @@ string Workspace::prompt() {
     ss << dir.root_name().string() << "/../" << dir.filename().string();
   ss << ")";
 
-  ss << FG_YELLOW << " \u2192 " << RESET;
+  ss << color(FOREGROUND, Yellow) << " \u2192 " << resetColor;
   return ss.str();
 }
 
 void Workspace::inputPrompt(bool enableSuggestion) {
-  cout << prompt();
-  cout.flush();
+  term << prompt();
 
   string input;
   if (enableSuggestion) {
     char c;
     while (true) {
       c = readChar();
-      eraseFromCursor();
+      term << eraseFromCursorToLineEnd;
 
       if (c == '\b' || c == 127) {
         if (!input.empty()) {
           gotoxy(wherex() - 1, wherey());
-          cout << ' ';
+          term << " ";
           gotoxy(wherex() - 1, wherey());
           input = input.substr(0, input.length() - 1);
         }
@@ -193,25 +193,25 @@ void Workspace::inputPrompt(bool enableSuggestion) {
       } else if (c == '\t') {
         string suggestion = getSuggestion(*this, input);
         input += suggestion;
-        cout << "\033[0m" << suggestion;
+        term << "\033[0m" << suggestion;
       } else if (c == 38/*UP ARROW*/) {
         gotoxy(wherex() - (int) input.size(), wherey());
-        eraseFromCursor();
+        term << eraseFromCursorToLineEnd;
         input = historyUp();
-        cout << input;
+        term << input;
       } else if (c == 40/*DOWN ARROW*/) {
         gotoxy(wherex() - (int) input.size(), wherey());
-        eraseFromCursor();
+        term << eraseFromCursorToLineEnd;
         input = historyDown();
-        cout << input;
+        term << input;
       } else if (c == '@') {
         gotoxy(wherex() - (int) input.size() - 2, wherey());
-        eraseFromCursor();
-        cout << FG_YELLOW << "@ " << RESET;
+        term << eraseFromCursorToLineEnd;
+        term << color(FOREGROUND, Yellow) << "@ " << resetColor;
         string wsName;
         getline(cin, wsName);
 
-        white();
+        term << newLine;
         if (wsMap.find(wsName) != wsMap.end()) {
           currentWorkspace = &wsMap[wsName];
         } else {
@@ -220,16 +220,15 @@ void Workspace::inputPrompt(bool enableSuggestion) {
         }
         return;
       } else {
-        cout << "\033[0m" << c;
+        term << "\033[0m" << to_string(c);
         input += c;
       }
 
       string suggestion = getSuggestion(*this, input);
-      cout << "\033[90m" << suggestion << RESET;
-      cout.flush();
-      gotoxy(wherex() - (int) suggestion.length(), wherey());
+      term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
+      gotoxy(wherex() - (int) suggestion.size(), wherey());
     }
-    white();
+    term << newLine;
   } else {
     getline(cin, input);
   }

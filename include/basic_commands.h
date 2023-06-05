@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <filesystem>
+#include <term.h>
 
 #include "console.h"
 #include "i18n.h"
@@ -28,7 +29,7 @@ void listCmd(Workspace &workspace, const vector<string> &args) {
     string name = replace(absolute(entry.path()).string(), absolute(dir).string(), "");
     if (name[0] == '\\' || name[0] == '/') name = name.substr(1);
     if (entry.is_directory()) {
-      info(BG_BLUE + name + "/");
+      info(color(BACKGROUND, Blue) + name + "/");
     } else {
       info(name);
     }
@@ -41,7 +42,7 @@ void exitCmd(Workspace &workspace, const vector<string> &args) {
 }
 
 void clearCmd(Workspace &workspace, const vector<string> &args) {
-  clear();
+  term << eraseAll;
 }
 
 #endif //SHUFFLE_INCLUDE_BASIC_COMMANDS_H_

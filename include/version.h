@@ -12,7 +12,7 @@ class Version {
  public:
   Version(int major, int minor, int patch, int hotfix) : major(major), minor(minor), patch(patch), hotfix(hotfix) {}
 
-  [[nodiscard]] string to_string() const {
+  [[nodiscard]] string str() const {
     stringstream ss;
     ss << "v";
     ss << major << ".";
