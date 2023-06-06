@@ -9,9 +9,10 @@
 using namespace std;
 
 int main(int argc, char *argv[]) {
-//  ios::sync_with_stdio(false);
-//  cin.tie(nullptr);
-//  cout.tie(nullptr);
+  loadCommands();
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
+  cout.tie(nullptr);
 
   if (argc > 1) {
     string arg = argv[1];
@@ -20,7 +21,6 @@ int main(int argc, char *argv[]) {
       return 0;
     }
 
-    loadCommands();
     Workspace workspace;
     string cmd;
     for (int i = 1; i < argc; ++i) {
@@ -32,15 +32,12 @@ int main(int argc, char *argv[]) {
   }
 
   initShflJson();
-
+  
   term << eraseAll
        << "Welcome to" << color(FOREGROUND, Yellow) << " SHUFFLE " << SHUFFLE_VERSION.str() << resetColor << "!"
        << newLine
-       << "(C) 2023 Shuffle Team. All Rights Reserved." << newLine << newLine;
-
-  loadCommands();
-
-  term << "Type 'help' to get help!" << newLine;
+       << "(C) 2023 Shuffle Team. All Rights Reserved." << newLine << newLine
+       << "Type 'help' to get help!" << newLine;
 
   currentWorkspace = new Workspace("main");
   while (true) {
