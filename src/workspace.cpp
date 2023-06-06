@@ -299,6 +299,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
   }
 
   if (!input.empty()) {
+    term << eraseLine;
     addHistory(input);
     execute(input);
   }
