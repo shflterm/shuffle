@@ -29,5 +29,6 @@ int readChar();
 void gotoxy(int x, int y);
 int wherex();
 int wherey();
+int height();
 
 #endif //SHUFFLE_INCLUDE_CONSOLE_H_
