@@ -164,6 +164,29 @@ string getSuggestion(const Workspace &ws, const string &input) {
   return suggestion;
 }
 
+string getHint(const Workspace &ws, const string &input) {
+  vector<string> args = split(input, regex(R"(\s+)"));
+
+  if (args.size() == 1) {
+    Command *command = findCommand(args[0]);
+    if (command == nullptr) return "";
+    else return command->getDescription();
+  } else {
+    Command *final = findCommand(args[0]);
+    if (final == nullptr) return "";
+
+    for (int i = 1; i < args.size(); i++) {
+      Command *sub = findCommand(args[i], final->getChildren());
+      if (sub == nullptr) {
+        return final->getDescription();
+      }
+      final = sub;
+    }
+
+    return final->getDescription();
+  }
+}
+
 string Workspace::prompt() {
   stringstream ss;
   if (!name.empty())
@@ -184,6 +207,9 @@ string Workspace::prompt() {
 
 void Workspace::inputPrompt(bool enableSuggestion) {
   term << prompt();
+  int x = wherex();
+  term << newLine;
+  term << teleport(x + 1, wherey());
 
   string input;
   if (enableSuggestion) {
@@ -259,6 +285,13 @@ void Workspace::inputPrompt(bool enableSuggestion) {
       string suggestion = getSuggestion(*this, input);
       term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
       gotoxy(wherex() - (int) suggestion.size(), wherey());
+
+      string hint = getHint(*this, input);
+      term << saveCursorPosition
+           << teleport(wherex() - ((int) hint.size() / 2), wherey() + 2)
+           << eraseLine
+           << color(FOREGROUND_BRIGHT, Black) << hint
+           << loadCursorPosition;
     }
     term << newLine;
   } else {

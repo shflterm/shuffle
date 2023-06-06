@@ -12,14 +12,14 @@
 using namespace std;
 
 vector<string> findSuggestion(Workspace ws,
-                      const string &input,
-                      Command *rootCommand,
-                      const vector<unique_ptr<Command>> &DICTIONARY) {
+                              const string &input,
+                              Command *rootCommand,
+                              const vector<unique_ptr<Command>> &DICTIONARY) {
   vector<string> suggestions = createSuggestions(std::move(ws), input, rootCommand, DICTIONARY);
   if (suggestions.empty()) return {""};
 
   vector<string> res;
-  for (const auto &item : suggestions)  {
+  for (const auto &item : suggestions) {
     string suggestion = suggestions[0];
     if (suggestion.size() < input.length() + 1) return {""};
 
@@ -39,7 +39,10 @@ vector<string> createSuggestions(Workspace ws,
     Command *cmd = &command;
     if (cmd->getName().rfind("option.", 0) == 0) {
       auto *sappCmd = dynamic_cast<SAPPCommand *>(rootCommand);
-      if (sappCmd == nullptr) continue;
+      if (sappCmd == nullptr) {
+        res.push_back("[" + cmd->getName().substr(7) + "]");
+        continue;
+      }
 
       vector<string> suggestions = sappCmd->makeDynamicSuggestion(ws, cmd->getName().substr(7));
       for (const auto &item2 : suggestions)

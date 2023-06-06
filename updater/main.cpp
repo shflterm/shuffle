@@ -13,7 +13,7 @@ int onExtractEntry(const char *filename, void *arg) {
   string name = path(filename).filename().string();
   if (!name.empty()) {
     term << eraseLine << "Extracting... (" << name << ")"
-         << moveVertical(1);
+         << moveVertical(-1);
   }
   return 0;
 }
