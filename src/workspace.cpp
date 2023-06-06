@@ -105,26 +105,27 @@ void Workspace::execute(const string &input) {
     return;
   }
 
-  bool isCommandFounded = false;
+  bool isCommandFound = false;
   for (const auto &item : commands) {
     Command &cmd = *item;
     Command *command = &cmd;
     if (command->getName() != args[0]) continue;
-    isCommandFounded = true;
+    isCommandFound = true;
 
     vector<string> newArgs;
     for (int i = 1; i < args.size(); ++i) newArgs.push_back(args[i]);
 
     Workspace &ws = (*this);
-    if (dynamic_cast<SAPPCommand *>(command) != nullptr) {
-      dynamic_cast<SAPPCommand *>(command)->run(*this, newArgs);
+    auto *sappCommand = dynamic_cast<SAPPCommand *>(command);
+    if (sappCommand != nullptr) {
+      sappCommand->run(*this, newArgs);
     } else {
       command->run(ws, args);
     }
     break;
   } // Find Commands
 
-  if (!isCommandFounded) {
+  if (!isCommandFound) {
     error("Sorry. Command '$0' not found.", {args[0]});
     pair<int, Command> similarWord = {1000000000, Command("")};
     for (const auto &item : commands) {
