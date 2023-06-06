@@ -27,7 +27,7 @@ string replace(string str, const string &from, const string &to);
 string readFile(const string &path);
 void writeFile(const string &path, const string &value);
 string readTextFromWeb(const string &url);
-void downloadFile(const string &url, const string &file);
+bool downloadFile(const string &url, const string &file);
 void updateShuffle();
 void initShflJson();
 Json::Value getShflJson(const string& part);
