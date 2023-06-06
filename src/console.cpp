@@ -137,3 +137,16 @@ int wherey() {
   return ly;
 #endif
 }
+
+int height() {
+#ifdef _WIN32
+  HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  GetConsoleScreenBufferInfo(hConsole, &csbi);
+  return csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+#elif defined(__unix__) || defined(__APPLE__)
+  struct winsize size;
+  ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+  return size.ws_row;
+#endif
+}
