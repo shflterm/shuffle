@@ -198,6 +198,9 @@ string Workspace::prompt() {
 
 void Workspace::inputPrompt(bool enableSuggestion) {
   term << prompt();
+  int x = wherex();
+  term << newLine;
+  term << teleport(x + 1, wherey());
 
   string input;
   if (enableSuggestion) {
@@ -276,7 +279,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
 
       string hint = getHint(*this, input);
       term << saveCursorPosition
-           << teleport(wherex() - ((int) hint.size() / 2), wherey())
+           << teleport(wherex() - ((int) hint.size() / 2), wherey() + 2)
            << eraseLine
            << color(FOREGROUND_BRIGHT, Black) << hint
            << loadCursorPosition;
