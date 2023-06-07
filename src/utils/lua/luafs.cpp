@@ -46,13 +46,24 @@ int lua_isFile(lua_State *L) {
 int lua_mkDir(lua_State *L) {
   path p = lua_getPath(L, luaL_checkstring(L, 1));
   create_directory(p);
-  return 1;
+  return 0;
 }
 
 int lua_readFile(lua_State *L) {
   path p = lua_getPath(L, luaL_checkstring(L, 1));
   lua_pushstring(L, readFile(p.string()).c_str());
   return 1;
+}
+
+int lua_writeFile(lua_State *L) {
+  path p = lua_getPath(L, luaL_checkstring(L, 1));
+
+  string str = luaL_checkstring(L, 2);
+  std::ofstream fs(p);
+  fs << str;
+  fs.close();
+
+  return 0;
 }
 
 int lua_parentDir(lua_State *L) {
@@ -83,6 +94,9 @@ void initFileSystem(lua_State *L) {
 
   lua_pushcfunction(L, lua_readFile);
   lua_setfield(L, -2, "readFile");
+
+  lua_pushcfunction(L, lua_writeFile);
+  lua_setfield(L, -2, "writeFile");
 
   lua_pushcfunction(L, lua_parentDir);
   lua_setfield(L, -2, "parentDir");
