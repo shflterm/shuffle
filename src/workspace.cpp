@@ -14,11 +14,12 @@
 #include "sapp/downloader.h"
 #include "sapp/sapp.h"
 #include "version.h"
+#include "utils/crashreport.h"
 
 using namespace std;
 using namespace std::filesystem;
 
-map<string, Workspace> wsMap;
+map<string, Workspace*> wsMap;
 
 path Workspace::currentDirectory() {
   return dir;
@@ -33,6 +34,10 @@ void Workspace::moveDirectory(path newDir) {
 
   if (dir.string()[dir.string().length() - 1] == '\\' || dir.string()[dir.string().length() - 1] == '/')
     dir = dir.parent_path();
+}
+
+vector<string> Workspace::getHistory() {
+  return history;
 }
 
 void Workspace::addHistory(const string &s) {
@@ -262,7 +267,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
 
         term << newLine;
         if (wsMap.find(wsName) != wsMap.end()) {
-          currentWorkspace = &wsMap[wsName];
+          currentWorkspace = wsMap[wsName];
         } else {
           info("{FG_BLUE}New workspace created: {BG_GREEN}$0", {wsName});
           currentWorkspace = new Workspace(wsName);
@@ -307,6 +312,6 @@ void Workspace::inputPrompt(bool enableSuggestion) {
 }
 
 Workspace::Workspace(const string &name) : name(name) {
-  wsMap[name] = *this;
+  wsMap[name] = this;
 }
 Workspace::Workspace() = default;
