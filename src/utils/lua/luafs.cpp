@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "utils/utils.h"
+#include "console.h"
 
 using namespace std;
 
@@ -45,7 +46,14 @@ int lua_isFile(lua_State *L) {
 
 int lua_mkDir(lua_State *L) {
   path p = lua_getPath(L, luaL_checkstring(L, 1));
-  create_directory(p);
+
+  if (regex_match(p.filename().string(),
+                  regex(R"(^[^\s^\x00-\x1f\\?*:"";<>|\/.][^\x00-\x1f\\?*:"";<>|\/]*[^\s^\x00-\x1f\\?*:"";<>|\/.]+$)"))) {
+    create_directory(p);
+  } else {
+    error("The folder name is incorrect.");
+  }
+
   return 0;
 }
 
