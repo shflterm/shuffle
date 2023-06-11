@@ -110,8 +110,8 @@ void Workspace::execute(const string &input) {
     return;
   } else if (args[0] == "help") {
     term << "== Shuffle Help ==" << newLine
-         << "Version: " << SHUFFLE_VERSION.str() << newLine
-         << newLine;
+         << "Version: " << SHUFFLE_VERSION.str() << newLine << newLine
+         << "Commands: " << newLine;
     for (const auto &item : commands) {
       auto command = *item;
       if (command.getDescription() != "-") {
