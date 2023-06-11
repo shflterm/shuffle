@@ -27,6 +27,9 @@ void loadDefaultCommands() {
 }
 
 void loadCommand(const CommandData &data) {
+  for (const auto &item : commands) {
+    if (item->getName() == data.name) return;
+  }
   commands.push_back(make_unique<SAPPCommand>(SAPPCommand(data.name)));
 }
 
@@ -50,7 +53,10 @@ void addRegisteredCommand(const CommandData &data) {
 
   Json::Value value(Json::objectValue);
   value["name"] = data.name;
-  value["value"] = data.value;
+  for (const auto &item : commands) {
+    if (item->getName() == data.name) return;
+  }
+
   commandList.append(value);
 
   setShflJson("commands", commandList);
@@ -104,7 +110,7 @@ void Command::addChild(const Command &command) {
   children.push_back(command);
 }
 
-void Command::run(Workspace &ws, const vector<std::string> &args) const { }
+void Command::run(Workspace &ws, const vector<std::string> &args) const {}
 
 Command::Command(string name, string description, vector<Command> children)
     : name(std::move(name)),

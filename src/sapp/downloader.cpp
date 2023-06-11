@@ -57,7 +57,7 @@ void addSAPP(const string &name) {
 
   info("Adding to config...");
 
-  addRegisteredCommand({name, name});
+  addRegisteredCommand({name});
 
   success("Done!");
 }

@@ -43,8 +43,6 @@ class OptionSubCommand : public Command {
 class CommandData {
  public:
   string name;
-  string description;
-  string value;
 };
 
 extern vector<unique_ptr<Command>> commands;
