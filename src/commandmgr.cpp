@@ -30,6 +30,9 @@ void loadDefaultCommands() {
 }
 
 void loadCommand(const CommandData &data) {
+  for (const auto &item : commands) {
+    if (item->getName() == data.name) return;
+  }
   commands.push_back(make_unique<SAPPCommand>(SAPPCommand(data.name)));
 }
 
@@ -46,17 +49,21 @@ vector<CommandData> getRegisteredCommands() {
   return res;
 }
 
-void addRegisteredCommand(const CommandData &data) {
+bool addRegisteredCommand(const CommandData &data) {
   vector<CommandData> res;
 
   Json::Value commandList = getShflJson("apps");
 
   Json::Value value(Json::objectValue);
   value["name"] = data.name;
-  value["value"] = data.value;
+  for (const auto &item : commands) {
+    if (item->getName() == data.name) return false;
+  }
+
   commandList.append(value);
 
   setShflJson("apps", commandList);
+  return true;
 }
 
 void loadCommands() {

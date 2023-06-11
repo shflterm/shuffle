@@ -64,9 +64,11 @@ void addSAPP(const string &name) {
 
   info("Adding to config...");
 
-  addRegisteredCommand({name, name});
-
-  success("Done!");
+  if (!addRegisteredCommand({name})) {
+    error("Failed to add app. (The app has already been added.)");
+  } else {
+    success("Done!");
+  }
 }
 
 void removeSAPP(const string &name) {

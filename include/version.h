@@ -13,14 +13,15 @@ class Version {
   Version(int major, int minor, int patch, int hotfix) : major(major), minor(minor), patch(patch), hotfix(hotfix) {}
 
   [[nodiscard]] string str() const {
-    stringstream ss;
-    ss << "v";
-    ss << major << ".";
-    ss << minor << ".";
-    ss << patch << ".";
-    ss << hotfix;
-
-    return string(ss.str());
+//    stringstream ss;
+//    ss << "v";
+//    ss << major << ".";
+//    ss << minor << ".";
+//    ss << patch << ".";
+//    ss << hotfix;
+//
+//    return string(ss.str());
+    return "Beta 4";
   }
 };
 

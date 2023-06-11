@@ -43,8 +43,6 @@ class OptionSubCommand : public Command {
 class CommandData {
  public:
   string name;
-  string description;
-  string value;
 };
 
 extern vector<unique_ptr<Command>> commands;
@@ -53,7 +51,7 @@ void loadDefaultCommands();
 void loadCommand(const CommandData &data);
 
 vector<CommandData> getRegisteredCommands();
-void addRegisteredCommand(const CommandData &data);
+bool addRegisteredCommand(const CommandData &data);
 
 void loadCommands();
 
