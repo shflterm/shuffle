@@ -46,7 +46,7 @@ vector<CommandData> getRegisteredCommands() {
   return res;
 }
 
-void addRegisteredCommand(const CommandData &data) {
+bool addRegisteredCommand(const CommandData &data) {
   vector<CommandData> res;
 
   Json::Value commandList = getShflJson("commands");
@@ -54,12 +54,13 @@ void addRegisteredCommand(const CommandData &data) {
   Json::Value value(Json::objectValue);
   value["name"] = data.name;
   for (const auto &item : commands) {
-    if (item->getName() == data.name) return;
+    if (item->getName() == data.name) return false;
   }
 
   commandList.append(value);
 
   setShflJson("commands", commandList);
+  return true;
 }
 
 void loadCommands() {
