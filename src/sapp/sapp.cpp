@@ -132,6 +132,9 @@ void SAPPCommand::loadVersion1(Json::Value root, const string &name) {
   Json::Value helpRoot;
   Json::Reader helpReader;
   helpReader.parse(readFile(helpDotShfl), helpRoot, false);
+
+  description = helpRoot["description"].asString();
+
   Json::Value children = helpRoot["children"];
   addChildren(children, this);
 }

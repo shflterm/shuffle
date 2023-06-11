@@ -19,7 +19,7 @@
 using namespace std;
 using namespace std::filesystem;
 
-map<string, Workspace*> wsMap;
+map<string, Workspace *> wsMap;
 
 path Workspace::currentDirectory() {
   return dir;
@@ -108,6 +108,20 @@ void Workspace::execute(const string &input) {
     }
 
     return;
+  } else if (args[0] == "help") {
+    term << "== Shuffle Help ==" << newLine
+         << "Version: " << SHUFFLE_VERSION.str() << newLine
+         << newLine;
+    for (const auto &item : commands) {
+      auto command = *item;
+      if (command.getDescription() != "-") {
+        term << "  " << command.getName() << " : " << command.getDescription() << newLine;
+      }
+    }
+    term << newLine
+         << "Additional Help: " << newLine
+         << "  For more information on a specific command, type 'help <command>'" << newLine
+         << "  Visit the online documentation for Shuffle at https://github.com/shflterm/shuffle/wiki." << newLine;
   }
 
   bool isCommandFound = false;

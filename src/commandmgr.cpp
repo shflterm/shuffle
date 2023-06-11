@@ -24,6 +24,9 @@ void loadDefaultCommands() {
                    Command("remove", "Delete SAPP")}),
           Command("update", "Update Shuffle"),
       })));
+  commands.push_back(make_unique<Command>(Command(
+      "help", "Show help"
+  )));
 }
 
 void loadCommand(const CommandData &data) {
@@ -104,7 +107,7 @@ void Command::addChild(const Command &command) {
   children.push_back(command);
 }
 
-void Command::run(Workspace &ws, const vector<std::string> &args) const { }
+void Command::run(Workspace &ws, const vector<std::string> &args) const {}
 
 Command::Command(string name, string description, vector<Command> children)
     : name(std::move(name)),
