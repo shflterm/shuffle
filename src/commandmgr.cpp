@@ -24,6 +24,9 @@ void loadDefaultCommands() {
                    Command("remove", "Delete SAPP")}),
           Command("update", "Update Shuffle"),
       })));
+  commands.push_back(make_unique<Command>(Command(
+      "help", "Show help"
+  )));
 }
 
 void loadCommand(const CommandData &data) {
@@ -36,7 +39,7 @@ void loadCommand(const CommandData &data) {
 vector<CommandData> getRegisteredCommands() {
   vector<CommandData> res;
 
-  Json::Value commandList = getShflJson("commands");
+  Json::Value commandList = getShflJson("apps");
   for (auto command : commandList) {
     CommandData data;
     data.name = command["name"].asString();
@@ -49,7 +52,7 @@ vector<CommandData> getRegisteredCommands() {
 bool addRegisteredCommand(const CommandData &data) {
   vector<CommandData> res;
 
-  Json::Value commandList = getShflJson("commands");
+  Json::Value commandList = getShflJson("apps");
 
   Json::Value value(Json::objectValue);
   value["name"] = data.name;
@@ -59,7 +62,7 @@ bool addRegisteredCommand(const CommandData &data) {
 
   commandList.append(value);
 
-  setShflJson("commands", commandList);
+  setShflJson("apps", commandList);
   return true;
 }
 

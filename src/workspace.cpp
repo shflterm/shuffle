@@ -14,11 +14,12 @@
 #include "sapp/downloader.h"
 #include "sapp/sapp.h"
 #include "version.h"
+#include "utils/crashreport.h"
 
 using namespace std;
 using namespace std::filesystem;
 
-map<string, Workspace> wsMap;
+map<string, Workspace *> wsMap;
 
 path Workspace::currentDirectory() {
   return dir;
@@ -33,6 +34,10 @@ void Workspace::moveDirectory(path newDir) {
 
   if (dir.string()[dir.string().length() - 1] == '\\' || dir.string()[dir.string().length() - 1] == '/')
     dir = dir.parent_path();
+}
+
+vector<string> Workspace::getHistory() {
+  return history;
 }
 
 void Workspace::addHistory(const string &s) {
@@ -69,7 +74,7 @@ void Workspace::execute(const string &input) {
       loadCommands();
       success("Reloaded all commands!");
     } else if (args[1] == "apps") {
-      if (args.size() < 2) {
+      if (args.size() < 3) {
         too_many_arguments();
         return;
       }
@@ -81,6 +86,15 @@ void Workspace::execute(const string &input) {
 
         for (int i = 3; i < args.size(); ++i) {
           addSAPP(args[i]);
+        }
+      } else if (args[2] == "remove") {
+        if (args.size() < 4) {
+          too_many_arguments();
+          return;
+        }
+
+        for (int i = 3; i < args.size(); ++i) {
+          removeSAPP(args[i]);
         }
       }
     } else if (args[1] == "update") {
@@ -94,28 +108,43 @@ void Workspace::execute(const string &input) {
     }
 
     return;
+  } else if (args[0] == "help") {
+    term << "== Shuffle Help ==" << newLine
+         << "Version: " << SHUFFLE_VERSION.str() << newLine
+         << newLine;
+    for (const auto &item : commands) {
+      auto command = *item;
+      if (command.getDescription() != "-") {
+        term << "  " << command.getName() << " : " << command.getDescription() << newLine;
+      }
+    }
+    term << newLine
+         << "Additional Help: " << newLine
+         << "  For more information on a specific command, type 'help <command>'" << newLine
+         << "  Visit the online documentation for Shuffle at https://github.com/shflterm/shuffle/wiki." << newLine;
   }
 
-  bool isCommandFounded = false;
+  bool isCommandFound = false;
   for (const auto &item : commands) {
     Command &cmd = *item;
     Command *command = &cmd;
     if (command->getName() != args[0]) continue;
-    isCommandFounded = true;
+    isCommandFound = true;
 
     vector<string> newArgs;
     for (int i = 1; i < args.size(); ++i) newArgs.push_back(args[i]);
 
     Workspace &ws = (*this);
-    if (dynamic_cast<SAPPCommand *>(command) != nullptr) {
-      dynamic_cast<SAPPCommand *>(command)->run(*this, newArgs);
+    auto *sappCommand = dynamic_cast<SAPPCommand *>(command);
+    if (sappCommand != nullptr) {
+      sappCommand->run(*this, newArgs);
     } else {
       command->run(ws, args);
     }
     break;
   } // Find Commands
 
-  if (!isCommandFounded) {
+  if (!isCommandFound) {
     error("Sorry. Command '$0' not found.", {args[0]});
     pair<int, Command> similarWord = {1000000000, Command("")};
     for (const auto &item : commands) {
@@ -226,7 +255,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
 
         term << newLine;
         if (wsMap.find(wsName) != wsMap.end()) {
-          currentWorkspace = &wsMap[wsName];
+          currentWorkspace = wsMap[wsName];
         } else {
           info("{FG_BLUE}New workspace created: {BG_GREEN}$0", {wsName});
           currentWorkspace = new Workspace(wsName);
@@ -248,12 +277,13 @@ void Workspace::inputPrompt(bool enableSuggestion) {
   }
 
   if (!input.empty()) {
+    term << eraseLine;
     addHistory(input);
     execute(input);
   }
 }
 
 Workspace::Workspace(const string &name) : name(name) {
-  wsMap[name] = *this;
+  wsMap[name] = this;
 }
 Workspace::Workspace() = default;

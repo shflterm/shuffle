@@ -1,18 +1,27 @@
 #include <iostream>
 #include <term.h>
+#include <csignal>
 
 #include "console.h"
 #include "commandmgr.h"
 #include "utils/utils.h"
+#include "utils/crashreport.h"
 #include "version.h"
 
 using namespace std;
 
+extern "C" void handleAborts(int signal_number) {
+  error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
+  error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
+  term << newLine;
+  error(generateCrashReport());
+}
+
 int main(int argc, char *argv[]) {
-  loadCommands();
-  ios::sync_with_stdio(false);
-  cin.tie(nullptr);
-  cout.tie(nullptr);
+//  ios::sync_with_stdio(false);
+//  cin.tie(nullptr);
+//  cout.tie(nullptr);
+  signal(SIGABRT, &handleAborts);
 
   if (argc > 1) {
     string arg = argv[1];
