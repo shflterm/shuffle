@@ -261,6 +261,15 @@ void Workspace::inputPrompt(bool enableSuggestion) {
           currentWorkspace = new Workspace(wsName);
         }
         return;
+      } else if (c == '&') {
+        gotoxy(wherex() - (int) input.size() - 2, wherey());
+        term << eraseFromCursorToLineEnd;
+        term << color(FOREGROUND, Yellow) << "& " << resetColor;
+        string command;
+        getline(cin, command);
+
+        system(command.c_str());
+        return;
       } else {
         string character(1, (char) c);
         term << resetColor << character;
