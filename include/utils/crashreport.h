@@ -7,8 +7,22 @@
 
 #include <string>
 
+#include "workspace.h"
+
 using namespace std;
 
-string generateCrashReport();
+string genStackTrace();
+
+class CrashReport {
+  vector<Workspace *> workspaces;
+  string stackTrace;
+  int sig;
+
+ public:
+  CrashReport setStackTrace(const string &stackTrace_);
+  CrashReport setSignalNumber(int sig);
+
+  string make();
+};
 
 #endif //SHFL_INCLUDE_UTILS_CRASHREPORT_H_

@@ -4,7 +4,6 @@
 #include <ctime>
 
 #include "version.h"
-#include "workspace.h"
 #ifdef _WIN32
 #elif __linux__ || __APPLE__
 #include <execinfo.h>
@@ -12,7 +11,7 @@
 
 using namespace std;
 
-string printStackTrace() {
+string genStackTrace() {
   stringstream ss;
 
 #ifdef _WIN32
@@ -43,12 +42,23 @@ string getOSName() {
 #endif
 }
 
-string generateCrashReport() {
+CrashReport CrashReport::setStackTrace(const string &stackTrace_) {
+  stackTrace = stackTrace_;
+  return *this;
+}
+
+CrashReport CrashReport::setSignalNumber(int sig_) {
+  sig = sig_;
+  return *this;
+}
+
+string CrashReport::make() {
   stringstream ss;
   ss << "[ Shuffle Crash Report ]" << endl;
   ss << "OS: " << getOSName() << endl;
   ss << "Version: " << SHUFFLE_VERSION.str() << endl;
   ss << "Time: " << time(nullptr) << endl;
+  ss << "Signal Number: " << sig << endl;
   ss << "========================" << endl;
   ss << "Workspaces: " << endl;
   for (auto &ws : wsMap) {
@@ -57,6 +67,6 @@ string generateCrashReport() {
   }
   ss << "========================" << endl;
   ss << "Stack Trace: " << endl;
-  ss << printStackTrace();
+  ss << stackTrace;
   return ss.str();
 }
