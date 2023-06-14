@@ -164,7 +164,7 @@ string getSuggestion(const Workspace &ws, const string &input) {
   if (input[input.length() - 1] == ' ') args.emplace_back("");
 
   if (args.size() == 1) {
-    suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands)[0];
+    suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands)[3];
   } else {
     Command *final = findCommand(args[0]);
     if (final == nullptr) return "";

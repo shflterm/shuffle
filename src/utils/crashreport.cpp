@@ -5,8 +5,29 @@
 
 #include "version.h"
 #include "workspace.h"
+#ifdef _WIN32
+#elif __linux__ || __APPLE__
+#include <execinfo.h>
+#endif
 
 using namespace std;
+
+string printStackTrace() {
+  stringstream ss;
+
+#ifdef _WIN32
+  ss << "Stack traces for Windows are in the works!" << endl;
+#elif __linux__ || __APPLE__
+  void *array[10];
+  size_t size;
+  size = backtrace(array, 10);
+  for (int i = 0; i < size; ++i) {
+    ss << backtrace_symbols(array, size)[i] << endl;
+  }
+#endif
+
+  return ss.str();
+}
 
 string getOSName() {
 #ifdef _WIN32
@@ -14,11 +35,11 @@ string getOSName() {
 #elif __APPLE__
   return "macOS";
 #elif __linux__
-    return "Linux";
+  return "Linux";
 #elif __unix__
-    return "Unix";
+  return "Unix";
 #else
-    return "Unknown";
+  return "Unknown";
 #endif
 }
 
@@ -33,11 +54,9 @@ string generateCrashReport() {
   for (auto &ws : wsMap) {
     ss << "  " << ws.first << endl;
     ss << "    Current Directory: " << ws.second->currentDirectory().string() << endl;
-    ss << "    History: " << endl;
-    for (auto &h : ws.second->getHistory()) {
-      ss << "      " << h << endl;
-    }
   }
   ss << "========================" << endl;
+  ss << "Stack Trace: " << endl;
+  ss << printStackTrace();
   return ss.str();
 }

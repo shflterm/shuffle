@@ -11,16 +11,20 @@
 using namespace std;
 
 extern "C" void handleAborts(int signal_number) {
+  term << newLine;
   error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
   error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
   term << newLine;
   error(generateCrashReport());
+
+  exit(1);
 }
 
 int main(int argc, char *argv[]) {
 //  ios::sync_with_stdio(false);
 //  cin.tie(nullptr);
 //  cout.tie(nullptr);
+  signal(SIGSEGV, &handleAborts);
   signal(SIGABRT, &handleAborts);
 
   loadCommands();
