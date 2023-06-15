@@ -24,7 +24,7 @@ string createCreditText() {
 
   ss << color(FOREGROUND, Blue) << "Special Thanks: " << endl;
   for (const auto &item : SPECIAL_THANKS)
-    ss << resetColor << "  - " << replace(item, "@", "https://github.com/") << endl;
+    ss << resetColor << "  - " << item << endl;
 
   ss << color(FOREGROUND, Cyan) << "Open Source Libraries: " << endl;
   for (const auto &item : LIBRARIES)

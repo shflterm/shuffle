@@ -13,7 +13,7 @@ using namespace std;
 
 #define CREATED_BY vector<string>({"@ssyuk"})
 #define CONTRIBUTORS vector<string>({"@devproje"})
-#define SPECIAL_THANKS vector<string>({"@NY0510"})
+#define SPECIAL_THANKS vector<string>({"@NY0510", "@norhu1130", "@NOOBNUBY", "@aidenlee33"})
 #define LIBRARIES vector<pair<string,string>>({ \
   {"JsonCpp", "@open-source-parsers"},          \
   {"curl", "https://curl.se"},                  \
