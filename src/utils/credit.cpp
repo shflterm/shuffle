@@ -22,7 +22,7 @@ string createCreditText() {
   for (const auto &item : CONTRIBUTORS)
     ss << resetColor << "  - " << replace(item, "@", "https://github.com/") << endl;
 
-  ss << color(FOREGROUND, Blue) << "Special Thanks: " << endl;👨‍💻
+  ss << color(FOREGROUND, Blue) << "Special Thanks: " << endl;
   for (const auto &item : SPECIAL_THANKS)
     ss << resetColor << "  - " << replace(item, "@", "https://github.com/") << endl;
 
