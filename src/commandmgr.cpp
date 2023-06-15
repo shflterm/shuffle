@@ -23,6 +23,7 @@ void loadDefaultCommands() {
                   {Command("add", "Install SAPP"),
                    Command("remove", "Delete SAPP")}),
           Command("update", "Update Shuffle"),
+          Command("credits", "Show credits"),
       })));
   commands.push_back(make_unique<Command>(Command(
       "help", "Show help"
