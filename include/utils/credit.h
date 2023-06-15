@@ -6,20 +6,13 @@
 #define SHFL_INCLUDE_UTILS_CREDIT_H_
 
 #include <vector>
+#include <map>
 #include <string>
 #include <algorithm>
 
 using namespace std;
 
-#define CREATED_BY vector<string>({"@ssyuk"})
-#define CONTRIBUTORS vector<string>({"@devproje"})
-#define SPECIAL_THANKS vector<string>({"@NY0510", "@norhu1130", "@NOOBNUBY", "@aidenlee33"})
-#define LIBRARIES vector<pair<string,string>>({ \
-  {"JsonCpp", "@open-source-parsers"},          \
-  {"curl", "https://curl.se"},                  \
-  {"zip", "@kuba--"}                            \
-})
-
+map<string, vector<string>> getCredits();
 
 string createCreditText();
 
