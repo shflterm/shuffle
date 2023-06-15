@@ -14,7 +14,7 @@
 #include "sapp/downloader.h"
 #include "sapp/sapp.h"
 #include "version.h"
-#include "utils/crashreport.h"
+#include "utils/credit.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -105,6 +105,8 @@ void Workspace::execute(const string &input) {
       } else {
         term << "You are using the latest version of Shuffle." << newLine;
       }
+    } else if (args[1] == "credits") {
+      term << createCreditText();
     }
 
     return;
