@@ -82,6 +82,19 @@ int lua_parentDir(lua_State *L) {
   return 1;
 }
 
+int lua_rm(lua_State *L) {
+  path p = lua_getPath(L, luaL_checkstring(L, 1));
+  if (exists(p)) {
+    if (is_directory(p)) {
+      remove_all(p);
+      lua_pushboolean(L, remove(p));
+    } else {
+      lua_pushboolean(L, remove(p));
+    }
+  }
+  return 1;
+}
+
 void initFileSystem(lua_State *L) {
   lua_newtable(L);
 
@@ -108,6 +121,9 @@ void initFileSystem(lua_State *L) {
 
   lua_pushcfunction(L, lua_parentDir);
   lua_setfield(L, -2, "parentDir");
+
+  lua_pushcfunction(L, lua_rm);
+  lua_setfield(L, -2, "remove");
 
   lua_setglobal(L, "fs");
 }
