@@ -4,7 +4,6 @@
 #include "console.h"
 
 #include <string>
-#include <iostream>
 #include <utility>
 #include <vector>
 #include <memory>

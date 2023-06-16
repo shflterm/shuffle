@@ -90,7 +90,7 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
     error("Error: 'suggest' is not a function!");
     return {};
   }
-  int err = lua_pcall(L, 0, 1, 0);
+  int err = lua_pcall(L, 0, 0, 0);
   if (err) {
     error("\nAn error occurred while generating suggestion.\n\n" + string(lua_tostring(L, -1)));
   }

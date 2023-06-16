@@ -80,7 +80,7 @@ void loadCommands() {
 Command *findCommand(const string &name, const vector<unique_ptr<Command>> &DICTIONARY) {
   for (auto &item : DICTIONARY) {
     if (item->getName() == name) {
-      return new Command(*item.get());
+      return item.get();
     }
   }
   return nullptr;
