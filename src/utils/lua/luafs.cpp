@@ -87,12 +87,11 @@ int lua_rm(lua_State *L) {
   if (exists(p)) {
     if (is_directory(p)) {
       remove_all(p);
-      lua_pushboolean(L, remove(p));
     } else {
-      lua_pushboolean(L, remove(p));
+      remove(p);
     }
   }
-  return 1;
+  return 0;
 }
 
 void initFileSystem(lua_State *L) {
