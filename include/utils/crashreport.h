@@ -23,6 +23,7 @@ class CrashReport {
   CrashReport setSignalNumber(int sig);
 
   string make();
+  void save();
 };
 
 #endif //SHFL_INCLUDE_UTILS_CRASHREPORT_H_

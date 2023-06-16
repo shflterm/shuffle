@@ -15,10 +15,11 @@ extern "C" void handleAborts(int sig) {
   error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
   error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
   term << newLine;
-  error(CrashReport()
-            .setStackTrace(genStackTrace())
-            .setSignalNumber(sig)
-            .make());
+  CrashReport report = CrashReport()
+      .setStackTrace(genStackTrace())
+      .setSignalNumber(sig);
+  error(report.make());
+  report.save();
   exit(1);
 }
 
