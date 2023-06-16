@@ -11,7 +11,19 @@
 
 using namespace std;
 
+#ifdef _WIN32
+#include "Windows.h"
+#include "DbgHelp.h"
+#include "TlHelp32.h"
+
+#pragma comment(lib, "Dbghelp.lib")
+
+string genStackTrace(CONTEXT *context);
+#elif __linux__ || __APPLE__
+#include <execinfo.h>
+
 string genStackTrace();
+#endif
 
 class CrashReport {
   vector<Workspace *> workspaces;

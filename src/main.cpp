@@ -1,6 +1,5 @@
 #include <iostream>
 #include <term.h>
-#include <csignal>
 
 #include "console.h"
 #include "commandmgr.h"
@@ -9,6 +8,22 @@
 #include "version.h"
 
 using namespace std;
+#ifdef _WIN32
+
+LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exceptionPointers) {
+  term << newLine;
+  error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
+  error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
+  term << newLine;
+  CrashReport report = CrashReport()
+      .setStackTrace(genStackTrace(exceptionPointers->ContextRecord));
+  error(report.make());
+  report.save();
+  exit(EXCEPTION_CONTINUE_SEARCH);
+}
+
+#elif __linux__ || __APPLE__
+#include <csignal>
 
 extern "C" void handleAborts(int sig) {
   term << newLine;
@@ -23,13 +38,21 @@ extern "C" void handleAborts(int sig) {
   exit(1);
 }
 
+#endif
+
 int main(int argc, char *argv[]) {
 //  ios::sync_with_stdio(false);
 //  cin.tie(nullptr);
 //  cout.tie(nullptr);
+#ifdef _WIN32
+  SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 
+  SetUnhandledExceptionFilter(ExceptionHandler);
+#elif __linux__ || __APPLE__
+#include <execinfo.h>
   signal(SIGSEGV, &handleAborts);
   signal(SIGABRT, &handleAborts);
+#endif
 
   loadCommands();
   if (argc > 1) {

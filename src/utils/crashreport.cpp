@@ -8,29 +8,99 @@
 #include "term.h"
 
 #include "version.h"
-#ifdef _WIN32
-#elif __linux__ || __APPLE__
-#include <execinfo.h>
-#endif
 
 using namespace std;
+
+#ifdef _WIN32
+
+string genStackTrace(CONTEXT *context) {
+  stringstream ss;
+
+  const HANDLE hProcess = GetCurrentProcess();
+  const HANDLE hThread = GetCurrentThread();
+
+  STACKFRAME64 stackFrame;
+  memset(&stackFrame, 0, sizeof(STACKFRAME64));
+  DWORD machineType;
+
+#ifdef _M_IX86
+  machineType = IMAGE_FILE_MACHINE_I386;
+    stackFrame.AddrPC.Offset = context->Eip;
+    stackFrame.AddrFrame.Offset = context->Ebp;
+    stackFrame.AddrStack.Offset = context->Esp;
+#elif _M_X64
+  machineType = IMAGE_FILE_MACHINE_AMD64;
+  stackFrame.AddrPC.Offset = context->Rip;
+  stackFrame.AddrFrame.Offset = context->Rsp;
+  stackFrame.AddrStack.Offset = context->Rsp;
+#elif _M_IA64
+  machineType = IMAGE_FILE_MACHINE_IA64;
+    stackFrame.AddrPC.Offset = context->StIIP;
+    stackFrame.AddrFrame.Offset = context->IntSp;
+    stackFrame.AddrBStore.Offset = context->RsBSP;
+    stackFrame.AddrStack.Offset = context->IntSp;
+#else
+#error "Unsupported architecture"
+#endif
+
+  stackFrame.AddrPC.Mode = AddrModeFlat;
+  stackFrame.AddrFrame.Mode = AddrModeFlat;
+  stackFrame.AddrStack.Mode = AddrModeFlat;
+
+  int frameCount = 0;
+
+  while (StackWalk64(machineType, hProcess, hThread, &stackFrame, context, nullptr,
+                     SymFunctionTableAccess64, SymGetModuleBase64, nullptr)) {
+    // Print the frame number, module name, and function name
+    ss << "    [" << std::dec << frameCount << "] ";
+
+    DWORD64 moduleBase = SymGetModuleBase64(hProcess, stackFrame.AddrPC.Offset);
+    char moduleName[MAX_PATH];
+    if (GetModuleFileNameA(reinterpret_cast<HMODULE>(moduleBase), moduleName, MAX_PATH) != 0) {
+      ss << moduleName;
+    }
+
+    ss << "! ";
+
+    DWORD64 displacement = 0;
+    const DWORD maxSymbolNameLen = 256;
+    BYTE symbolBuffer[sizeof(IMAGEHLP_SYMBOL64) + maxSymbolNameLen];
+    auto *symbol = reinterpret_cast<IMAGEHLP_SYMBOL64 *>(symbolBuffer);
+    symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
+    symbol->MaxNameLength = maxSymbolNameLen;
+
+    SymGetSymFromAddr64(hProcess, stackFrame.AddrPC.Offset, &displacement, symbol);
+//    if (SymGetSymFromAddr64(hProcess, stackFrame.AddrPC.Offset, &displacement, symbol)) {
+//      ss << symbol->Name;
+//    } else {
+//      ss << "Unknown Symbol";
+//    }
+    ss << symbol->Name;
+
+    ss << endl;
+
+    frameCount++;
+  }
+
+  return ss.str();
+}
+
+#elif __linux__ || __APPLE__
 
 string genStackTrace() {
   stringstream ss;
 
-#ifdef _WIN32
-  ss << "  Stack traces for Windows are in the works!" << endl;
-#elif __linux__ || __APPLE__
   void *array[10];
   size_t size;
   size = backtrace(array, 10);
   for (int i = 0; i < size; ++i) {
     ss << "  " << backtrace_symbols(array, size)[i] << endl;
   }
-#endif
 
   return ss.str();
 }
+
+#endif
 
 string getOSName() {
 #ifdef _WIN32
