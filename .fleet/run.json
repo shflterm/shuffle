@@ -1,5 +1,22 @@
 {
     "configurations": [
-        
+        {
+            "type": "command",
+            "name": "Init",
+            "program": "cmake",
+            "args": ["-B", "build", "-S", ".", "-DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake "],
+        },
+        {
+            "type": "command",
+            "name": "Build",
+            "program": "cmake",
+            "args": ["--build", "build"],
+        },
+        {
+            "type": "command",
+            "name": "Run",
+            "program": "./build/src/shuffle",
+            "dependsOn": ["Build"],
+        },
     ]
 }

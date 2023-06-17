@@ -1,5 +1,6 @@
 #include "suggestion.h"
 #include "utils/utils.h"
+#include "term.h"
 
 #include <regex>
 #include <iostream>
