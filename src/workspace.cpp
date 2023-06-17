@@ -5,7 +5,6 @@
 #include <utility>
 #include <sstream>
 #include <map>
-#include <term.h>
 
 #include "console.h"
 #include "commandmgr.h"
@@ -15,6 +14,7 @@
 #include "sapp/sapp.h"
 #include "version.h"
 #include "utils/credit.h"
+#include "term.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -216,9 +216,8 @@ void Workspace::inputPrompt(bool enableSuggestion) {
 
       if (c == '\b' || c == 127) {
         if (!input.empty()) {
-          gotoxy(wherex() - 1, wherey());
-          term << " ";
-          gotoxy(wherex() - 1, wherey());
+          term << moveHorizontal(-2);
+          term << eraseFromCursorToLineEnd;
           input = input.substr(0, input.length() - 1);
         }
       } else if (c == '\n' || c == '\r') {
