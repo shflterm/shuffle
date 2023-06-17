@@ -178,8 +178,6 @@ string getSuggestion(const Workspace &ws, const string &input) {
     }
 
     suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren())[0];
-
-    delete final;
   }
   if (suggestion.empty()) return "";
 
