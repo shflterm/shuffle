@@ -4,6 +4,7 @@
 #include <string>
 #include <json/json.h>
 
+#include "commandmgr.h"
 #include "utils/utils.h"
 #include "console.h"
 #include "utils/lua/luaapi.h"

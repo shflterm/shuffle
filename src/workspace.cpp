@@ -127,21 +127,19 @@ void Workspace::execute(const string &input) {
   }
 
   bool isCommandFound = false;
-  for (const auto &item : commands) {
-    Command &cmd = *item;
-    Command *command = &cmd;
-    if (command->getName() != args[0]) continue;
+  for (const auto &cmd : commands) {
+    if (cmd->getName() != args[0]) continue;
     isCommandFound = true;
 
     vector<string> newArgs;
     for (int i = 1; i < args.size(); ++i) newArgs.push_back(args[i]);
 
     Workspace &ws = (*this);
-    auto *sappCommand = dynamic_cast<SAPPCommand *>(command);
+    auto *sappCommand = dynamic_cast<SAPPCommand *>(cmd.get());
     if (sappCommand != nullptr) {
       sappCommand->run(*this, newArgs);
     } else {
-      command->run(ws, args);
+      cmd->run(ws, args);
     }
     break;
   } // Find Commands
@@ -149,10 +147,9 @@ void Workspace::execute(const string &input) {
   if (!isCommandFound) {
     error("Sorry. Command '$0' not found.", {args[0]});
     pair<int, Command> similarWord = {1000000000, Command("")};
-    for (const auto &item : commands) {
-      Command &command = *item;
-      int dist = levenshteinDist(args[0], command.getName());
-      if (dist < similarWord.first) similarWord = {dist, command};
+    for (const auto &cmd : commands) {
+      int dist = levenshteinDist(args[0], cmd->getName());
+      if (dist < similarWord.first) similarWord = {dist, *cmd};
     }
 
     if (similarWord.first > 1) warning("Please make sure you entered the correct command.");
@@ -168,11 +165,11 @@ string getSuggestion(const Workspace &ws, const string &input) {
   if (args.size() == 1) {
     suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands)[0];
   } else {
-    Command *final = findCommand(args[0]);
+    shared_ptr<Command>final = findCommand(args[0]);
     if (final == nullptr) return "";
 
     for (int i = 1; i < args.size() - 1; i++) {
-      Command *sub = findCommand(args[i], final->getChildren());
+      shared_ptr<Command>sub = findCommand(args[i], final->getChildren());
       if (sub == nullptr) return "";
       final = sub;
     }

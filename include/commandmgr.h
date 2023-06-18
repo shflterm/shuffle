@@ -23,7 +23,7 @@ class Command {
   [[nodiscard]] const string &getName() const;
   [[nodiscard]] const string &getDescription() const;
   [[nodiscard]] const string &getValue() const;
-  [[nodiscard]] vector<unique_ptr<Command>> getChildren() const;
+  [[nodiscard]] vector<shared_ptr<Command>> getChildren() const;
   void addChild(const Command &command);
 
   virtual void run(Workspace &ws, const vector<std::string> &args) const;
@@ -45,7 +45,7 @@ class CommandData {
   string name;
 };
 
-extern vector<unique_ptr<Command>> commands;
+extern vector<shared_ptr<Command>> commands;
 
 void loadDefaultCommands();
 void loadCommand(const CommandData &data);
@@ -55,7 +55,7 @@ bool addRegisteredCommand(const CommandData &data);
 
 void loadCommands();
 
-Command *findCommand(const string &name, const vector<unique_ptr<Command>> &DICTIONARY);
-Command *findCommand(const string &name);
+shared_ptr<Command>findCommand(const string &name, const vector<shared_ptr<Command>> &DICTIONARY);
+shared_ptr<Command>findCommand(const string &name);
 
 #endif //SHUFFLE_INCLUDE_COMMANDMGR_H_
