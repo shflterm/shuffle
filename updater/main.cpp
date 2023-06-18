@@ -12,8 +12,7 @@ using namespace std::filesystem;
 int onExtractEntry(const char *filename, void *arg) {
   string name = path(filename).filename().string();
   if (!name.empty()) {
-    term << eraseLine << "Extracting... (" << name << ")"
-         << moveVertical(1);
+    term << "Extracting... (" << name << ")" << newLine;
   }
   return 0;
 }
@@ -21,7 +20,8 @@ int onExtractEntry(const char *filename, void *arg) {
 int main(int argc, char *argv[]) {
   term << "Installing Shuffle...";
   string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
-  string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin.zip";
+//  string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin.zip";
+  string url = "https://github.com/shflterm/shuffle/releases/download/beta%2F4-hotfix/dotshuffle.zip";
 
   path updatePath(DOT_SHUFFLE + "/bin");
   if (exists(updatePath.string() + "/shuffle.exe")) {
@@ -37,6 +37,5 @@ int main(int argc, char *argv[]) {
   int arg = 0;
   zip_extract(temp.string().c_str(), updatePath.string().c_str(), onExtractEntry, &arg);
 
-  term << eraseLine;
   term << "Completed!";
 }
