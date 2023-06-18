@@ -19,7 +19,7 @@ int onExtractEntry(const char *filename, void *arg) {
 }
 
 int main(int argc, char *argv[]) {
-  term << "Updating...";
+  term << "Installing Shuffle...";
   string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
   string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin.zip";
 

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <term.h>
+#include <filesystem>
 
 #include "console.h"
 #include "commandmgr.h"
@@ -8,6 +9,7 @@
 #include "version.h"
 
 using namespace std;
+using namespace std::filesystem;
 #ifdef _WIN32
 
 LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exceptionPointers) {
@@ -73,6 +75,7 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  if (!exists(path(DOT_SHUFFLE))) create_directories(path(DOT_SHUFFLE));
   initShflJson();
 
   term << eraseAll
