@@ -78,8 +78,7 @@ int main(int argc, char *argv[]) {
   if (!exists(path(DOT_SHUFFLE))) create_directories(path(DOT_SHUFFLE));
   initShflJson();
 
-  term << ""
-       << "Welcome to" << color(FOREGROUND, Yellow) << " SHUFFLE " << SHUFFLE_VERSION.str() << resetColor << "!"
+  term << "Welcome to" << color(FOREGROUND, Yellow) << " SHUFFLE " << SHUFFLE_VERSION.str() << resetColor << "!"
        << newLine
        << "(C) 2023 Shuffle Team. All Rights Reserved." << newLine << newLine;
 

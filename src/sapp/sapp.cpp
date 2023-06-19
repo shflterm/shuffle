@@ -62,6 +62,8 @@ void addChildren(const Json::Value &json, Command *command) {
   for (Json::Value item : json) {
     if (item["type"] == "option") {
       OptionSubCommand child = OptionSubCommand(item["name"].asString(), item["description"].asString());
+      if (item.isMember("children")) addChildren(item["children"], &child);
+
       command->addChild(child);
     } else if (item["type"] == "subcommand") {
       Command child = Command(item["name"].asString(), item["description"].asString());
