@@ -75,7 +75,9 @@ void helpCmd(Workspace ws, vector<string> args) {
         << newLine << "Additional Help: " << newLine
         << "  For more information on a specific command, type 'help <command>'" << newLine
         << "  Visit the online documentation for Shuffle at "
-           "https://github.com/shflterm/shuffle/wiki." << newLine;
+           "https://github.com/shflterm/shuffle/wiki." << newLine << newLine;
+
+    term << "Thanks to: " << color(BACKGROUND, Green) << "shfl credits" << resetColor << newLine;
   } else {
     string cmdName = args[1];
     shared_ptr<Command> cmd = findCommand(cmdName);
