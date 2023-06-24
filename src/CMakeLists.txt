@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 project(shuffle)
 
 set(SOURCES suggestion.cpp utils/utils.cpp console.cpp i18n.cpp commandmgr.cpp sapp/sapp.cpp workspace.cpp
-    ../include/libsapp.h sapp/downloader.cpp utils/lua/luaapi.cpp utils/crashreport.cpp utils/credit.cpp builtincmd.cpp)
+    ../include/libsapp.h sapp/downloader.cpp utils/lua/luaapi.cpp utils/crashreport.cpp utils/credit.cpp builtincmd.cpp snippetmgr.cpp)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_executable(${PROJECT_NAME} ${SOURCES} main.cpp ../include/basic_commands.h)

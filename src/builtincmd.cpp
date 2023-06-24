@@ -9,6 +9,7 @@
 #include "utils/credit.h"
 #include "utils/utils.h"
 #include "version.h"
+#include "snippetmgr.h"
 
 void shflCmd(Workspace ws, vector<string> args) {
     if (args.size() < 2) {
@@ -116,6 +117,7 @@ void snippetCmd(Workspace ws, vector<string> args) {
         for (int i = 3; i < args.size(); ++i) {
             cmd += args[i] + " ";
         }
+        snippets.push_back(make_shared<Snippet>(Snippet(snippetName, cmd)));
         term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
     }
 }
