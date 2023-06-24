@@ -2,7 +2,7 @@ name: Build Shuffle
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
 
 env:
   BUILD_TYPE: Release
@@ -52,7 +52,7 @@ jobs:
             !build-${{ matrix.config.os }}/*.cbp
   release:
     permissions: write-all
-    needs: [build]
+    needs: [ build ]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -69,3 +69,15 @@ jobs:
 
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v3
+
+      - name: Send mail
+        uses: dawidd6/action-send-mail@v3
+        with:
+          connection_url: ${{secrets.MAIL_CONNECTION}}
+          server_address: smtp.gmail.com
+          server_port: 587
+          secure: true
+          subject: Github Actions job result
+          to: sihu@syuk.me
+          from: Shuffle
+          attachments: build/*
