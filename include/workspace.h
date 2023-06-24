@@ -8,6 +8,7 @@
 #include <string>
 #include <filesystem>
 #include <vector>
+#include <map>
 
 using namespace std;
 using namespace std::filesystem;
@@ -27,6 +28,7 @@ class Workspace {
  public:
   path currentDirectory();
   void moveDirectory(path newDir);
+  vector<string> getHistory();
   void addHistory(const string &s);
   string historyUp();
   string historyDown();
@@ -37,5 +39,7 @@ class Workspace {
   explicit Workspace(const string& name);
   Workspace();
 };
+
+extern map<string, Workspace*> wsMap;
 
 #endif //SHUFFLE_INCLUDE_WORKSPACE_H_

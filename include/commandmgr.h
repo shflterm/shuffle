@@ -13,51 +13,60 @@
 using namespace std;
 
 class Command {
- protected:
-  string name;
-  string description;
-  string value;
-  vector<Command> children;
+protected:
+    string name;
+    string description;
+    vector<Command> children;
+    vector<pair<string, string>> usage;
 
- public:
-  [[nodiscard]] const string &getName() const;
-  [[nodiscard]] const string &getDescription() const;
-  [[nodiscard]] const string &getValue() const;
-  [[nodiscard]] vector<unique_ptr<Command>> getChildren() const;
-  void addChild(const Command &command);
+public:
+    [[nodiscard]] const string &getName() const;
 
-  virtual void run(Workspace &ws, const vector<std::string> &args) const;
+    [[nodiscard]] const string &getDescription() const;
 
-  Command(string name, string description, vector<Command> children);
-  Command(string name, string description);
+    [[nodiscard]] vector<shared_ptr<Command>> getChildren() const;
 
-  Command(string name, vector<Command> children);
-  explicit Command(string name);
+    [[nodiscard]] const vector<pair<string, string>> &getUsage() const;
+
+    void addChild(const Command &command);
+
+    virtual void run(Workspace &ws, const vector<std::string> &args) const;
+
+    Command(string name, string description, vector<Command> children, vector<pair<string, string>> usage);
+
+    Command(string name, string description, vector<Command> children);
+
+    Command(string name, string description);
+
+    Command(string name, vector<Command> children);
+
+    explicit Command(string name);
 };
 
 class OptionSubCommand : public Command {
- public:
-  OptionSubCommand(const string &name, string description);
+public:
+    OptionSubCommand(const string &name, string description);
 };
 
 class CommandData {
- public:
-  string name;
-  string description;
-  string value;
+public:
+    string name;
 };
 
-extern vector<unique_ptr<Command>> commands;
+extern vector<shared_ptr<Command>> commands;
 
 void loadDefaultCommands();
+
 void loadCommand(const CommandData &data);
 
 vector<CommandData> getRegisteredCommands();
-void addRegisteredCommand(const CommandData &data);
+
+bool addRegisteredCommand(const CommandData &data);
 
 void loadCommands();
 
-Command *findCommand(const string &name, const vector<unique_ptr<Command>> &DICTIONARY);
-Command *findCommand(const string &name);
+shared_ptr<Command> findCommand(const string &name, const vector<shared_ptr<Command>> &DICTIONARY);
+
+shared_ptr<Command> findCommand(const string &name);
 
 #endif //SHUFFLE_INCLUDE_COMMANDMGR_H_

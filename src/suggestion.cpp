@@ -4,7 +4,6 @@
 #include "console.h"
 
 #include <string>
-#include <iostream>
 #include <utility>
 #include <vector>
 #include <memory>
@@ -12,33 +11,30 @@
 using namespace std;
 
 vector<string> findSuggestion(Workspace ws,
-                      const string &input,
-                      Command *rootCommand,
-                      const vector<unique_ptr<Command>> &DICTIONARY) {
+                              const string &input,
+                              shared_ptr<Command>rootCommand,
+                              const vector<shared_ptr<Command>> &DICTIONARY) {
   vector<string> suggestions = createSuggestions(std::move(ws), input, rootCommand, DICTIONARY);
   if (suggestions.empty()) return {""};
 
   vector<string> res;
-  for (const auto &item : suggestions)  {
-    string suggestion = suggestions[0];
-    if (suggestion.size() < input.length() + 1) return {""};
-
-    res.push_back(suggestion.substr(input.length()));
+  for (const auto &item : suggestions) {
+    if (item.size() < input.length() + 1) continue;
+    res.push_back(item.substr(input.length()));
   }
+
+  if (res.empty()) return {""};
   return res;
 }
 
 vector<string> createSuggestions(Workspace ws,
                                  const string &str,
-                                 Command *rootCommand,
-                                 const vector<unique_ptr<Command>> &DICTIONARY) {
+                                 shared_ptr<Command> rootCommand,
+                                 const vector<shared_ptr<Command>> &DICTIONARY) {
   vector<string> res;
-  for (const auto &item : DICTIONARY) {
-    Command &command = *item;
-
-    Command *cmd = &command;
-    if (cmd->getName().rfind("option.", 0) == 0) {
-      auto *sappCmd = dynamic_cast<SAPPCommand *>(rootCommand);
+  for (const auto &cmd : DICTIONARY) {
+    if (cmd && cmd->getName().rfind("option.", 0) == 0) {
+      auto *sappCmd = dynamic_cast<SAPPCommand *>(rootCommand.get());
       if (sappCmd == nullptr) continue;
 
       vector<string> suggestions = sappCmd->makeDynamicSuggestion(ws, cmd->getName().substr(7));
@@ -47,9 +43,9 @@ vector<string> createSuggestions(Workspace ws,
           res.push_back(item2);
 
     } else {
-      if (command.getName().substr(0, str.size()) != str) continue;
+      if (cmd->getName().substr(0, str.size()) != str) continue;
 
-      res.push_back(command.getName());
+      res.push_back(cmd->getName());
     }
   }
 
