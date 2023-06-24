@@ -9,6 +9,7 @@
 #include "utils/credit.h"
 #include "utils/utils.h"
 #include "version.h"
+#include "snippetmgr.h"
 
 void shflCmd(Workspace ws, vector<string> args) {
     if (args.size() < 2) {
@@ -96,5 +97,28 @@ void helpCmd(Workspace ws, vector<string> args) {
             string description = item.second;
             term << "  " << example << " : " << description << newLine;
         }
+    }
+}
+
+void snippetCmd(Workspace ws, vector<string> args) {
+    //snf create aa help cd
+    if (args.size() < 2) {
+        too_many_arguments();
+        return;
+    }
+    if (args[1] == "create") {
+        if (args.size() < 4) {
+            too_many_arguments();
+            return;
+        }
+
+        string snippetName = args[2];
+        string cmd;
+        for (int i = 3; i < args.size(); ++i) {
+            cmd += args[i] + " ";
+        }
+
+        addSnippet(snippetName, cmd);
+        term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
     }
 }
