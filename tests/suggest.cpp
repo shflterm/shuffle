@@ -18,14 +18,14 @@ int main() {
   if (args.size() == 1) {
     suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands);
   } else {
-    shared_ptr<Command>final = findCommand(args[0]);
+    Command *final = findCommand(args[0]);
     if (final->getName().empty() && final->getValue().empty()) {
       term << "Both name and value is empty!" << endl;
       return 0;
     }
 
     for (int i = 1; i < args.size() - 1; ++i) {
-      shared_ptr<Command>sub = findCommand(args[i], final->getChildren());
+      Command *sub = findCommand(args[i], final->getChildren());
       if (sub->getName().empty() && sub->getValue().empty()) {
         term << "Both name and value is empty!" << endl;
         return 0;

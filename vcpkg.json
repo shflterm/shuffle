@@ -17,5 +17,8 @@
   }, {
     "name" : "nlohmann-json",
     "version>=" : "3.11.2"
+  }, {
+    "name" : "zlib",
+    "version>=" : "1.2.13"
   } ]
 }
