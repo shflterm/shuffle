@@ -158,7 +158,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
 
       if (c == '\b' || c == 127) {
         if (!input.empty()) {
-          term << moveHorizontal(-2);
+          term << teleport(wherex()-1, wherey());
           term << eraseFromCursorToLineEnd;
           input = input.substr(0, input.length() - 1);
         }
