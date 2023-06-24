@@ -70,7 +70,9 @@ void Workspace::execute(const string &input) {
 
     return;
   } else if (args[0] == "help") {
-    helpCmd(*this, args);
+      helpCmd(*this, args);
+  } else if (args[0] == "snf") {
+      snippetCmd(*this, args);
   }
 
   bool isCommandFound = false;

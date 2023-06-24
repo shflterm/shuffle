@@ -98,3 +98,24 @@ void helpCmd(Workspace ws, vector<string> args) {
         }
     }
 }
+
+void snippetCmd(Workspace ws, vector<string> args) {
+    //snf create aa help cd
+    if (args.size() < 2) {
+        too_many_arguments();
+        return;
+    }
+    if (args[1] == "create") {
+        if (args.size() < 4) {
+            too_many_arguments();
+            return;
+        }
+
+        string snippetName = args[2];
+        string cmd;
+        for (int i = 3; i < args.size(); ++i) {
+            cmd += args[i] + " ";
+        }
+        term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
+    }
+}

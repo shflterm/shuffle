@@ -24,9 +24,17 @@ void loadDefaultCommands() {
                              Command("remove", "Delete SAPP")}),
                     Command("update", "Update Shuffle"),
                     Command("credits", "Show credits"),
-            })));
+            }
+    )));
     commands.push_back(make_shared<Command>(Command(
             "help", "Show help"
+    )));
+    commands.push_back(make_shared<Command>(Command(
+            "snf", "Manage Snippets",
+            {
+                    Command("create", "Create new Snippet"),
+                    Command("remove", "Delete Snippet"),
+            }
     )));
 }
 

@@ -13,6 +13,9 @@
 using namespace std;
 
 void shflCmd(Workspace ws, vector<string> args);
-void helpCmd(Workspace ws, vector<string> args); 
+
+void helpCmd(Workspace ws, vector<string> args);
+
+void snippetCmd(Workspace ws, vector<string> args);
 
 #endif //SHUFFLE_INCLUDE_BUILTINCMD_H_
