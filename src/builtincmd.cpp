@@ -117,7 +117,8 @@ void snippetCmd(Workspace ws, vector<string> args) {
         for (int i = 3; i < args.size(); ++i) {
             cmd += args[i] + " ";
         }
-        snippets.push_back(make_shared<Snippet>(Snippet(snippetName, cmd)));
+
+        addSnippet(snippetName, cmd);
         term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
     }
 }
