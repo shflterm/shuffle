@@ -4,6 +4,7 @@
 #include <string>
 #include <json/json.h>
 
+#include "commandmgr.h"
 #include "utils/utils.h"
 #include "console.h"
 #include "utils/lua/luaapi.h"
@@ -90,7 +91,7 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
     error("Error: 'suggest' is not a function!");
     return {};
   }
-  int err = lua_pcall(L, 0, 1, 0);
+  int err = lua_pcall(L, 0, 0, 0);
   if (err) {
     error("\nAn error occurred while generating suggestion.\n\n" + string(lua_tostring(L, -1)));
   }
@@ -132,6 +133,9 @@ void SAPPCommand::loadVersion1(Json::Value root, const string &name) {
   Json::Value helpRoot;
   Json::Reader helpReader;
   helpReader.parse(readFile(helpDotShfl), helpRoot, false);
+
+  description = helpRoot["description"].asString();
+
   Json::Value children = helpRoot["children"];
   addChildren(children, this);
 }
