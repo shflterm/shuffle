@@ -30,4 +30,4 @@ key.txt
 .cmake/
 vcpkg/
 vcpkg_installed/
-.cache
+.cache/

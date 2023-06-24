@@ -82,7 +82,7 @@ int lua_parentDir(lua_State *L) {
   return 1;
 }
 
-int lua_rm(lua_State *L) {
+int lua_removeFile(lua_State *L) {
   path p = lua_getPath(L, luaL_checkstring(L, 1));
   if (exists(p)) {
     if (is_directory(p)) {
@@ -90,6 +90,15 @@ int lua_rm(lua_State *L) {
     } else {
       remove(p);
     }
+  }
+  return 0;
+}
+
+int lua_copyFile(lua_State *L) {
+  path from = lua_getPath(L, luaL_checkstring(L, 1));
+  path to = lua_getPath(L, luaL_checkstring(L, 2));
+  if (exists(from)) {
+    copy(from, to);
   }
   return 0;
 }
@@ -121,8 +130,11 @@ void initFileSystem(lua_State *L) {
   lua_pushcfunction(L, lua_parentDir);
   lua_setfield(L, -2, "parentDir");
 
-  lua_pushcfunction(L, lua_rm);
+  lua_pushcfunction(L, lua_removeFile);
   lua_setfield(L, -2, "remove");
+
+  lua_pushcfunction(L, lua_copyFile);
+  lua_setfield(L, -2, "copy");
 
   lua_setglobal(L, "fs");
 }
