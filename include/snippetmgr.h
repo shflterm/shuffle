@@ -29,7 +29,7 @@ extern vector<shared_ptr<Snippet>> snippets;
 
 vector<Snippet> getSnippets();
 
-bool addSnippet(const string &name, const string &target)
+bool addSnippet(const string &name, const string &target);
 
 void loadSnippets();
 
