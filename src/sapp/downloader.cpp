@@ -10,7 +10,6 @@
 #include "console.h"
 #include "utils/utils.h"
 #include "commandmgr.h"
-#include "term.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -44,14 +43,8 @@ void addSAPP(const string &name) {
   string downloadTo = temp_directory_path().append("app.sapp").string();
   if (ver == 1) {
     string downloadFrom = replace(repo["download_at"].asString(), "{APP}", name);
-    bool res = downloadFile(downloadFrom, downloadTo);
-    if (res) {
-      term << eraseFromCursorToLineEnd;
-      info("Download Completed!");
-    } else {
-      error("An error occurred while downloading the app. (Please double check the name of the app to be installed.)");
-      return;
-    }
+    downloadFile(downloadFrom, downloadTo);
+    info("Download Completed!");
   } else {
     error("Unknown repository version: " + to_string(ver));
     return;
@@ -64,30 +57,7 @@ void addSAPP(const string &name) {
 
   info("Adding to config...");
 
-  if (!addRegisteredCommand({name})) {
-    error("Failed to add app. (The app has already been added.)");
-  } else {
-    success("Done!");
-  }
-}
+  addRegisteredCommand({name, name});
 
-void removeSAPP(const string &name) {
-  info("Deleting '" + name + "'...");
-
-  string path = DOT_SHUFFLE + "/apps/" + name + ".app";
-  if (exists(path)) {
-    remove_all(path);
-
-    Json::Value json = getShflJson("apps");
-    for (int i = 0; i < json.size(); ++i) {
-      if (json[i]["name"] == name) {
-        json.removeIndex(i, &json[i]);
-      }
-    }
-    setShflJson("apps", json);
-
-    success("Done!");
-  } else {
-    error("App not found!");
-  }
+  success("Done!");
 }
