@@ -53,9 +53,6 @@ int main(int argc, char *argv[]) {
 
     SetUnhandledExceptionFilter(ExceptionHandler);
 #elif defined(__linux__) || defined(__APPLE__)
-
-#include <execinfo.h>
-
     signal(SIGSEGV, &handleAborts);
     signal(SIGABRT, &handleAborts);
 #endif
