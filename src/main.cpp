@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 //  ios::sync_with_stdio(false);
 //  cin.tie(nullptr);
 //  cout.tie(nullptr);
-#if _WIN32
+#ifdef _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 
     SetUnhandledExceptionFilter(ExceptionHandler);

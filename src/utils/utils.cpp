@@ -8,7 +8,6 @@
 #include <sstream>
 #include <cstdlib>
 #include <curl/curl.h>
-#include <kubazip/zip/zip.h>
 #include <term.h>
 
 #include "utils/utils.h"

@@ -27,8 +27,13 @@ int main(int argc, char *argv[]) {
     term << SHUFFLE << newLine
          << "Installing Shuffle..." << newLine;
     string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
-//    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin.zip";
-    string url = "https://github.com/shflterm/shuffle/releases/download/beta%2F4-hotfix/dotshuffle.zip";
+#ifdef _WIN32
+    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-windows.zip";
+#elif defined(__linux__)
+    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-linux.zip";
+#elif defined(__APPLE__)
+    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-macos.zip";
+#endif
 
     path updatePath(DOT_SHUFFLE + "/bin");
     if (exists(updatePath.string() + "/shuffle.exe")) {
