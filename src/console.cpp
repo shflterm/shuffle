@@ -73,7 +73,7 @@ int readChar() {
 #ifdef _WIN32
   while (!_kbhit()) {}
   return _getch();
-#elif _defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__)
   struct termios oldt, newt;
   int ch;
   tcgetattr(STDIN_FILENO, &oldt);
