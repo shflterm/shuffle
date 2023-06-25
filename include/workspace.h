@@ -16,7 +16,7 @@ using namespace std::filesystem;
 class Workspace {
 #ifdef _WIN32
   path dir = current_path();
-#elif __linux__ || __APPLE__
+#elif defined(__linux__) || defined(__APPLE__)
   path dir = current_path();
 #endif
   vector<string> history;

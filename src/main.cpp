@@ -25,7 +25,7 @@ LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exceptionPointers) {
   exit(EXCEPTION_CONTINUE_SEARCH);
 }
 
-#elif __linux__ || __APPLE__
+#elif defined(__linux__) || defined(__APPLE__)
 
 #include <csignal>
 
@@ -48,11 +48,11 @@ int main(int argc, char *argv[]) {
 //  ios::sync_with_stdio(false);
 //  cin.tie(nullptr);
 //  cout.tie(nullptr);
-#ifdef _WIN32
+#if _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 
     SetUnhandledExceptionFilter(ExceptionHandler);
-#elif __linux__ || __APPLE__
+#elif defined(__linux__) || defined(__APPLE__)
 
 #include <execinfo.h>
 

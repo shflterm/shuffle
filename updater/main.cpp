@@ -47,8 +47,11 @@ int main(int argc, char *argv[]) {
     term << teleport(0, wherey()) << eraseLine << "Extracted!" << newLine;
 
     term << teleport(0, wherey()) << eraseLine << "Install native apps.." << newLine;
-    system(("chmod +x " + DOT_SHUFFLE + "/bin/bin/shuffle").c_str());
-    int status = system((DOT_SHUFFLE + "/bin/bin/shuffle shfl apps add cd cp dir list mk mv rm").c_str());
+#if defined(__linux__) || defined(__APPLE__)
+    system(("chmod +x " + DOT_SHUFFLE + "/bin/shuffle").c_str());
+#endif
+    int status = system((DOT_SHUFFLE + "/bin/shuffle shfl apps add cd cp dir list mk mv rm").c_str());
+
     if (status == 0) {
         term << teleport(0, wherey()) << eraseLine << "Shuffle has been successfully installed!";
     } else {

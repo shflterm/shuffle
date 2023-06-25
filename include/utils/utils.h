@@ -7,7 +7,7 @@
 
 #ifdef _WIN32
 #define HOME string(getenv("APPDATA"))
-#elif __linux__ || __APPLE__
+#elif defined(__linux__) || defined(__APPLE__)
 #define HOME string(getenv("HOME"))
 #endif
 #define DOT_SHUFFLE (HOME + "/.shuffle")

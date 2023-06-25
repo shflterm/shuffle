@@ -64,7 +64,7 @@ void too_many_arguments() { error("There are too many or too few arguments."); }
 
 #include <Windows.h>
 #include <conio.h>
-#elif __linux__ || __APPLE__
+#elif defined(__linux__) || defined(__APPLE__)
 #include <unistd.h>
 #include <termios.h>
 #endif
@@ -73,7 +73,7 @@ int readChar() {
 #ifdef _WIN32
   while (!_kbhit()) {}
   return _getch();
-#elif __linux__ || __APPLE__
+#elif _defined(__linux__) || defined(__APPLE__)
   struct termios oldt, newt;
   int ch;
   tcgetattr(STDIN_FILENO, &oldt);
@@ -93,7 +93,7 @@ void gotoxy(int x, int y) {
   pos.X = (short) x;
   pos.Y = (short) y;
   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
-#elif __linux__ || __APPLE__
+#elif defined(__linux__) || defined(__APPLE__)
   printf("\033[%d;%dH", y, x);
 #endif
 }
@@ -103,7 +103,7 @@ int wherex() {
   CONSOLE_SCREEN_BUFFER_INFO buf;
   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &buf);
   return buf.dwCursorPosition.X;
-#elif __linux__ || __APPLE__
+#elif defined(__linux__) || defined(__APPLE__)
   printf("\033[6n");
   if (readChar() != '\x1B') return 0;
   if (readChar() != '\x5B') return 0;
@@ -123,7 +123,7 @@ int wherey() {
   CONSOLE_SCREEN_BUFFER_INFO buf;
   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &buf);
   return buf.dwCursorPosition.Y;
-#elif __linux__ || __APPLE__
+#elif defined(__linux__) || defined(__APPLE__)
   printf("\033[6n");
   if (readChar() != '\x1B') return 0;
   if (readChar() != '\x5B') return 0;

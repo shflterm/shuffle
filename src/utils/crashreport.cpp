@@ -85,7 +85,7 @@ string genStackTrace(CONTEXT *context) {
   return ss.str();
 }
 
-#elif __linux__ || __APPLE__
+#elif defined(__linux__) || defined(__APPLE__)
 
 string genStackTrace() {
   stringstream ss;

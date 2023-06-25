@@ -19,7 +19,7 @@ using namespace std;
 #pragma comment(lib, "Dbghelp.lib")
 
 string genStackTrace(CONTEXT *context);
-#elif __linux__ || __APPLE__
+#elif defined(__linux__) || defined(__APPLE__)
 #include <execinfo.h>
 
 string genStackTrace();
