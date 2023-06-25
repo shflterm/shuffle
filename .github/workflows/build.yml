@@ -2,7 +2,7 @@ name: Build Shuffle
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
 
 env:
   BUILD_TYPE: Release
@@ -14,28 +14,74 @@ jobs:
     strategy:
       matrix:
         config:
-        - os: ubuntu
-          configure: ./vcpkg/bootstrap-vcpkg.sh
-        - os: macos
-          configure: ./vcpkg/bootstrap-vcpkg.sh
-        - os: windows
-          configure: .\vcpkg\bootstrap-vcpkg.bat
+          - os: ubuntu
+            configure: ./vcpkg/bootstrap-vcpkg.sh
+          - os: macos
+            configure: ./vcpkg/bootstrap-vcpkg.sh
+          - os: windows
+            configure: .\vcpkg\bootstrap-vcpkg.bat
 
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Update Submodule
-      run: "git submodule update --init --recursive"
-        
-    - name: Download vcpkg
-      run: git clone https://github.com/Microsoft/vcpkg.git
-    - name: Configure vcpkg
-      run: ${{ matrix.config.configure }}
-      
-    - name: Install Packages
-      run: "./vcpkg/vcpkg install"
+      - uses: actions/checkout@v3
 
-    - name: Configure CMake
-      run: cmake -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{github.workspace}} -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Update Submodule
+        run: "git submodule update --init --recursive"
 
-    - run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: Download vcpkg
+        run: git clone https://github.com/Microsoft/vcpkg.git
+      - name: Configure vcpkg
+        run: ${{ matrix.config.configure }}
+
+      - name: Install Packages
+        run: "./vcpkg/vcpkg install"
+
+      - name: Configure CMake
+        run: cmake -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{github.workspace}} -B ${{github.workspace}}/build-${{ matrix.config.os }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+      - run: cmake --build ${{github.workspace}}/build-${{ matrix.config.os }} --config ${{env.BUILD_TYPE}}
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ matrix.config.os }}
+          path: |
+            build-${{ matrix.config.os }}/
+
+  release:
+    permissions: write-all
+    needs: [ build ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update Submodule
+        run: "git submodule update --init --recursive"
+
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Compress Linux Release
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r build-ubuntu.zip build-ubuntu
+
+      - name: Compress MacOS Release
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r build-macos.zip build-macos
+
+      - name: Compress Windows Release
+        uses: montudor/action-zip@v1
+        with:
+          args: zip -qq -r build-windows.zip build-windows
+
+      - name: Upload Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: ${{ vars.VERSION }}
+          files: |
+            build-ubuntu.zip
+            build-macos.zip
+            build-windows.zip
