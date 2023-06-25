@@ -2,7 +2,7 @@ name: Build Shuffle
 
 on:
   push:
-    branches: [ "main", "actions-setup" ]
+    branches: [ "main" ]
 
 env:
   BUILD_TYPE: Release
