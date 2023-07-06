@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 project(updater)
 
-set(SOURCES )
+set(SOURCES ../include/cmd/executedcmd.h)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_executable(${PROJECT_NAME} ${SOURCES} main.cpp)

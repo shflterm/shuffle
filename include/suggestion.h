@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "commandmgr.h"
+#include "cmd/commandmgr.h"
 
 using namespace std;
 

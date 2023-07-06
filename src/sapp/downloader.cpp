@@ -9,7 +9,7 @@
 
 #include "console.h"
 #include "utils/utils.h"
-#include "commandmgr.h"
+#include "cmd/commandmgr.h"
 #include "term.h"
 
 using namespace std;

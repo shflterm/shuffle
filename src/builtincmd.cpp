@@ -3,7 +3,7 @@
 #include <memory>
 #include <term.h>
 
-#include "commandmgr.h"
+#include "cmd/commandmgr.h"
 #include "console.h"
 #include "sapp/downloader.h"
 #include "utils/credit.h"
