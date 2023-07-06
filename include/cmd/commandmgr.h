@@ -16,36 +16,29 @@ class Command {
 protected:
     string name;
     string description;
-    vector<Command> children;
     vector<pair<string, string>> usage;
+    map<string, vector<string>> options;
 
 public:
     [[nodiscard]] const string &getName() const;
 
     [[nodiscard]] const string &getDescription() const;
 
-    [[nodiscard]] vector<shared_ptr<Command>> getChildren() const;
-
     [[nodiscard]] const vector<pair<string, string>> &getUsage() const;
 
-    void addChild(const Command &command);
+    [[nodiscard]] const map<string, vector<string>> &getOptions() const;
 
-    virtual void run(Workspace &ws, const vector<std::string> &args) const;
+    virtual void run(Workspace &ws, const map<string, string> &optionValues) const;
 
-    Command(string name, string description, vector<Command> children, vector<pair<string, string>> usage);
+    Command(string name, string description, map<string, vector<string>> options, vector<pair<string, string>> usage);
 
-    Command(string name, string description, vector<Command> children);
+    Command(string name, string description, map<string, vector<string>> options);
 
     Command(string name, string description);
 
-    Command(string name, vector<Command> children);
+    Command(string name, map<string, vector<string>> options);
 
     explicit Command(string name);
-};
-
-class OptionSubCommand : public Command {
-public:
-    OptionSubCommand(const string &name, string description);
 };
 
 class CommandData {

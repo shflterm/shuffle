@@ -8,16 +8,15 @@
 
 #include "builtincmd.h"
 #include "console.h"
-#include "commandmgr.h"
+#include "cmd/commandmgr.h"
 #include "utils/utils.h"
 #include "suggestion.h"
 #include "sapp/downloader.h"
 #include "sapp/sapp.h"
-#include "version.h"
 #include "utils/credit.h"
 #include "term.h"
-#include "builtincmd.h"
 #include "snippetmgr.h"
+#include "cmd/executedcmd.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -62,23 +61,84 @@ string Workspace::historyDown() {
     return history[++historyIndex];
 }
 
-void Workspace::execute(const string &input) {
-    vector<string> args = split(input, regex(R"(\s+)"));
-    if (args.empty()) return;
 
-    if (args[0] == "shfl") {
-        shflCmd(*this, args);
+std::map<std::string, std::string> parseOptions(Command* app, const std::vector<std::string>& args) {
+    std::map<std::string, std::string> parsedOptions;
+    std::map<std::string, std::vector<std::string>> optionAbbreviations = app->getOptions();
+
+    for (size_t i = 0; i < args.size(); ++i) {
+        const std::string& arg = args[i];
+        std::string key, value;
+
+        size_t delimiterPos = arg.find('=');
+        if (delimiterPos != std::string::npos) {
+            key = arg.substr(0, delimiterPos);
+            value = arg.substr(delimiterPos + 1);
+        } else if (arg[0] == '-' && arg.size() > 1) {
+            key = arg.substr(1);
+            if (key[0] == '-') {
+                std::cout << "Error: Invalid option format '" << arg << "'. Options should be in the format '-key value' or 'key=value'." << std::endl;
+                continue;
+            }
+            if (i + 1 < args.size() && args[i + 1][0] != '-') {
+                value = args[i + 1];
+                ++i;
+            } else {
+                std::cout << "Error: Missing value for option '-" << key << "'." << std::endl;
+                continue;
+            }
+        } else {
+            std::cout << "Error: Invalid option format '" << arg << "'. Options should be in the format '-key value' or 'key=value'." << std::endl;
+            continue;
+        }
+
+        // Check if the key is an abbreviation and convert it to the full name
+        bool foundAbbreviation = false;
+        for (const auto& entry : optionAbbreviations) {
+            if (entry.first == key) {
+                foundAbbreviation = true;
+                break;
+            }
+            for (const auto& abbreviation : entry.second) {
+                if (abbreviation == key) {
+                    key = entry.first;
+                    foundAbbreviation = true;
+                    break;
+                }
+            }
+            if (foundAbbreviation) {
+                break;
+            }
+        }
+
+        if (!foundAbbreviation) {
+            std::cout << "Error: Invalid option key '" << key << "'." << std::endl;
+            continue;
+        }
+
+        parsedOptions[key] = value;
+    }
+
+    return parsedOptions;
+}
+
+void Workspace::execute(const string &input) {
+    vector<string> inSpl = split(input, regex(R"(\s+)"));
+    if (inSpl.empty()) return;
+
+    if (inSpl[0] == "shfl") {
+        shflCmd(*this, inSpl);
 
         return;
-    } else if (args[0] == "help") {
-        helpCmd(*this, args);
-    } else if (args[0] == "snf") {
-        snippetCmd(*this, args);
+    } else if (inSpl[0] == "help") {
+        helpCmd(*this, inSpl);
+    } else if (inSpl[0] == "snf") {
+        snippetCmd(*this, inSpl);
     }
 
     bool isSnippetFound = false;
     for (const auto &item: snippets) {
-        if (item->getName() != args[0]) continue;
+        if (item->getName() != inSpl[0]) continue;
         isSnippetFound = true;
 
         term << "[*] " << item->getTarget() << newLine << newLine;
@@ -88,34 +148,36 @@ void Workspace::execute(const string &input) {
     if (isSnippetFound) return;
 
     bool isCommandFound = false;
+    Command *app;
     for (const auto &cmd: commands) {
-        if (cmd->getName() != args[0]) continue;
+        if (cmd->getName() != inSpl[0]) continue;
         isCommandFound = true;
 
-        vector<string> newArgs;
-        for (int i = 1; i < args.size(); ++i) newArgs.push_back(args[i]);
-
-        Workspace &ws = (*this);
-        auto *sappCommand = dynamic_cast<SAPPCommand *>(cmd.get());
-        if (sappCommand != nullptr) {
-            sappCommand->run(*this, newArgs);
-        } else {
-            cmd->run(ws, args);
-        }
+        app = dynamic_cast<SAPPCommand *>(cmd.get());
         break;
-    } // Find Commands
+    }
 
     if (!isCommandFound) {
-        error("Sorry. Command '$0' not found.", {args[0]});
+        error("Sorry. Command '$0' not found.", {inSpl[0]});
         pair<int, Command> similarWord = {1000000000, Command("")};
         for (const auto &cmd: commands) {
-            int dist = levenshteinDist(args[0], cmd->getName());
+            int dist = levenshteinDist(inSpl[0], cmd->getName());
             if (dist < similarWord.first) similarWord = {dist, *cmd};
         }
 
         if (similarWord.first > 1) warning("Please make sure you entered the correct command.");
         else warning("Did you mean '$0'?", {similarWord.second.getName()});
+
+        return;
     }
+
+    ExecutedCommand executed = ExecutedCommand(app);
+
+    vector<string> args;
+    for (int i = 1; i < inSpl.size(); ++i) args.push_back(inSpl[i]);
+
+    executed.options = parseOptions(app, args);
+    executed.executeApp(*this);
 }
 
 string getSuggestion(const Workspace &ws, const string &input) {
@@ -126,16 +188,16 @@ string getSuggestion(const Workspace &ws, const string &input) {
     if (args.size() == 1) {
         suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands)[0];
     } else {
-        shared_ptr<Command> final = findCommand(args[0]);
-        if (final == nullptr) return "";
-
-        for (int i = 1; i < args.size() - 1; i++) {
-            shared_ptr<Command> sub = findCommand(args[i], final->getChildren());
-            if (sub == nullptr) return "";
-            final = sub;
-        }
-
-        suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren())[0];
+//        shared_ptr<Command> final = findCommand(args[0]);
+//        if (final == nullptr) return "";
+//
+//        for (int i = 1; i < args.size() - 1; i++) {
+//            shared_ptr<Command> sub = findCommand(args[i], final->getChildren());
+//            if (sub == nullptr) return "";
+//            final = sub;
+//        }
+//
+//        suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren())[0];
     }
     if (suggestion.empty()) return "";
 
@@ -150,19 +212,20 @@ string getHint(const Workspace &ws, const string &input) {
         if (command == nullptr) return "";
         else return command->getDescription();
     } else {
-        shared_ptr<Command> final = findCommand(args[0]);
-        if (final == nullptr) return "";
-
-        for (int i = 1; i < args.size(); i++) {
-            shared_ptr<Command> sub = findCommand(args[i], final->getChildren());
-            if (sub == nullptr) {
-                return final->getDescription();
-            }
-            final = sub;
-        }
-
-        return final->getDescription();
+//        shared_ptr<Command> final = findCommand(args[0]);
+//        if (final == nullptr) return "";
+//
+//        for (int i = 1; i < args.size(); i++) {
+//            shared_ptr<Command> sub = findCommand(args[i], final->getChildren());
+//            if (sub == nullptr) {
+//                return final->getDescription();
+//            }
+//            final = sub;
+//        }
+//
+//        return final->getDescription();
     }
+    return "";
 }
 
 string Workspace::prompt() {

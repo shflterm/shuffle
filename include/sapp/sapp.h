@@ -5,7 +5,7 @@
 #ifndef SHUFFLE_INCLUDE_LOADER_H_
 #define SHUFFLE_INCLUDE_LOADER_H_
 
-#include "commandmgr.h"
+#include "cmd/commandmgr.h"
 #include "lua.hpp"
 #include "utils/utils.h"
 #include "console.h"
@@ -22,8 +22,8 @@ class SAPPCommand : public Command {
 
  public:
   explicit SAPPCommand(const string &name);
-  void loadVersion1(Json::Value root, const string &name);
-  void run(Workspace &ws, const vector<string> &args) const override;
+  void loadVersion2(Json::Value root, const string &name);
+  void run(Workspace &ws, const map<string, string> &optionValues) const override;
   vector<string> makeDynamicSuggestion(Workspace &ws, const string& suggestId);
 };
 

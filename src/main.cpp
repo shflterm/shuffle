@@ -3,7 +3,7 @@
 #include <filesystem>
 
 #include "console.h"
-#include "commandmgr.h"
+#include "cmd/commandmgr.h"
 #include "utils/utils.h"
 #include "utils/crashreport.h"
 #include "version.h"
@@ -90,6 +90,6 @@ int main(int argc, char *argv[]) {
 
     currentWorkspace = new Workspace("main");
     while (true) {
-        currentWorkspace->inputPrompt(true);
+        currentWorkspace->inputPrompt(false);
     }
 }

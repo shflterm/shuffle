@@ -4,7 +4,7 @@
 #include <string>
 #include <json/json.h>
 
-#include "commandmgr.h"
+#include "cmd/commandmgr.h"
 #include "utils/utils.h"
 #include "console.h"
 #include "utils/lua/luaapi.h"
@@ -26,7 +26,7 @@ typedef void (*entrypoint_t)(Workspace &workspace, const vector<string> &args);
 
 typedef vector<string> (*suggest_t)(Workspace &workspace, const string &suggestId);
 
-void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
+void SAPPCommand::run(Workspace &ws, const map<string, string> &optionValues) const {
     // Create workspace table
     lua_newtable(L);
     {
@@ -37,12 +37,10 @@ void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
     lua_setglobal(L, "workspace");
 
     // Create args list
-    lua_newtable(L);
-    for (int i = 0; i < args.size(); ++i) {
-        lua_pushstring(L, args[i].c_str());
-        lua_rawseti(L, -2, i + 1);
+    for (const auto &item: optionValues) {
+        lua_pushstring(L, item.second.c_str());
+        lua_setglobal(L, item.first.c_str());
     }
-    lua_setglobal(L, "args");
 
     lua_getglobal(L, "entrypoint");
     if (lua_type(L, -1) != LUA_TFUNCTION) {
@@ -59,22 +57,6 @@ void SAPPCommand::run(Workspace &ws, const vector<std::string> &args) const {
     path newDir = lua_tostring(L, -1);
     if (newDir.is_relative()) newDir = ws.currentDirectory() / newDir;
     ws.moveDirectory(newDir);
-}
-
-void addChildren(const Json::Value &json, Command *command) {
-    for (Json::Value item: json) {
-        if (item["type"] == "option") {
-            OptionSubCommand child = OptionSubCommand(item["name"].asString(), item["description"].asString());
-            if (item.isMember("children")) addChildren(item["children"], &child);
-
-            command->addChild(child);
-        } else if (item["type"] == "subcommand") {
-            Command child = Command(item["name"].asString(), item["description"].asString());
-            if (item.isMember("children")) addChildren(item["children"], &child);
-
-            command->addChild(child);
-        }
-    }
 }
 
 vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &suggestId) {
@@ -119,7 +101,7 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
     return {};
 }
 
-void SAPPCommand::loadVersion1(Json::Value root, const string &name) {
+void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
     string appPath = DOT_SHUFFLE + "/apps/" + name + ".app/";
 
     string value = appPath + "/lib/entrypoint.lua";
@@ -141,8 +123,15 @@ void SAPPCommand::loadVersion1(Json::Value root, const string &name) {
 
     description = helpRoot["description"].asString();
 
-    Json::Value children = helpRoot["children"];
-    addChildren(children, this);
+    Json::Value optionsJson = helpRoot["options"];
+    for (const auto &item: optionsJson) {
+        string optionName = item["name"].asString();
+        vector<string> optNames;
+        optNames.push_back(optionName);
+        for (const auto &item2: item["aliases"]) optNames.push_back(item2.asString());
+
+        options[optionName] = optNames;
+    }
 
     for (const auto &item: helpRoot["example"]) {
         usage.emplace_back(item["usage"].asString(), item["description"].asString());
@@ -156,9 +145,10 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
     Json::Reader reader;
     reader.parse(readFile(runDotShfl), root, false);
     if (root["version"].asInt() == 1) {
-        loadVersion1(root, name);
+        error("This app is no longer supported. Please upgrade the app.");
+    } else if (root["version"].asInt() == 2) {
+        loadVersion2(root, name);
     } else {
-        warning("Error: Invalid version number in " + name + ". Load with version 1.");
-        loadVersion1(root, name);
+        error("Error: Invalid version number in " + name + ".");
     }
 }
