@@ -29,6 +29,8 @@ public:
 
 void shflCmd(Workspace &ws, map<string, string> &optionValues);
 
+void appMgrCmd(Workspace &ws, map<string, string> &optionValues);
+
 void helpCmd(Workspace &ws, map<string, string> &optionValues);
 
 void snippetCmd(Workspace &ws, map<string, string> &optionValues);

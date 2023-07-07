@@ -12,47 +12,37 @@
 #include "snippetmgr.h"
 
 void shflCmd(Workspace &ws, map<string, string> &optionValues) {
-//    if (args[1] == "reload") {
-//        info("Reloading command...");
-//        loadCommands();
-//        success("Reloaded all commands!");
-//    } else if (args[1] == "apps") {
-//        if (args.size() < 3) {
-//            too_many_arguments();
-//            return;
-//        }
-//        if (args[2] == "add") {
-//            if (args.size() < 4) {
-//                too_many_arguments();
-//                return;
-//            }
-//
-//            for (int i = 3; i < args.size(); ++i) {
-//                addSAPP(args[i]);
-//            }
-//        } else if (args[2] == "remove") {
-//            if (args.size() < 4) {
-//                too_many_arguments();
-//                return;
-//            }
-//
-//            for (int i = 3; i < args.size(); ++i) {
-//                removeSAPP(args[i]);
-//            }
-//        }
-//    } else if (args[1] == "update") {
-//        string latest = trim(readTextFromWeb(
-//                "https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
-//        if (latest != SHUFFLE_VERSION.str()) {
-//            term << "New version available: " << SHUFFLE_VERSION.str() << " -> "
-//                 << latest << newLine;
-//            updateShuffle();
-//        } else {
-//            term << "You are using the latest version of Shuffle." << newLine;
-//        }
-//    } else if (args[1] == "credits") {
-//        term << createCreditText();
-//    }
+    if (optionValues["reload"] == "true") {
+        info("Reloading command...");
+        loadCommands();
+        success("Reloaded all commands!");
+    } else if (optionValues["apps"] == "true") {
+        if (optionValues.count("add")) {
+            addSAPP(optionValues["add"]);
+        } else if (optionValues.count("remove")) {
+            removeSAPP(optionValues["remove"]);
+        }
+    } else if (optionValues["update"] == "true") {
+        string latest = trim(readTextFromWeb(
+                "https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
+        if (latest != SHUFFLE_VERSION.str()) {
+            term << "New version available: " << SHUFFLE_VERSION.str() << " -> "
+                 << latest << newLine;
+            updateShuffle();
+        } else {
+            term << "You are using the latest version of Shuffle." << newLine;
+        }
+    } else if (optionValues["credits"] == "true") {
+        term << createCreditText();
+    }
+}
+
+void appMgrCmd(Workspace &ws, map<string, string> &optionValues) {
+    if (optionValues.count("add")) {
+        addSAPP(optionValues["add"]);
+    } else if (optionValues.count("remove")) {
+        removeSAPP(optionValues["remove"]);
+    }
 }
 
 void helpCmd(Workspace &ws, map<string, string> &optionValues) {
