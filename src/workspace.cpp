@@ -89,7 +89,7 @@ std::map<std::string, std::string> parseOptions(Command *app, const std::vector<
                 continue;
             }
         } else if (arg[0] == '!' && arg.size() > 1) {
-            key = arg;
+            key = arg.substr(1);
             value = "false";
         } else {
             key = arg;
