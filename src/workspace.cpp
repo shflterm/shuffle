@@ -6,7 +6,7 @@
 #include <sstream>
 #include <map>
 
-#include "builtincmd.h"
+#include "cmd/builtincmd.h"
 #include "console.h"
 #include "cmd/commandmgr.h"
 #include "utils/utils.h"
@@ -130,16 +130,6 @@ void Workspace::execute(const string &input) {
     vector<string> inSpl = split(input, regex(R"(\s+)"));
     if (inSpl.empty()) return;
 
-    if (inSpl[0] == "shfl") {
-        shflCmd(*this, inSpl);
-
-        return;
-    } else if (inSpl[0] == "help") {
-        helpCmd(*this, inSpl);
-    } else if (inSpl[0] == "snf") {
-        snippetCmd(*this, inSpl);
-    }
-
     bool isSnippetFound = false;
     for (const auto &item: snippets) {
         if (item->getName() != inSpl[0]) continue;
@@ -158,10 +148,11 @@ void Workspace::execute(const string &input) {
         isCommandFound = true;
 
         app = dynamic_cast<SAPPCommand *>(cmd.get());
+        if (app == nullptr) app = dynamic_cast<BuiltinCommand *>(cmd.get());
         break;
     }
 
-    if (!isCommandFound) {
+    if (!isCommandFound || app == nullptr) {
         error("Sorry. Command '$0' not found.", {inSpl[0]});
         pair<int, Command> similarWord = {1000000000, Command("")};
         for (const auto &cmd: commands) {

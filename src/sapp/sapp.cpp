@@ -26,7 +26,7 @@ typedef void (*entrypoint_t)(Workspace &workspace, const vector<string> &args);
 
 typedef vector<string> (*suggest_t)(Workspace &workspace, const string &suggestId);
 
-void SAPPCommand::run(Workspace &ws, const map<string, string> &optionValues) const {
+void SAPPCommand::run(Workspace &ws, map<string, string> &optionValues) const {
     // Create workspace table
     lua_newtable(L);
     {

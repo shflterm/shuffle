@@ -28,7 +28,7 @@ public:
 
     [[nodiscard]] const map<string, vector<string>> &getOptions() const;
 
-    virtual void run(Workspace &ws, const map<string, string> &optionValues) const;
+    virtual void run(Workspace &ws, map<string, string> &optionValues) const;
 
     Command(string name, string description, map<string, vector<string>> options, vector<pair<string, string>> usage);
 

@@ -7,22 +7,22 @@
 
 #include "console.h"
 #include "utils/utils.h"
-#include "basic_commands.h"
 #include "sapp/sapp.h"
+#include "cmd/builtincmd.h"
 
 using namespace std;
 
 vector<shared_ptr<Command>> commands;
 
 void loadDefaultCommands() {
-    commands.push_back(make_shared<Command>(Command(
-            "shfl", "Shuffle Command"
+    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+            "shfl", "Shuffle Command", {}, shflCmd
     )));
-    commands.push_back(make_shared<Command>(Command(
-            "help", "Show help"
+    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+            "help", "Show help", {{"command", {"cmd", "c"}}}, helpCmd
     )));
-    commands.push_back(make_shared<Command>(Command(
-            "snf", "Manage Snippets"
+    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+            "snf", "Manage Snippets", {{"create", {"mk", "c", "new"}}}, snippetCmd
     )));
 }
 
@@ -94,7 +94,7 @@ const string &Command::getDescription() const {
     return description;
 }
 
-void Command::run(Workspace &ws, const map<string, string> &optionValues) const {}
+void Command::run(Workspace &ws, map<string, string> &optionValues) const {}
 
 Command::Command(string name, string description, map<string, vector<string>> options, vector<pair<string, string>> usage)
         : name(std::move(name)),
