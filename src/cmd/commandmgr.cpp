@@ -16,7 +16,17 @@ vector<shared_ptr<Command>> commands;
 
 void loadDefaultCommands() {
     commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
-            "shfl", "Shuffle Command", {}, shflCmd
+            "shfl", "Shuffle Command", {
+                    {"reload",  {"rl"}},
+                    {"update",  {"up"}},
+                    {"credits", {"credit", "crd"}}
+            }, shflCmd
+    )));
+    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+            "appmgr", "App Manager", {
+                    {"add",    {"ad", "a"}},
+                    {"remove", {"rm", "r"}},
+            }, appMgrCmd
     )));
     commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
             "help", "Show help", {{"command", {"cmd", "c"}}}, helpCmd
@@ -96,7 +106,8 @@ const string &Command::getDescription() const {
 
 void Command::run(Workspace &ws, map<string, string> &optionValues) const {}
 
-Command::Command(string name, string description, map<string, vector<string>> options, vector<pair<string, string>> usage)
+Command::Command(string name, string description, map<string, vector<string>> options,
+                 vector<pair<string, string>> usage)
         : name(std::move(name)),
           description(std::move(description)),
           options(std::move(options)),
