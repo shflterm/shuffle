@@ -23,7 +23,7 @@ class SAPPCommand : public Command {
  public:
   explicit SAPPCommand(const string &name);
   void loadVersion2(Json::Value root, const string &name);
-  void run(Workspace &ws, const map<string, string> &optionValues) const override;
+  void run(Workspace &ws, map<string, string> &optionValues) const override;
   vector<string> makeDynamicSuggestion(Workspace &ws, const string& suggestId);
 };
 
