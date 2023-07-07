@@ -62,12 +62,12 @@ string Workspace::historyDown() {
 }
 
 
-std::map<std::string, std::string> parseOptions(Command* app, const std::vector<std::string>& args) {
+std::map<std::string, std::string> parseOptions(Command *app, const std::vector<std::string> &args) {
     std::map<std::string, std::string> parsedOptions;
     std::map<std::string, std::vector<std::string>> optionAbbreviations = app->getOptions();
 
     for (size_t i = 0; i < args.size(); ++i) {
-        const std::string& arg = args[i];
+        const std::string &arg = args[i];
         std::string key, value;
 
         size_t delimiterPos = arg.find('=');
@@ -77,7 +77,8 @@ std::map<std::string, std::string> parseOptions(Command* app, const std::vector<
         } else if (arg[0] == '-' && arg.size() > 1) {
             key = arg.substr(1);
             if (key[0] == '-') {
-                std::cout << "Error: Invalid option format '" << arg << "'. Options should be in the format '-key value' or 'key=value'." << std::endl;
+                std::cout << "Error: Invalid option format '" << arg
+                          << "'. Options should be in the format '-key value' or 'key=value'." << std::endl;
                 continue;
             }
             if (i + 1 < args.size() && args[i + 1][0] != '-') {
@@ -87,19 +88,22 @@ std::map<std::string, std::string> parseOptions(Command* app, const std::vector<
                 std::cout << "Error: Missing value for option '-" << key << "'." << std::endl;
                 continue;
             }
+        } else if (arg[0] == '!' && arg.size() > 1) {
+            key = arg;
+            value = "false";
         } else {
-            std::cout << "Error: Invalid option format '" << arg << "'. Options should be in the format '-key value' or 'key=value'." << std::endl;
-            continue;
+            key = arg;
+            value = "true";
         }
 
         // Check if the key is an abbreviation and convert it to the full name
         bool foundAbbreviation = false;
-        for (const auto& entry : optionAbbreviations) {
+        for (const auto &entry: optionAbbreviations) {
             if (entry.first == key) {
                 foundAbbreviation = true;
                 break;
             }
-            for (const auto& abbreviation : entry.second) {
+            for (const auto &abbreviation: entry.second) {
                 if (abbreviation == key) {
                     key = entry.first;
                     foundAbbreviation = true;
@@ -248,12 +252,13 @@ string Workspace::prompt() {
 
 void Workspace::inputPrompt(bool enableSuggestion) {
     term << prompt();
-    int x = wherex();
-    term << newLine;
-    term << teleport(x, wherey() - 1);
 
     string input;
     if (enableSuggestion) {
+        int x = wherex();
+        term << newLine;
+        term << teleport(x, wherey() - 1);
+
         int c;
         while (true) {
             c = readChar();
