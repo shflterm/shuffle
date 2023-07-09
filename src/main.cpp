@@ -90,6 +90,6 @@ int main(int argc, char *argv[]) {
 
     currentWorkspace = new Workspace("main");
     while (true) {
-        currentWorkspace->inputPrompt(false);
+        currentWorkspace->inputPrompt(true);
     }
 }
