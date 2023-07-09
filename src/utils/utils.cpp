@@ -16,10 +16,24 @@
 using namespace std;
 using namespace std::filesystem;
 
-vector<string> split(const string &s, const regex &delimiter_regex) {
-  std::sregex_token_iterator iter(s.begin(), s.end(), delimiter_regex, -1);
-  std::sregex_token_iterator end;
-  return {iter, end};
+vector<string> split(const string &s, const regex &regex) {
+    std::vector<std::string> result;
+    std::sregex_iterator iterator(s.begin(), s.end(), regex);
+    std::sregex_iterator end;
+
+    while (iterator != end) {
+        std::smatch match = *iterator;
+        std::string token = match.str();
+
+        if (!token.empty() && token.front() == '"' && token.back() == '"') {
+            token = token.substr(1, token.size() - 2);
+        }
+
+        result.push_back(token);
+        ++iterator;
+    }
+
+    return result;
 }
 
 const string WHITESPACE = " \n\r\t\f\v";

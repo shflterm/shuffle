@@ -61,42 +61,65 @@ string Workspace::historyDown() {
     return history[++historyIndex];
 }
 
+map<string, string> *parseOptions(Command *app, const vector<string> &args) {
+    auto *parsedOptions = new map<string, string>();
+    map<string, vector<string>> optionAbbreviations = app->getOptions();
+    vector<string> optionNames = app->getOptionNames();
+    vector<string> optionNamesWithAbbr = app->getOptionNames();
+    for (auto &option: optionNames) {
+        for (const auto &item: optionAbbreviations[option]) {
+            optionNamesWithAbbr.push_back(item);
+        }
+    }
 
-std::map<std::string, std::string> parseOptions(Command *app, const std::vector<std::string> &args) {
-    std::map<std::string, std::string> parsedOptions;
-    std::map<std::string, std::vector<std::string>> optionAbbreviations = app->getOptions();
+    size_t optionIndex = 0;
 
     for (size_t i = 0; i < args.size(); ++i) {
-        const std::string &arg = args[i];
-        std::string key, value;
+        const string &arg = args[i];
+        string key, value;
 
         size_t delimiterPos = arg.find('=');
-        if (delimiterPos != std::string::npos) {
+        if (delimiterPos != string::npos) {
             key = arg.substr(0, delimiterPos);
             value = arg.substr(delimiterPos + 1);
         } else if (arg[0] == '-' && arg.size() > 1) {
             key = arg.substr(1);
             if (key[0] == '-') {
-                std::cout << "Error: Invalid option format '" << arg
-                          << "'. Options should be in the format '-key value' or 'key=value'." << std::endl;
-                continue;
+                error("Invalid option format '" + arg +
+                      "'. Options should be in the format '-key value' or 'key=value'.");
+                delete parsedOptions;
+                return nullptr;
             }
             if (i + 1 < args.size() && args[i + 1][0] != '-') {
                 value = args[i + 1];
                 ++i;
             } else {
-                std::cout << "Error: Missing value for option '-" << key << "'." << std::endl;
-                continue;
+                error("Missing value for option '-" + key + "'.");
+                delete parsedOptions;
+                return nullptr;
             }
         } else if (arg[0] == '!' && arg.size() > 1) {
             key = arg.substr(1);
             value = "false";
         } else {
-            key = arg;
-            value = "true";
+            if (find(optionNamesWithAbbr.begin(), optionNamesWithAbbr.end(), arg) != optionNamesWithAbbr.end()) {
+                key = arg;
+                value = "true";
+            } else if (optionIndex < optionNames.size()) {
+                key = optionNames[optionIndex++];
+                value = arg;
+                // Add this line to handle multiple arguments for an option
+                while (i + 1 < args.size() && args[i + 1][0] != '-') {
+                    value += " " + args[i + 1];
+                    ++i;
+                }
+            } else {
+                error("Unexpected argument '" + arg + "'.");
+                delete parsedOptions;
+                return nullptr;
+            }
         }
 
-        // Check if the key is an abbreviation and convert it to the full name
         bool foundAbbreviation = false;
         for (const auto &entry: optionAbbreviations) {
             if (entry.first == key) {
@@ -116,18 +139,19 @@ std::map<std::string, std::string> parseOptions(Command *app, const std::vector<
         }
 
         if (!foundAbbreviation) {
-            std::cout << "Error: Invalid option key '" << key << "'." << std::endl;
-            continue;
+            error("Invalid option key '" + key + "'.");
+            delete parsedOptions;
+            return nullptr;
         }
 
-        parsedOptions[key] = value;
+        (*parsedOptions)[key] = value;
     }
 
     return parsedOptions;
 }
 
 void Workspace::execute(const string &input) {
-    vector<string> inSpl = split(input, regex(R"(\s+)"));
+    vector<string> inSpl = split(input, regex("\"([^\"]*)\"|(\\S+)"));
     if (inSpl.empty()) return;
 
     bool isSnippetFound = false;
@@ -171,7 +195,10 @@ void Workspace::execute(const string &input) {
     vector<string> args;
     for (int i = 1; i < inSpl.size(); ++i) args.push_back(inSpl[i]);
 
-    executed.options = parseOptions(app, args);
+    map<string, string> *parsedOptions = parseOptions(app, args);
+    if (parsedOptions == nullptr) return;
+
+    executed.options = *parsedOptions;
     executed.executeApp(*this);
 }
 
@@ -342,8 +369,10 @@ void Workspace::inputPrompt(bool enableSuggestion) {
     }
 }
 
-Workspace::Workspace(const string &name) : name(name) {
+Workspace::Workspace(
+        const string &name) : name(name) {
     wsMap[name] = this;
 }
 
-Workspace::Workspace() = default;
+Workspace::Workspace() =
+default;
