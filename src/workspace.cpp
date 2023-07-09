@@ -151,7 +151,7 @@ map<string, string> *parseOptions(Command *app, const vector<string> &args) {
 }
 
 void Workspace::execute(const string &input) {
-    vector<string> inSpl = split(input, regex("\"([^\"]*)\"|(\\S+)"));
+    vector<string> inSpl = splitBySpace(input);
     if (inSpl.empty()) return;
 
     bool isSnippetFound = false;
@@ -202,38 +202,43 @@ void Workspace::execute(const string &input) {
     executed.executeApp(*this);
 }
 
+vector<string> makeDictionary(const vector<shared_ptr<Command>> &cmds) {
+    vector<string> dictionary;
+    dictionary.reserve(cmds.size());
+    for (const auto &item: cmds) {
+        dictionary.push_back(item->getName());
+    }
+    return dictionary;
+}
+
 string getSuggestion(const Workspace &ws, const string &input) {
     vector<string> args = split(input, regex(R"(\s+)"));
     string suggestion;
     if (input[input.length() - 1] == ' ') args.emplace_back("");
 
     if (args.size() == 1) {
-        suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands)[0];
+        suggestion = findSuggestion(ws, args[0], makeDictionary(commands))[0];
     } else {
-//        shared_ptr<Command> final = findCommand(args[0]);
-//        if (final == nullptr) return "";
-//
-//        for (int i = 1; i < args.size() - 1; i++) {
-//            shared_ptr<Command> sub = findCommand(args[i], final->getChildren());
-//            if (sub == nullptr) return "";
-//            final = sub;
-//        }
-//
-//        suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren())[0];
-    }
-    if (suggestion.empty()) return "";
+        shared_ptr<Command> cmd = findCommand(args[0]);
 
+        size_t cur = args.size() - 1;
+        if (args[cur][0] == '-') {
+            suggestion = findSuggestion(ws, args[cur].substr(1), cmd->getOptionNames())[0];
+        } else {
+            suggestion = "else";
+        }
+    }
     return suggestion;
 }
 
 string getHint(const Workspace &ws, const string &input) {
-    vector<string> args = split(input, regex(R"(\s+)"));
-
-    if (args.size() == 1) {
-        shared_ptr<Command> command = findCommand(args[0]);
-        if (command == nullptr) return "";
-        else return command->getDescription();
-    } else {
+//    vector<string> args = split(input, regex(R"(\s+)"));
+//
+//    if (args.size() == 1) {
+//        shared_ptr<Command> command = findCommand(args[0]);
+//        if (command == nullptr) return "";
+//        else return command->getDescription();
+//    } else {
 //        shared_ptr<Command> final = findCommand(args[0]);
 //        if (final == nullptr) return "";
 //
@@ -246,7 +251,7 @@ string getHint(const Workspace &ws, const string &input) {
 //        }
 //
 //        return final->getDescription();
-    }
+//    }
     return "";
 }
 

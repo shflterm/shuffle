@@ -20,6 +20,8 @@
 
 using namespace std;
 
+std::vector<std::string> splitBySpace(const std::string &input);
+
 vector<string> split(const string &s, const regex &delimiter_regex);
 
 string trim(const string &s);
