@@ -16,15 +16,17 @@
 using namespace std;
 using namespace std::filesystem;
 
-vector<string> split(const string &s, const regex &regex) {
+std::vector<std::string> splitBySpace(const std::string& input) {
     std::vector<std::string> result;
-    std::sregex_iterator iterator(s.begin(), s.end(), regex);
+    std::regex regex("\"([^\"]*)\"|(\\S+)");
+    std::sregex_iterator iterator(input.begin(), input.end(), regex);
     std::sregex_iterator end;
 
     while (iterator != end) {
         std::smatch match = *iterator;
         std::string token = match.str();
 
+        // Remove leading and trailing quotes if present
         if (!token.empty() && token.front() == '"' && token.back() == '"') {
             token = token.substr(1, token.size() - 2);
         }
@@ -34,6 +36,12 @@ vector<string> split(const string &s, const regex &regex) {
     }
 
     return result;
+}
+
+vector<string> split(const string &s, const regex &regex) {
+    std::sregex_token_iterator iter(s.begin(), s.end(), regex, -1);
+    std::sregex_token_iterator end;
+    return {iter, end};
 }
 
 const string WHITESPACE = " \n\r\t\f\v";
