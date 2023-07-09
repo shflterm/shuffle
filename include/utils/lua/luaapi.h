@@ -14,6 +14,7 @@ using namespace std;
 using namespace std::filesystem;
 
 void pushStringArray(lua_State *L, const vector<string> &strings);
+
 path lua_getPath(lua_State *L, const string &s);
 
 void initLua(lua_State *L);

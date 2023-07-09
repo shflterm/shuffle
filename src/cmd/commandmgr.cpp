@@ -32,7 +32,8 @@ void loadDefaultCommands() {
             "help", "Show help", {{"command", {"cmd", "c"}}}, helpCmd
     )));
     commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
-            "snf", "Manage Snippets", {{"create", {"mk", "c", "new"}}, {"value", {"v"}}}, snippetCmd
+            "snf", "Manage Snippets", {{"create", {"mk", "c", "new"}},
+                                       {"value",  {"v"}}}, snippetCmd
     )));
 }
 

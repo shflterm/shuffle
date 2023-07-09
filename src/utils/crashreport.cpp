@@ -88,74 +88,74 @@ string genStackTrace(CONTEXT *context) {
 #elif defined(__linux__) || defined(__APPLE__)
 
 string genStackTrace() {
-  stringstream ss;
+    stringstream ss;
 
-  void *array[10];
-  size_t size;
-  size = backtrace(array, 10);
-  for (int i = 0; i < size; ++i) {
-    ss << "  " << backtrace_symbols(array, size)[i] << endl;
-  }
+    void *array[10];
+    size_t size;
+    size = backtrace(array, 10);
+    for (int i = 0; i < size; ++i) {
+        ss << "  " << backtrace_symbols(array, size)[i] << endl;
+    }
 
-  return ss.str();
+    return ss.str();
 }
 
 #endif
 
 string getOSName() {
 #ifdef _WIN32
-  return "Windows";
+    return "Windows";
 #elif __APPLE__
-  return "macOS";
+    return "macOS";
 #elif __linux__
-  return "Linux";
+    return "Linux";
 #elif __unix__
-  return "Unix";
+    return "Unix";
 #else
-  return "Unknown";
+    return "Unknown";
 #endif
 }
 
 CrashReport CrashReport::setStackTrace(const string &stackTrace_) {
-  stackTrace = stackTrace_;
-  return *this;
+    stackTrace = stackTrace_;
+    return *this;
 }
 
 CrashReport CrashReport::setSignalNumber(int sig_) {
-  sig = sig_;
-  return *this;
+    sig = sig_;
+    return *this;
 }
 
 string CrashReport::make() {
-  stringstream ss;
-  ss << "[ Shuffle Crash Report ]" << endl;
-  ss << "OS: " << getOSName() << endl;
-  ss << "Version: " << SHUFFLE_VERSION.str() << endl;
-  ss << "Time: " << time(nullptr) << endl;
-  ss << "Signal Number: " << sig << endl;
-  ss << "========================" << endl;
-  ss << "Workspaces: " << endl;
-  for (auto &ws : wsMap) {
-    ss << "  " << ws.first << endl;
-    ss << "    Current Directory: " << ws.second->currentDirectory().string() << endl;
-    ss << "    History: " << endl;
-    for (int i = 0; i < ws.second->getHistory().size(); ++i) {
-      auto item = ws.second->getHistory()[i];
-      ss << "      " << i << ". " << item << endl;
+    stringstream ss;
+    ss << "[ Shuffle Crash Report ]" << endl;
+    ss << "OS: " << getOSName() << endl;
+    ss << "Version: " << SHUFFLE_VERSION.str() << endl;
+    ss << "Time: " << time(nullptr) << endl;
+    ss << "Signal Number: " << sig << endl;
+    ss << "========================" << endl;
+    ss << "Workspaces: " << endl;
+    for (auto &ws: wsMap) {
+        ss << "  " << ws.first << endl;
+        ss << "    Current Directory: " << ws.second->currentDirectory().string() << endl;
+        ss << "    History: " << endl;
+        for (int i = 0; i < ws.second->getHistory().size(); ++i) {
+            auto item = ws.second->getHistory()[i];
+            ss << "      " << i << ". " << item << endl;
+        }
+        if (ws.second->getHistory().empty()) ss << "      (empty)" << endl;
     }
-    if (ws.second->getHistory().empty()) ss << "      (empty)" << endl;
-  }
-  ss << "========================" << endl;
-  ss << "Stack Trace: " << endl;
-  ss << stackTrace;
-  return ss.str();
+    ss << "========================" << endl;
+    ss << "Stack Trace: " << endl;
+    ss << stackTrace;
+    return ss.str();
 }
 
 void CrashReport::save() {
-  ofstream file(DOT_SHUFFLE + "/crash-report-" + to_string(time(nullptr)) + ".txt");
-  file << make();
-  file.close();
+    ofstream file(DOT_SHUFFLE + "/crash-report-" + to_string(time(nullptr)) + ".txt");
+    file << make();
+    file.close();
 
-  term << "Stack trace saved to \"" << DOT_SHUFFLE << "/crash-report-" << to_string(time(nullptr)) << ".txt" << "\"."
-       << newLine;
+    term << "Stack trace saved to \"" << DOT_SHUFFLE << "/crash-report-" << to_string(time(nullptr)) << ".txt" << "\"."
+         << newLine;
 }
