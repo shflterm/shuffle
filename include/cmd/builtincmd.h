@@ -22,7 +22,11 @@ class BuiltinCommand : public Command {
 
 public:
     BuiltinCommand(string name, string description, map<string, vector<string>> options, cmd_t cmd)
-            : Command(std::move(name), std::move(description), std::move(options)), cmd(cmd) {};
+            : Command(std::move(name), std::move(description), std::move(options)), cmd(cmd) {
+        for (const auto &item: this->options) {
+            optionNames.push_back(item.first);
+        }
+    };
 
     void run(Workspace &ws, map<string, string> &optionValues) const override;
 };

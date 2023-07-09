@@ -18,6 +18,7 @@ protected:
     string description;
     vector<pair<string, string>> usage;
     map<string, vector<string>> options;
+    vector<string> optionNames;
 
 public:
     [[nodiscard]] const string &getName() const;
@@ -27,6 +28,8 @@ public:
     [[nodiscard]] const vector<pair<string, string>> &getUsage() const;
 
     [[nodiscard]] const map<string, vector<string>> &getOptions() const;
+
+    [[nodiscard]] const vector<string> &getOptionNames() const;
 
     virtual void run(Workspace &ws, map<string, string> &optionValues) const;
 

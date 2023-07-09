@@ -131,6 +131,7 @@ void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
         for (const auto &item2: item["aliases"]) optNames.push_back(item2.asString());
 
         options[optionName] = optNames;
+        optionNames.push_back(optionName);
     }
 
     for (const auto &item: helpRoot["example"]) {

@@ -32,7 +32,7 @@ void loadDefaultCommands() {
             "help", "Show help", {{"command", {"cmd", "c"}}}, helpCmd
     )));
     commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
-            "snf", "Manage Snippets", {{"create", {"mk", "c", "new"}}}, snippetCmd
+            "snf", "Manage Snippets", {{"create", {"mk", "c", "new"}}, {"value", {"v"}}}, snippetCmd
     )));
 }
 
@@ -137,4 +137,8 @@ const vector<pair<string, string>> &Command::getUsage() const {
 
 const map<string, vector<string>> &Command::getOptions() const {
     return options;
+}
+
+const vector<string> &Command::getOptionNames() const {
+    return optionNames;
 }

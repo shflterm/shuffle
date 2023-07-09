@@ -87,11 +87,8 @@ void helpCmd(Workspace &ws, map<string, string> &optionValues) {
 
 void snippetCmd(Workspace &ws, map<string, string> &optionValues) {
     //snf create aa help cd
-    string snippetName = optionValues["name"];
-    string cmd;
-//    for (int i = 3; i < args.size(); ++i) {
-//        cmd += args[i] + " ";
-//    }
+    string snippetName = optionValues["create"];
+    string cmd = optionValues["value"];
 
     addSnippet(snippetName, cmd);
     term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
