@@ -150,20 +150,22 @@ map<string, string> *parseOptions(Command *app, const vector<string> &args) {
     return parsedOptions;
 }
 
-void Workspace::execute(const string &input) {
+void Workspace::execute(const string &input, bool isSnippet) {
     vector<string> inSpl = splitBySpace(input);
     if (inSpl.empty()) return;
 
-    bool isSnippetFound = false;
-    for (const auto &item: snippets) {
-        if (item->getName() != inSpl[0]) continue;
-        isSnippetFound = true;
+    if (!isSnippet) {
+        bool isSnippetFound = false;
+        for (const auto &item: snippets) {
+            if (item->getName() != inSpl[0]) continue;
+            isSnippetFound = true;
 
-        term << "[*] " << item->getTarget() << newLine << newLine;
-        execute(item->getTarget());
+            term << "[*] " << item->getTarget() << newLine << newLine;
+            execute(item->getTarget(), true);
+        }
+
+        if (isSnippetFound) return;
     }
-
-    if (isSnippetFound) return;
 
     bool isCommandFound = false;
     Command *app;
