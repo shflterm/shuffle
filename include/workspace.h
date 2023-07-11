@@ -38,7 +38,7 @@ public:
 
     string historyDown();
 
-    void execute(const string &input);
+    void execute(const string &input, bool isSnippet = false);
 
     void inputPrompt(bool enableSuggestion);
 
