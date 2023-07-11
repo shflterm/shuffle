@@ -57,8 +57,6 @@ int main(int argc, char *argv[]) {
     signal(SIGABRT, &handleAborts);
 #endif
 
-    loadCommands();
-    loadSnippets();
     if (argc > 1) {
         string arg = argv[1];
         if (arg == "--version" || arg == "-v") {
@@ -81,11 +79,12 @@ int main(int argc, char *argv[]) {
     if (!exists(path(DOT_SHUFFLE))) create_directories(path(DOT_SHUFFLE));
     initShflJson();
 
-    term << "Welcome to" << color(FOREGROUND, Yellow) << " SHUFFLE " << SHUFFLE_VERSION.str() << resetColor << "!"
+    term << "Welcome to" << color(FOREGROUND, Blue) << " Shuffle " << SHUFFLE_VERSION.str() << resetColor << "!"
          << newLine
-         << "(C) 2023 Shuffle Team. All Rights Reserved." << newLine << newLine;
+         << "(C) 2023 김시후. All Rights Reserved." << newLine << newLine;
 
     loadCommands();
+    loadSnippets();
 
     term << "Type 'help' to get help!" << newLine;
 
