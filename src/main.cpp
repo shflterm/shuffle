@@ -44,6 +44,12 @@ extern "C" void handleAborts(int sig) {
 
 #endif
 
+extern "C" void handleQuit(int sig) {
+    term << newLine << "Bye." << newLine;
+    exit(sig);
+}
+
+
 int main(int argc, char *argv[]) {
 //  ios::sync_with_stdio(false);
 //  cin.tie(nullptr);
@@ -56,6 +62,8 @@ int main(int argc, char *argv[]) {
     signal(SIGSEGV, &handleAborts);
     signal(SIGABRT, &handleAborts);
 #endif
+    signal(SIGQUIT, &handleQuit);
+    signal(SIGINT, &handleQuit);
 
     if (argc > 1) {
         string arg = argv[1];
