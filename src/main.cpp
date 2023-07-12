@@ -29,7 +29,7 @@ LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exceptionPointers) {
 
 #include <csignal>
 
-extern "C" void handleAborts(int sig) {
+extern "C" void handleCrash(int sig) {
     term << newLine;
     error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
     error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
@@ -45,16 +45,13 @@ extern "C" void handleAborts(int sig) {
 #endif
 
 int main(int argc, char *argv[]) {
-//  ios::sync_with_stdio(false);
-//  cin.tie(nullptr);
-//  cout.tie(nullptr);
 #ifdef _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 
     SetUnhandledExceptionFilter(ExceptionHandler);
 #elif defined(__linux__) || defined(__APPLE__)
-    signal(SIGSEGV, &handleAborts);
-    signal(SIGABRT, &handleAborts);
+    signal(SIGSEGV, &handleCrash);
+    signal(SIGABRT, &handleCrash);
 #endif
 
     if (argc > 1) {
