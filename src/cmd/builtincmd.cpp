@@ -87,16 +87,8 @@ void helpCmd(Workspace &ws, map<string, string> &optionValues) {
 
 void snippetCmd(Workspace &ws, map<string, string> &optionValues) {
     //snf create aa help cd
-<<<<<<< HEAD
     string snippetName = optionValues["create"];
     string cmd = optionValues["value"];
-=======
-    string snippetName = optionValues["name"];
-    string cmd;
-//    for (int i = 3; i < args.size(); ++i) {
-//        cmd += args[i] + " ";
-//    }
->>>>>>> 3ff891d (빌트인커멘드 일부 구현)
 
     addSnippet(snippetName, cmd);
     term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
