@@ -11,7 +11,7 @@
 #include "version.h"
 #include "snippetmgr.h"
 
-void shflCmd(Workspace &ws, map <string, string> &optionValues) {
+void shflCmd(Workspace &ws, map<string, string> &optionValues) {
     if (optionValues["reload"] == "true") {
         info("Reloading command...");
         loadCommands();
@@ -37,7 +37,7 @@ void shflCmd(Workspace &ws, map <string, string> &optionValues) {
     }
 }
 
-void appMgrCmd(Workspace &ws, map <string, string> &optionValues) {
+void appMgrCmd(Workspace &ws, map<string, string> &optionValues) {
     if (optionValues.count("add")) {
         addSAPP(optionValues["add"]);
     } else if (optionValues.count("remove")) {
@@ -45,7 +45,7 @@ void appMgrCmd(Workspace &ws, map <string, string> &optionValues) {
     }
 }
 
-void helpCmd(Workspace &ws, map <string, string> &optionValues) {
+void helpCmd(Workspace &ws, map<string, string> &optionValues) {
     if (optionValues.count("command") == 0) {
         term << "== Shuffle Help ==" << newLine
              << "Version: " << SHUFFLE_VERSION.str() << newLine << newLine
@@ -66,7 +66,7 @@ void helpCmd(Workspace &ws, map <string, string> &optionValues) {
         term << "Thanks to: " << color(BACKGROUND, Green) << "shfl credits" << resetColor << newLine;
     } else {
         string cmdName = optionValues["command"];
-        shared_ptr <Command> cmd = findCommand(cmdName);
+        shared_ptr<Command> cmd = findCommand(cmdName);
         if (cmd == nullptr) {
             term << "Command '" << cmdName << "' not found." << newLine;
             return;
@@ -85,7 +85,7 @@ void helpCmd(Workspace &ws, map <string, string> &optionValues) {
     }
 }
 
-void snippetCmd(Workspace &ws, map <string, string> &optionValues) {
+void snippetCmd(Workspace &ws, map<string, string> &optionValues) {
     //snf create aa help cd
     string snippetName = optionValues["create"];
     string cmd = optionValues["value"];
@@ -94,6 +94,6 @@ void snippetCmd(Workspace &ws, map <string, string> &optionValues) {
     term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
 }
 
-void BuiltinCommand::run(Workspace &ws, map <string, string> &optionValues) const {
+void BuiltinCommand::run(Workspace &ws, map<string, string> &optionValues) const {
     cmd(ws, optionValues);
 }

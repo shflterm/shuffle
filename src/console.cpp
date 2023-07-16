@@ -53,8 +53,6 @@ void error(const string &text) {
     error(text, {});
 }
 
-void too_many_arguments() { error("There are too many or too few arguments."); }
-
 #ifdef _WIN32
 #define NOMINMAX 1
 #define byte win_byte_override
@@ -86,17 +84,6 @@ int readChar() {
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 
     return ch;
-#endif
-}
-
-void gotoxy(int x, int y) {
-#ifdef _WIN32
-    COORD pos;
-    pos.X = (short) x;
-    pos.Y = (short) y;
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
-#elif defined(__linux__) || defined(__APPLE__)
-    printf("\033[%d;%dH", y, x);
 #endif
 }
 

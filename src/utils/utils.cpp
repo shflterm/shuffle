@@ -144,7 +144,7 @@ int progressCallback([[maybe_unused]] void *clientp, curl_off_t dltotal,
     lastPercent = percent;
     term << eraseLine;
     info("Downloading... (" + to_string(percent) + "%)");
-    gotoxy(wherex(), wherey() - 1);
+    term << teleport(wherex(), wherey() - 1);
 
     return 0;
 }

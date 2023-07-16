@@ -25,9 +25,9 @@ string genStackTrace(CONTEXT *context) {
 
 #ifdef _M_IX86
     machineType = IMAGE_FILE_MACHINE_I386;
-      stackFrame.AddrPC.Offset = context->Eip;
-      stackFrame.AddrFrame.Offset = context->Ebp;
-      stackFrame.AddrStack.Offset = context->Esp;
+    stackFrame.AddrPC.Offset = context->Eip;
+    stackFrame.AddrFrame.Offset = context->Ebp;
+    stackFrame.AddrStack.Offset = context->Esp;
 #elif _M_X64
     machineType = IMAGE_FILE_MACHINE_AMD64;
     stackFrame.AddrPC.Offset = context->Rip;

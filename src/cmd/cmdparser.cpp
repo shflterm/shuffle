@@ -4,29 +4,29 @@
 
 #include "console.h"
 
-ParsedCommand parseCommand(Command *app, const vector <string> &args) {
+ParsedCommand parseCommand(Command *app, const vector<string> &args) {
     ParsedCommand parsed = ParsedCommand(app);
 
-    map <string, string> *parsedOptions = parseOptions(app, args);
+    map<string, string> *parsedOptions = parseOptions(app, args);
     if (parsedOptions == nullptr) return ParsedCommand(nullptr);
 
     parsed.options = *parsedOptions;
     return parsed;
 }
 
-map <string, string> *parseOptions(Command *app, const vector <string> &args) {
+map<string, string> *parseOptions(Command *app, const vector<string> &args) {
     auto *parsedOptions = new map<string, string>();
 
-    vector <CommandOption> options = app->getOptions();
+    vector<CommandOption> options = app->getOptions();
 
-    map <string, vector<string>> optionAbbreviations;
+    map<string, vector<string>> optionAbbreviations;
     for (auto &option: options) {
         for (auto &abbr: option.aliases) {
             optionAbbreviations[option.name].push_back(abbr);
         }
     }
 
-    vector <string> optionNames, optionNamesWithAbbr;
+    vector<string> optionNames, optionNamesWithAbbr;
     for (const auto &option: options) {
         optionNames.push_back(option.name);
         optionNamesWithAbbr.push_back(option.name);

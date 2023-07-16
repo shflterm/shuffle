@@ -33,7 +33,7 @@ void Workspace::moveDirectory(path newDir) {
         dir = dir.parent_path();
 }
 
-vector <string> Workspace::getHistory() {
+vector<string> Workspace::getHistory() {
     return history;
 }
 
@@ -57,7 +57,7 @@ string Workspace::historyDown() {
 }
 
 void Workspace::execute(const string &input, bool isSnippet) {
-    vector <string> inSpl = splitBySpace(input);
+    vector<string> inSpl = splitBySpace(input);
     if (inSpl.empty()) return;
 
     if (!isSnippet) {
@@ -89,7 +89,7 @@ void Workspace::execute(const string &input, bool isSnippet) {
         return;
     }
 
-    vector <string> args;
+    vector<string> args;
     for (int i = 1; i < inSpl.size(); ++i) args.push_back(inSpl[i]);
 
     ParsedCommand parsed = parseCommand(app, args);
@@ -98,8 +98,8 @@ void Workspace::execute(const string &input, bool isSnippet) {
     parsed.executeApp(*this);
 }
 
-vector <string> makeDictionary(const vector <shared_ptr<Command>> &cmds) {
-    vector <string> dictionary;
+vector<string> makeDictionary(const vector<shared_ptr<Command>> &cmds) {
+    vector<string> dictionary;
     dictionary.reserve(cmds.size());
     for (const auto &item: cmds) {
         dictionary.push_back(item->getName());
@@ -108,22 +108,22 @@ vector <string> makeDictionary(const vector <shared_ptr<Command>> &cmds) {
 }
 
 string getSuggestion(const Workspace &ws, const string &input) {
-    vector <string> args = split(input, regex(R"(\s+)"));
+    vector<string> args = split(input, regex(R"(\s+)"));
     string suggestion;
     if (input[input.length() - 1] == ' ') args.emplace_back("");
 
     if (args.size() == 1) {
         suggestion = findSuggestion(ws, args[0], makeDictionary(commands))[0];
     } else {
-        shared_ptr <Command> cmd = findCommand(args[0]);
+        shared_ptr<Command> cmd = findCommand(args[0]);
 
         size_t cur = args.size() - 1;
         if (args[cur][0] == '-') {
-            vector <string> optionNames;
+            vector<string> optionNames;
             for (const auto &item: cmd->getOptions()) optionNames.push_back(item.name);
             suggestion = findSuggestion(ws, args[cur].substr(1), optionNames)[0];
         } else {
-            vector <string> optionNames;
+            vector<string> optionNames;
             for (const auto &item: cmd->getOptions())
                 if (item.type == BOOL_T)
                     optionNames.push_back(item.name);
@@ -207,14 +207,14 @@ void Workspace::inputPrompt(bool enableSuggestion) {
                 mv *= -1;
                 switch (i) {
                     case 72: {
-                        gotoxy(wherex() - (int) input.size(), wherey());
+                        term << teleport(wherex() - (int) input.size(), wherey());
                         term << eraseFromCursorToLineEnd;
                         input = historyUp();
                         term << input;
                         break;
                     }
                     case 80: {
-                        gotoxy(wherex() - (int) input.size(), wherey());
+                        term << teleport(wherex() - (int) input.size(), wherey());
                         term << eraseFromCursorToLineEnd;
                         input = historyDown();
                         term << input;
@@ -224,7 +224,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
                         break;
                 }
             } else if (c == '@') {
-                gotoxy(wherex() - (int) input.size() - 2, wherey());
+                term << teleport(wherex() - (int) input.size() - 2, wherey());
                 term << eraseFromCursorToLineEnd;
                 term << color(FOREGROUND, Yellow) << "@ " << resetColor;
                 string wsName;
@@ -239,7 +239,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
                 }
                 return;
             } else if (c == '&') {
-                gotoxy(wherex() - (int) input.size() - 2, wherey());
+                term << teleport(wherex() - (int) input.size() - 2, wherey());
                 term << eraseFromCursorToLineEnd;
                 term << color(FOREGROUND, Yellow) << "& " << resetColor;
                 string command;
@@ -255,7 +255,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
 
             string suggestion = getSuggestion(*this, input);
             term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
-            gotoxy(wherex() - (int) suggestion.size(), wherey());
+            term << teleport(wherex() - (int) suggestion.size(), wherey());
 
             string hint = getHint(*this, input);
             term << saveCursorPosition
