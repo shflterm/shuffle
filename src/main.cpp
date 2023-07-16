@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
 
     term << "Welcome to" << color(FOREGROUND, Blue) << " Shuffle " << SHUFFLE_VERSION.str() << resetColor << "!"
          << newLine
-         << "(C) 2023 김시후. All Rights Reserved." << newLine << newLine;
+         << "(C) 2023 Kim Sihu. All Rights Reserved." << newLine << newLine;
 
     loadCommands();
     loadSnippets();
