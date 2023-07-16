@@ -51,7 +51,7 @@ void addSAPP(const string &name) {
             success("Download Completed!");
         } else {
             term << teleport(0, wherey() - 1) << eraseLine;
-            error("An error occurred while downloading the app. (Please double check the name of the app to be installed.)");
+            error("The app could not be found in the repository.");
             return;
         }
     } else {

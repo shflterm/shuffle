@@ -150,7 +150,7 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
     Json::Reader reader;
     reader.parse(readFile(runDotShfl), root, false);
     if (root["version"].asInt() == 1) {
-        error("This app is no longer supported. Please upgrade the app.");
+        error("This app(" + name + ") is no longer supported. Please upgrade the app.");
     } else if (root["version"].asInt() == 2) {
         loadVersion2(root, name);
     } else {
