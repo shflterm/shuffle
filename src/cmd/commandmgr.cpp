@@ -14,26 +14,30 @@ using std::make_shared;
 vector<shared_ptr<Command>> commands;
 
 void loadDefaultCommands() {
-//    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
-//            "shfl", "Shuffle Command", {
-//                    {"reload",  {"rl"}},
-//                    {"update",  {"up"}},
-//                    {"credits", {"credit", "crd"}}
-//            }, shflCmd
-//    )));
-//    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
-//            "appmgr", "App Manager", {
-//                    {"add",    {"ad", "a"}},
-//                    {"remove", {"rm", "r"}},
-//            }, appMgrCmd
-//    )));
-//    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
-//            "help", "Show help", {{"command", {"cmd", "c"}}}, helpCmd
-//    )));
-//    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
-//            "snf", "Manage Snippets", {{"create", {"mk", "c", "new"}},
-//                                       {"value",  {"v"}}}, snippetCmd
-//    )));
+    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+            "shfl", "Shuffle Command", {
+                    CommandOption("reload", BOOL_T, {"rl"}),
+                    CommandOption("update", BOOL_T, {}),
+                    CommandOption("credits", BOOL_T, {"credit"}),
+            }, shflCmd
+    )));
+    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+            "appmgr", "App Manager", {
+                    CommandOption("add", TEXT_T, {"ad", "a"}),
+                    CommandOption("remove", TEXT_T, {"rm", "r"}),
+            }, appMgrCmd
+    )));
+    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+            "help", "Show help", {
+                    CommandOption("command", TEXT_T, {"cmd", "help"})
+            }, helpCmd
+    )));
+    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+            "snf", "Manage Snippets", {
+                    CommandOption("create", TEXT_T, {"mk", "c", "new"}),
+                    CommandOption("value", TEXT_T, {"v"}),
+            }, snippetCmd
+    )));
 }
 
 void loadCommand(const CommandData &data) {

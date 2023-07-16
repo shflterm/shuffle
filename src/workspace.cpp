@@ -116,6 +116,7 @@ string getSuggestion(const Workspace &ws, const string &input) {
         suggestion = findSuggestion(ws, args[0], makeDictionary(commands))[0];
     } else {
         shared_ptr<Command> cmd = findCommand(args[0]);
+        if (cmd == nullptr) return "";
 
         size_t cur = args.size() - 1;
 
