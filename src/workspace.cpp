@@ -118,16 +118,34 @@ string getSuggestion(const Workspace &ws, const string &input) {
         shared_ptr<Command> cmd = findCommand(args[0]);
 
         size_t cur = args.size() - 1;
+
+        vector<string> usedOptions;
+        for (int i = 1; i < args.size(); ++i) {
+            string item = args[i];
+            if (item[0] == '-') {
+                usedOptions.push_back(item.substr(1));
+            } else {
+                if (i <= 1 || args[i - 1][0] != '-') {
+                    usedOptions.push_back(item);
+                }
+            }
+        }
+
         if (args[cur][0] == '-') {
             vector<string> optionNames;
-            for (const auto &item: cmd->getOptions()) optionNames.push_back(item.name);
+            for (const auto &item: cmd->getOptions()) {
+                if (std::find(usedOptions.begin(), usedOptions.end(), item.name) == usedOptions.end()) {
+                    optionNames.push_back(item.name);
+                }
+            }
             suggestion = findSuggestion(ws, args[cur].substr(1), optionNames)[0];
         } else {
             vector<string> optionNames;
             for (const auto &item: cmd->getOptions())
-                if (item.type == BOOL_T)
+                if (item.type == BOOL_T &&
+                    std::find(usedOptions.begin(), usedOptions.end(), item.name) == usedOptions.end())
                     optionNames.push_back(item.name);
-            suggestion = findSuggestion(ws, args[cur].substr(1), optionNames)[0];
+            suggestion = findSuggestion(ws, args[cur], optionNames)[0];
         }
     }
     return suggestion;
