@@ -16,7 +16,8 @@
 #include "utils/credit.h"
 #include "term.h"
 #include "snippetmgr.h"
-#include "cmd/executedcmd.h"
+#include "cmd/parsedcmd.h"
+#include "cmd/cmdparser.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -61,95 +62,6 @@ string Workspace::historyDown() {
     return history[++historyIndex];
 }
 
-map<string, string> *parseOptions(Command *app, const vector<string> &args) {
-    auto *parsedOptions = new map<string, string>();
-    map<string, vector<string>> optionAbbreviations = app->getOptions();
-    vector<string> optionNames = app->getOptionNames();
-    vector<string> optionNamesWithAbbr = app->getOptionNames();
-    for (auto &option: optionNames) {
-        for (const auto &item: optionAbbreviations[option]) {
-            optionNamesWithAbbr.push_back(item);
-        }
-    }
-
-    size_t optionIndex = 0;
-
-    for (size_t i = 0; i < args.size(); ++i) {
-        const string &arg = args[i];
-        string key, value;
-
-        size_t delimiterPos = arg.find('=');
-        if (delimiterPos != string::npos) {
-            key = arg.substr(0, delimiterPos);
-            value = arg.substr(delimiterPos + 1);
-        } else if (arg[0] == '-' && arg.size() > 1) {
-            key = arg.substr(1);
-            if (key[0] == '-') {
-                error("Invalid option format '" + arg +
-                      "'. Options should be in the format '-key value' or 'key=value'.");
-                delete parsedOptions;
-                return nullptr;
-            }
-            if (i + 1 < args.size() && args[i + 1][0] != '-') {
-                value = args[i + 1];
-                ++i;
-            } else {
-                error("Missing value for option '-" + key + "'.");
-                delete parsedOptions;
-                return nullptr;
-            }
-        } else if (arg[0] == '!' && arg.size() > 1) {
-            key = arg.substr(1);
-            value = "false";
-        } else {
-            if (find(optionNamesWithAbbr.begin(), optionNamesWithAbbr.end(), arg) != optionNamesWithAbbr.end()) {
-                key = arg;
-                value = "true";
-            } else if (optionIndex < optionNames.size()) {
-                key = optionNames[optionIndex++];
-                value = arg;
-                // Add this line to handle multiple arguments for an option
-                while (i + 1 < args.size() && args[i + 1][0] != '-') {
-                    value += " " + args[i + 1];
-                    ++i;
-                }
-            } else {
-                error("Unexpected argument '" + arg + "'.");
-                delete parsedOptions;
-                return nullptr;
-            }
-        }
-
-        bool foundAbbreviation = false;
-        for (const auto &entry: optionAbbreviations) {
-            if (entry.first == key) {
-                foundAbbreviation = true;
-                break;
-            }
-            for (const auto &abbreviation: entry.second) {
-                if (abbreviation == key) {
-                    key = entry.first;
-                    foundAbbreviation = true;
-                    break;
-                }
-            }
-            if (foundAbbreviation) {
-                break;
-            }
-        }
-
-        if (!foundAbbreviation) {
-            error("Invalid option key '" + key + "'.");
-            delete parsedOptions;
-            return nullptr;
-        }
-
-        (*parsedOptions)[key] = value;
-    }
-
-    return parsedOptions;
-}
-
 void Workspace::execute(const string &input, bool isSnippet) {
     vector<string> inSpl = splitBySpace(input);
     if (inSpl.empty()) return;
@@ -167,18 +79,9 @@ void Workspace::execute(const string &input, bool isSnippet) {
         if (isSnippetFound) return;
     }
 
-    bool isCommandFound = false;
-    Command *app;
-    for (const auto &cmd: commands) {
-        if (cmd->getName() != inSpl[0]) continue;
-        isCommandFound = true;
+    Command *app = findCommand(inSpl[0]).get();
 
-        app = dynamic_cast<SAPPCommand *>(cmd.get());
-        if (app == nullptr) app = dynamic_cast<BuiltinCommand *>(cmd.get());
-        break;
-    }
-
-    if (!isCommandFound || app == nullptr) {
+    if (app == nullptr) {
         error("Sorry. Command '$0' not found.", {inSpl[0]});
         pair<int, Command> similarWord = {1000000000, Command("")};
         for (const auto &cmd: commands) {
@@ -192,16 +95,10 @@ void Workspace::execute(const string &input, bool isSnippet) {
         return;
     }
 
-    ExecutedCommand executed = ExecutedCommand(app);
-
     vector<string> args;
-    for (int i = 1; i < inSpl.size(); ++i) args.push_back(inSpl[i]);
+    for (int i = 1; i < inSpl.size(); ++i) inSpl.push_back(args[i]);
 
-    map<string, string> *parsedOptions = parseOptions(app, args);
-    if (parsedOptions == nullptr) return;
-
-    executed.options = *parsedOptions;
-    executed.executeApp(*this);
+    parseCommand(app, args).executeApp(*this);
 }
 
 vector<string> makeDictionary(const vector<shared_ptr<Command>> &cmds) {

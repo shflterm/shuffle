@@ -2,8 +2,8 @@
 // Created by 08sih on 7/6/2023.
 //
 
-#ifndef SHFL_EXECUTEDCMD_H
-#define SHFL_EXECUTEDCMD_H
+#ifndef SHFL_PARSEDCMD_H
+#define SHFL_PARSEDCMD_H
 
 #include <map>
 #include <string>
@@ -12,14 +12,14 @@
 
 using namespace std;
 
-class ExecutedCommand {
+class ParsedCommand {
 public:
     Command *app;
     map<string, string> options;
 
     void executeApp(Workspace ws);
 
-    explicit ExecutedCommand(Command *app);
+    explicit ParsedCommand(Command *app);
 };
 
-#endif //SHFL_EXECUTEDCMD_H
+#endif //SHFL_PARSEDCMD_H
