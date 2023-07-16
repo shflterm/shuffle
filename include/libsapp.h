@@ -10,7 +10,6 @@
 
 #include "workspace.h"
 
-using namespace std;
 
 #ifdef _WIN32
 #define SAPPENTRYPOINT extern "C" __declspec(dllexport) void

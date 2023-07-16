@@ -8,18 +8,15 @@
 #include <string>
 #include <vector>
 
-#include "commandmgr.h"
+#include "cmd/commandmgr.h"
 
-using namespace std;
 
 vector<string> findSuggestion(Workspace ws,
                               const string &input,
-                              shared_ptr<Command>rootCommand,
-                              const vector<shared_ptr<Command>> &DICTIONARY);
+                              const vector<string> &DICTIONARY);
 
 vector<string> createSuggestions(Workspace ws,
                                  const string &str,
-                                 shared_ptr<Command>rootCommand,
-                                 const vector<shared_ptr<Command>> &DICTIONARY);
+                                 const vector<string> &DICTIONARY);
 
 #endif //SHUFFLE_INCLUDE_SUGGESTION_H_

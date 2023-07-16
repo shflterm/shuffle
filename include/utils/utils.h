@@ -18,19 +18,32 @@
 #include <regex>
 #include <json/json.h>
 
-using namespace std;
+using std::regex;
+
+std::vector<std::string> splitBySpace(const std::string &input);
 
 vector<string> split(const string &s, const regex &delimiter_regex);
+
 string trim(const string &s);
+
 int levenshteinDist(const string &str1, const string &str2);
+
 string replace(string str, const string &from, const string &to);
+
 string readFile(const string &path);
+
 void writeFile(const string &path, const string &value);
+
 string readTextFromWeb(const string &url);
+
 bool downloadFile(const string &url, const string &file);
+
 void updateShuffle();
+
 void initShflJson();
-Json::Value getShflJson(const string& part);
-void setShflJson(const string& part, Json::Value value);
+
+Json::Value getShflJson(const string &part);
+
+void setShflJson(const string &part, Json::Value value);
 
 #endif //SHUFFLE_INCLUDE_UTILS_H_

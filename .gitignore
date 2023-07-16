@@ -31,3 +31,7 @@ key.txt
 vcpkg/
 vcpkg_installed/
 .cache/
+build-wsl/
+build-wsl-dbg/
+build-mingw/
+build-mingw-dbg/

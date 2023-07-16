@@ -3,33 +3,31 @@
 #include <filesystem>
 
 #include "console.h"
-#include "commandmgr.h"
+#include "cmd/commandmgr.h"
 #include "utils/utils.h"
 #include "utils/crashreport.h"
 #include "version.h"
 #include "snippetmgr.h"
 
-using namespace std;
-using namespace std::filesystem;
 #ifdef _WIN32
 
 LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exceptionPointers) {
-  term << newLine;
-  error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
-  error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
-  term << newLine;
-  CrashReport report = CrashReport()
-      .setStackTrace(genStackTrace(exceptionPointers->ContextRecord));
-  error(report.make());
-  report.save();
-  exit(EXCEPTION_CONTINUE_SEARCH);
+    term << newLine;
+    error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
+    error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
+    term << newLine;
+    CrashReport report = CrashReport()
+            .setStackTrace(genStackTrace(exceptionPointers->ContextRecord));
+    error(report.make());
+    report.save();
+    exit(EXCEPTION_CONTINUE_SEARCH);
 }
 
 #elif defined(__linux__) || defined(__APPLE__)
 
 #include <csignal>
 
-extern "C" void handleAborts(int sig) {
+extern "C" void handleCrash(int sig) {
     term << newLine;
     error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
     error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
@@ -51,16 +49,13 @@ extern "C" void handleQuit(int sig) {
 
 
 int main(int argc, char *argv[]) {
-//  ios::sync_with_stdio(false);
-//  cin.tie(nullptr);
-//  cout.tie(nullptr);
 #ifdef _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 
     SetUnhandledExceptionFilter(ExceptionHandler);
 #elif defined(__linux__) || defined(__APPLE__)
-    signal(SIGSEGV, &handleAborts);
-    signal(SIGABRT, &handleAborts);
+    signal(SIGSEGV, &handleCrash);
+    signal(SIGABRT, &handleCrash);
 #endif
     signal(SIGQUIT, &handleQuit);
     signal(SIGINT, &handleQuit);

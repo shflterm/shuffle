@@ -1,26 +1,20 @@
 #include "workspace.h"
 
 #include <iostream>
-#include <regex>
 #include <utility>
-#include <sstream>
 #include <map>
 
-#include "builtincmd.h"
+#include "cmd/builtincmd.h"
 #include "console.h"
-#include "commandmgr.h"
 #include "utils/utils.h"
 #include "suggestion.h"
 #include "sapp/downloader.h"
-#include "sapp/sapp.h"
-#include "version.h"
-#include "utils/credit.h"
 #include "term.h"
-#include "builtincmd.h"
 #include "snippetmgr.h"
+#include "cmd/parsedcmd.h"
+#include "cmd/cmdparser.h"
 
-using namespace std;
-using namespace std::filesystem;
+using std::stringstream, std::cin;
 
 map<string, Workspace *> wsMap;
 
@@ -62,60 +56,55 @@ string Workspace::historyDown() {
     return history[++historyIndex];
 }
 
-void Workspace::execute(const string &input) {
-    vector<string> args = split(input, regex(R"(\s+)"));
-    if (args.empty()) return;
+void Workspace::execute(const string &input, bool isSnippet) {
+    vector<string> inSpl = splitBySpace(input);
+    if (inSpl.empty()) return;
 
-    if (args[0] == "shfl") {
-        shflCmd(*this, args);
+    if (!isSnippet) {
+        bool isSnippetFound = false;
+        for (const auto &item: snippets) {
+            if (item->getName() != inSpl[0]) continue;
+            isSnippetFound = true;
 
-        return;
-    } else if (args[0] == "help") {
-        helpCmd(*this, args);
-    } else if (args[0] == "snf") {
-        snippetCmd(*this, args);
-    }
-
-    bool isSnippetFound = false;
-    for (const auto &item: snippets) {
-        if (item->getName() != args[0]) continue;
-        isSnippetFound = true;
-
-        term << "[*] " << item->getTarget() << newLine << newLine;
-        execute(item->getTarget());
-    }
-
-    if (isSnippetFound) return;
-
-    bool isCommandFound = false;
-    for (const auto &cmd: commands) {
-        if (cmd->getName() != args[0]) continue;
-        isCommandFound = true;
-
-        vector<string> newArgs;
-        for (int i = 1; i < args.size(); ++i) newArgs.push_back(args[i]);
-
-        Workspace &ws = (*this);
-        auto *sappCommand = dynamic_cast<SAPPCommand *>(cmd.get());
-        if (sappCommand != nullptr) {
-            sappCommand->run(*this, newArgs);
-        } else {
-            cmd->run(ws, args);
+            term << "[*] " << item->getTarget() << newLine << newLine;
+            execute(item->getTarget(), true);
         }
-        break;
-    } // Find Commands
 
-    if (!isCommandFound) {
-        error("Sorry. Command '$0' not found.", {args[0]});
+        if (isSnippetFound) return;
+    }
+
+    Command *app = findCommand(inSpl[0]).get();
+
+    if (app == nullptr) {
+        error("Sorry. Command '$0' not found.", {inSpl[0]});
         pair<int, Command> similarWord = {1000000000, Command("")};
         for (const auto &cmd: commands) {
-            int dist = levenshteinDist(args[0], cmd->getName());
+            int dist = levenshteinDist(inSpl[0], cmd->getName());
             if (dist < similarWord.first) similarWord = {dist, *cmd};
         }
 
         if (similarWord.first > 1) warning("Please make sure you entered the correct command.");
         else warning("Did you mean '$0'?", {similarWord.second.getName()});
+
+        return;
     }
+
+    vector<string> args;
+    for (int i = 1; i < inSpl.size(); ++i) args.push_back(inSpl[i]);
+
+    ParsedCommand parsed = parseCommand(app, args);
+
+    if (parsed.app == nullptr) return;
+    parsed.executeApp(*this);
+}
+
+vector<string> makeDictionary(const vector<shared_ptr<Command>> &cmds) {
+    vector<string> dictionary;
+    dictionary.reserve(cmds.size());
+    for (const auto &item: cmds) {
+        dictionary.push_back(item->getName());
+    }
+    return dictionary;
 }
 
 string getSuggestion(const Workspace &ws, const string &input) {
@@ -124,45 +113,67 @@ string getSuggestion(const Workspace &ws, const string &input) {
     if (input[input.length() - 1] == ' ') args.emplace_back("");
 
     if (args.size() == 1) {
-        suggestion = findSuggestion(ws, args[args.size() - 1], nullptr, commands)[0];
+        suggestion = findSuggestion(ws, args[0], makeDictionary(commands))[0];
     } else {
-        shared_ptr<Command> final = findCommand(args[0]);
-        if (final == nullptr) return "";
+        shared_ptr<Command> cmd = findCommand(args[0]);
+        if (cmd == nullptr) return "";
 
-        for (int i = 1; i < args.size() - 1; i++) {
-            shared_ptr<Command> sub = findCommand(args[i], final->getChildren());
-            if (sub == nullptr) return "";
-            final = sub;
+        size_t cur = args.size() - 1;
+
+        vector<string> usedOptions;
+        for (int i = 1; i < args.size(); ++i) {
+            string item = args[i];
+            if (item[0] == '-') {
+                usedOptions.push_back(item.substr(1));
+            } else {
+                if (i <= 1 || args[i - 1][0] != '-') {
+                    usedOptions.push_back(item);
+                }
+            }
         }
 
-        suggestion = findSuggestion(ws, args[args.size() - 1], final, final->getChildren())[0];
+        if (args[cur][0] == '-') {
+            vector<string> optionNames;
+            for (const auto &item: cmd->getOptions()) {
+                if (std::find(usedOptions.begin(), usedOptions.end(), item.name) == usedOptions.end()) {
+                    optionNames.push_back(item.name);
+                }
+            }
+            suggestion = findSuggestion(ws, args[cur].substr(1), optionNames)[0];
+        } else {
+            vector<string> optionNames;
+            for (const auto &item: cmd->getOptions())
+                if (item.type == BOOL_T &&
+                    std::find(usedOptions.begin(), usedOptions.end(), item.name) == usedOptions.end())
+                    optionNames.push_back(item.name);
+            suggestion = findSuggestion(ws, args[cur], optionNames)[0];
+        }
     }
-    if (suggestion.empty()) return "";
-
     return suggestion;
 }
 
 string getHint(const Workspace &ws, const string &input) {
-    vector<string> args = split(input, regex(R"(\s+)"));
-
-    if (args.size() == 1) {
-        shared_ptr<Command> command = findCommand(args[0]);
-        if (command == nullptr) return "";
-        else return command->getDescription();
-    } else {
-        shared_ptr<Command> final = findCommand(args[0]);
-        if (final == nullptr) return "";
-
-        for (int i = 1; i < args.size(); i++) {
-            shared_ptr<Command> sub = findCommand(args[i], final->getChildren());
-            if (sub == nullptr) {
-                return final->getDescription();
-            }
-            final = sub;
-        }
-
-        return final->getDescription();
-    }
+//    vector<string> args = split(input, regex(R"(\s+)"));
+//
+//    if (args.size() == 1) {
+//        shared_ptr<Command> command = findCommand(args[0]);
+//        if (command == nullptr) return "";
+//        else return command->getDescription();
+//    } else {
+//        shared_ptr<Command> final = findCommand(args[0]);
+//        if (final == nullptr) return "";
+//
+//        for (int i = 1; i < args.size(); i++) {
+//            shared_ptr<Command> sub = findCommand(args[i], final->getChildren());
+//            if (sub == nullptr) {
+//                return final->getDescription();
+//            }
+//            final = sub;
+//        }
+//
+//        return final->getDescription();
+//    }
+    return "";
 }
 
 string Workspace::prompt() {
@@ -185,12 +196,13 @@ string Workspace::prompt() {
 
 void Workspace::inputPrompt(bool enableSuggestion) {
     term << prompt();
-    int x = wherex();
-    term << newLine;
-    term << teleport(x, wherey() - 1);
 
     string input;
     if (enableSuggestion) {
+        int x = wherex();
+        term << newLine;
+        term << teleport(x, wherey() - 1);
+
         int c;
         while (true) {
             c = readChar();
@@ -214,14 +226,14 @@ void Workspace::inputPrompt(bool enableSuggestion) {
                 mv *= -1;
                 switch (i) {
                     case 72: {
-                        gotoxy(wherex() - (int) input.size(), wherey());
+                        term << teleport(wherex() - (int) input.size(), wherey());
                         term << eraseFromCursorToLineEnd;
                         input = historyUp();
                         term << input;
                         break;
                     }
                     case 80: {
-                        gotoxy(wherex() - (int) input.size(), wherey());
+                        term << teleport(wherex() - (int) input.size(), wherey());
                         term << eraseFromCursorToLineEnd;
                         input = historyDown();
                         term << input;
@@ -231,7 +243,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
                         break;
                 }
             } else if (c == '@') {
-                gotoxy(wherex() - (int) input.size() - 2, wherey());
+                term << teleport(wherex() - (int) input.size() - 2, wherey());
                 term << eraseFromCursorToLineEnd;
                 term << color(FOREGROUND, Yellow) << "@ " << resetColor;
                 string wsName;
@@ -246,7 +258,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
                 }
                 return;
             } else if (c == '&') {
-                gotoxy(wherex() - (int) input.size() - 2, wherey());
+                term << teleport(wherex() - (int) input.size() - 2, wherey());
                 term << eraseFromCursorToLineEnd;
                 term << color(FOREGROUND, Yellow) << "& " << resetColor;
                 string command;
@@ -262,7 +274,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
 
             string suggestion = getSuggestion(*this, input);
             term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
-            gotoxy(wherex() - (int) suggestion.size(), wherey());
+            term << teleport(wherex() - (int) suggestion.size(), wherey());
 
             string hint = getHint(*this, input);
             term << saveCursorPosition
@@ -283,8 +295,10 @@ void Workspace::inputPrompt(bool enableSuggestion) {
     }
 }
 
-Workspace::Workspace(const string &name) : name(name) {
+Workspace::Workspace(
+        const string &name) : name(name) {
     wsMap[name] = this;
 }
 
-Workspace::Workspace() = default;
+Workspace::Workspace() =
+default;

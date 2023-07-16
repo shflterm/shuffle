@@ -1,9 +1,9 @@
-#include "builtincmd.h"
+#include "cmd/builtincmd.h"
 
 #include <memory>
-#include <term.h>
+#include "term.h"
 
-#include "commandmgr.h"
+#include "cmd/commandmgr.h"
 #include "console.h"
 #include "sapp/downloader.h"
 #include "utils/credit.h"
@@ -11,41 +11,18 @@
 #include "version.h"
 #include "snippetmgr.h"
 
-void shflCmd(Workspace ws, vector<string> args) {
-    if (args.size() < 2) {
-        too_many_arguments();
-        return;
-    }
-
-    if (args[1] == "reload") {
+void shflCmd(Workspace &ws, map<string, string> &optionValues) {
+    if (optionValues["reload"] == "true") {
         info("Reloading command...");
         loadCommands();
         success("Reloaded all commands!");
-    } else if (args[1] == "apps") {
-        if (args.size() < 3) {
-            too_many_arguments();
-            return;
+    } else if (optionValues["apps"] == "true") {
+        if (optionValues.count("add")) {
+            addSAPP(optionValues["add"]);
+        } else if (optionValues.count("remove")) {
+            removeSAPP(optionValues["remove"]);
         }
-        if (args[2] == "add") {
-            if (args.size() < 4) {
-                too_many_arguments();
-                return;
-            }
-
-            for (int i = 3; i < args.size(); ++i) {
-                addSAPP(args[i]);
-            }
-        } else if (args[2] == "remove") {
-            if (args.size() < 4) {
-                too_many_arguments();
-                return;
-            }
-
-            for (int i = 3; i < args.size(); ++i) {
-                removeSAPP(args[i]);
-            }
-        }
-    } else if (args[1] == "update") {
+    } else if (optionValues["update"] == "true") {
         string latest = trim(readTextFromWeb(
                 "https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
         if (latest != SHUFFLE_VERSION.str()) {
@@ -55,13 +32,21 @@ void shflCmd(Workspace ws, vector<string> args) {
         } else {
             term << "You are using the latest version of Shuffle." << newLine;
         }
-    } else if (args[1] == "credits") {
+    } else if (optionValues["credits"] == "true") {
         term << createCreditText();
     }
 }
 
-void helpCmd(Workspace ws, vector<string> args) {
-    if (args.size() < 2) {
+void appMgrCmd(Workspace &ws, map<string, string> &optionValues) {
+    if (optionValues.count("add")) {
+        addSAPP(optionValues["add"]);
+    } else if (optionValues.count("remove")) {
+        removeSAPP(optionValues["remove"]);
+    }
+}
+
+void helpCmd(Workspace &ws, map<string, string> &optionValues) {
+    if (optionValues.count("command") == 0) {
         term << "== Shuffle Help ==" << newLine
              << "Version: " << SHUFFLE_VERSION.str() << newLine << newLine
              << "Commands: " << newLine;
@@ -80,7 +65,7 @@ void helpCmd(Workspace ws, vector<string> args) {
 
         term << "Thanks to: " << color(BACKGROUND, Green) << "shfl credits" << resetColor << newLine;
     } else {
-        string cmdName = args[1];
+        string cmdName = optionValues["command"];
         shared_ptr<Command> cmd = findCommand(cmdName);
         if (cmd == nullptr) {
             term << "Command '" << cmdName << "' not found." << newLine;
@@ -100,25 +85,15 @@ void helpCmd(Workspace ws, vector<string> args) {
     }
 }
 
-void snippetCmd(Workspace ws, vector<string> args) {
+void snippetCmd(Workspace &ws, map<string, string> &optionValues) {
     //snf create aa help cd
-    if (args.size() < 2) {
-        too_many_arguments();
-        return;
-    }
-    if (args[1] == "create") {
-        if (args.size() < 4) {
-            too_many_arguments();
-            return;
-        }
+    string snippetName = optionValues["create"];
+    string cmd = optionValues["value"];
 
-        string snippetName = args[2];
-        string cmd;
-        for (int i = 3; i < args.size(); ++i) {
-            cmd += args[i] + " ";
-        }
+    addSnippet(snippetName, cmd);
+    term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
+}
 
-        addSnippet(snippetName, cmd);
-        term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
-    }
+void BuiltinCommand::run(Workspace &ws, map<string, string> &optionValues) const {
+    cmd(ws, optionValues);
 }

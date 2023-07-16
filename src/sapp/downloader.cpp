@@ -1,19 +1,16 @@
 #include "sapp/downloader.h"
 
 #include <string>
-#include <cstdio>
-#include <curl/curl.h>
 #include <json/json.h>
 #include <filesystem>
 #include <kubazip/zip/zip.h>
 
 #include "console.h"
 #include "utils/utils.h"
-#include "commandmgr.h"
+#include "cmd/commandmgr.h"
 #include "term.h"
 
-using namespace std;
-using namespace std::filesystem;
+using std::to_string, std::filesystem::temp_directory_path, std::filesystem::exists, std::filesystem::remove_all;
 
 Json::Value getRepo() {
     string repo = "https://raw.githubusercontent.com/shflterm/apps/main/repo.json";
@@ -54,7 +51,7 @@ void addSAPP(const string &name) {
             success("Download Completed!");
         } else {
             term << teleport(0, wherey() - 1) << eraseLine;
-            error("An error occurred while downloading the app. (Please double check the name of the app to be installed.)");
+            error("The app could not be found in the repository.");
             return;
         }
     } else {

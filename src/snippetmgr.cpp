@@ -9,6 +9,8 @@
 
 #include "utils/utils.h"
 
+using std::vector, std::make_shared;
+
 vector<shared_ptr<Snippet>> snippets;
 
 const string &Snippet::getName() const {
@@ -33,7 +35,7 @@ vector<Snippet> getSnippets() {
     return res;
 }
 
-bool addSnippet(const string& name, const string& target) {
+bool addSnippet(const string &name, const string &target) {
     snippets.push_back(make_shared<Snippet>(Snippet(name, target)));
 
     Json::Value snippetsJson = getShflJson("snippets");
