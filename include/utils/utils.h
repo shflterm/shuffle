@@ -18,7 +18,7 @@
 #include <regex>
 #include <json/json.h>
 
-using namespace std;
+using std::regex;
 
 std::vector<std::string> splitBySpace(const std::string &input);
 

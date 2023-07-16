@@ -10,7 +10,7 @@
 #include <map>
 #include <memory>
 
-using namespace std;
+using std::string, std::vector, std::shared_ptr;
 
 class Snippet {
 protected:
@@ -25,9 +25,9 @@ public:
     Snippet(string name, string target);
 };
 
-extern vector<shared_ptr<Snippet>> snippets;
+extern vector <shared_ptr<Snippet>> snippets;
 
-vector<Snippet> getSnippets();
+vector <Snippet> getSnippets();
 
 bool addSnippet(const string &name, const string &target);
 

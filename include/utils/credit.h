@@ -10,7 +10,7 @@
 #include <string>
 #include <algorithm>
 
-using namespace std;
+using std::string, std::vector, std::map;
 
 map<string, vector<string>> getCredits();
 

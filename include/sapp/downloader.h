@@ -7,7 +7,7 @@
 
 #include <string>
 
-using namespace std;
+using std::string;
 
 void addSAPP(const string &name);
 

@@ -9,6 +9,8 @@
 
 #include "utils/utils.h"
 
+using std::vector, std::make_shared;
+
 vector<shared_ptr<Snippet>> snippets;
 
 const string &Snippet::getName() const {

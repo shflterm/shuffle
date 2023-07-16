@@ -11,9 +11,8 @@
 #include "commandmgr.h"
 #include "parsedcmd.h"
 
-using namespace std;
 
-ParsedCommand parseCommand(Command *app, const vector<string>& args);
+ParsedCommand parseCommand(Command *app, const vector<string> &args);
 
 map<string, string> *parseOptions(Command *app, const vector<string> &args);
 

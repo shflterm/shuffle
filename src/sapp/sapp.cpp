@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <json/json.h>
+#include <magic_enum.hpp>
 
 #include "cmd/commandmgr.h"
 #include "utils/utils.h"
@@ -16,6 +17,9 @@
 #define _HAS_STD_BYTE 0
 
 #include <Windows.h>
+
+#undef near
+#undef far
 #elif __linux__
 
 #include <dlfcn.h>
@@ -126,12 +130,12 @@ void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
     Json::Value optionsJson = helpRoot["options"];
     for (const auto &item: optionsJson) {
         string optionName = item["name"].asString();
-        vector<string> optNames;
-        optNames.push_back(optionName);
-        for (const auto &item2: item["aliases"]) optNames.push_back(item2.asString());
+        vector<string> aliases;
+        aliases.push_back(optionName);
+        for (const auto &item2: item["aliases"]) aliases.push_back(item2.asString());
+        OptionType type = magic_enum::enum_cast<OptionType>(item["type"].asString()).value();
 
-        options[optionName] = optNames;
-        optionNames.push_back(optionName);
+        options.emplace_back(optionName, type, aliases);
     }
 
     for (const auto &item: helpRoot["example"]) {

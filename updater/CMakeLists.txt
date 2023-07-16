@@ -8,7 +8,7 @@ add_executable(${PROJECT_NAME} ${SOURCES} main.cpp)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 
-add_dependencies(${PROJECT_NAME} shuffle_lib)
+add_dependencies(${PROJECT_NAME} shuffle)
 target_include_directories(${PROJECT_NAME} PRIVATE ../include)
 target_link_libraries(${PROJECT_NAME} shuffle_lib)
 

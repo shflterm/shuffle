@@ -10,8 +10,7 @@
 #include <vector>
 #include <map>
 
-using namespace std;
-using namespace std::filesystem;
+using std::string, std::vector, std::map, std::filesystem::path, std::filesystem::current_path;
 
 class Workspace {
 #ifdef _WIN32
@@ -19,7 +18,7 @@ class Workspace {
 #elif defined(__linux__) || defined(__APPLE__)
     path dir = current_path();
 #endif
-    vector<string> history;
+    vector <string> history;
     int historyIndex = 0;
     string name;
 
@@ -30,7 +29,7 @@ public:
 
     void moveDirectory(path newDir);
 
-    vector<string> getHistory();
+    vector <string> getHistory();
 
     void addHistory(const string &s);
 

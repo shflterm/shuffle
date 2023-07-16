@@ -5,7 +5,6 @@
 #include <regex>
 #include <algorithm>
 #include <fstream>
-#include <sstream>
 #include <cstdlib>
 #include <curl/curl.h>
 #include <term.h>
@@ -13,18 +12,17 @@
 #include "utils/utils.h"
 #include "console.h"
 
-using namespace std;
-using namespace std::filesystem;
+using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, std::smatch, std::to_string;
 
-std::vector<std::string> splitBySpace(const std::string& input) {
-    std::vector<std::string> result;
-    std::regex regex("\"([^\"]*)\"|(\\S+)");
-    std::sregex_iterator iterator(input.begin(), input.end(), regex);
-    std::sregex_iterator end;
+vector<string> splitBySpace(const string &input) {
+    vector<std::string> result;
+    regex regex("\"([^\"]*)\"|(\\S+)");
+    sregex_iterator iterator(input.begin(), input.end(), regex);
+    sregex_iterator end;
 
     while (iterator != end) {
-        std::smatch match = *iterator;
-        std::string token = match.str();
+        smatch match = *iterator;
+        string token = match.str();
 
         // Remove leading and trailing quotes if present
         if (!token.empty() && token.front() == '"' && token.back() == '"') {
@@ -135,9 +133,9 @@ string readTextFromWeb(const string &url) {
 
 int lastPercent = -1;
 
-int progressCallback(void *clientp, curl_off_t dltotal,
-                     curl_off_t dlnow, curl_off_t ultotal,
-                     curl_off_t ulnow) {
+int progressCallback([[maybe_unused]] void *clientp, curl_off_t dltotal,
+                     curl_off_t dlnow, [[maybe_unused]] curl_off_t ultotal,
+                     [[maybe_unused]] curl_off_t ulnow) {
     if (dltotal == 0) return 0;
 
     int percent = (int) (static_cast<float>(dlnow) / static_cast<float>(dltotal) * 100);
@@ -222,7 +220,7 @@ void setShflJson(const string &part, Json::Value value) {
     Json::Reader reader;
     reader.parse(readFile(SHFL_JSON), root, false);
 
-    root[part] = value;
+    root[part] = std::move(value);
 
     writeFile(SHFL_JSON, root.toStyledString());
 }

@@ -9,16 +9,18 @@
 
 #include "workspace.h"
 
-using namespace std;
 
 #ifdef _WIN32
+
 #include "Windows.h"
 #include "DbgHelp.h"
 #include "TlHelp32.h"
+#include <cstddef>
 
 #pragma comment(lib, "Dbghelp.lib")
 
 string genStackTrace(CONTEXT *context);
+
 #elif defined(__linux__) || defined(__APPLE__)
 
 #include <execinfo.h>

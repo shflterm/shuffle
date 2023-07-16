@@ -5,7 +5,7 @@
 #include <regex>
 #include <iostream>
 
-using namespace std;
+
 
 int main() {
   loadCommands();

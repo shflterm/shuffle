@@ -7,10 +7,10 @@
 #include "term.h"
 #include "json/json.h"
 
-using namespace std;
+using std::endl;
 
 map<string, vector<string>> getCredits() {
-    map<string, vector<string>> credits;
+    map <string, vector<string>> credits;
     string repo = "https://raw.githubusercontent.com/shflterm/shuffle/main/credits.json";
 
     Json::Value root;

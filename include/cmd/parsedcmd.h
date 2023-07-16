@@ -10,7 +10,6 @@
 
 #include "commandmgr.h"
 
-using namespace std;
 
 class ParsedCommand {
 public:

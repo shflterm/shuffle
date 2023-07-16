@@ -8,7 +8,6 @@
 #include <string>
 #include <initializer_list>
 
-using namespace std;
 
 void loadLanguageFile(const string &region);
 

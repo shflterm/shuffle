@@ -10,7 +10,7 @@
 
 #include "workspace.h"
 
-using namespace std;
+using std::initializer_list;
 
 extern Workspace *currentWorkspace;
 

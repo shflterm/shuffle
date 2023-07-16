@@ -9,20 +9,18 @@
 #include "version.h"
 #include "snippetmgr.h"
 
-using namespace std;
-using namespace std::filesystem;
 #ifdef _WIN32
 
 LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exceptionPointers) {
-  term << newLine;
-  error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
-  error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
-  term << newLine;
-  CrashReport report = CrashReport()
-      .setStackTrace(genStackTrace(exceptionPointers->ContextRecord));
-  error(report.make());
-  report.save();
-  exit(EXCEPTION_CONTINUE_SEARCH);
+    term << newLine;
+    error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
+    error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
+    term << newLine;
+    CrashReport report = CrashReport()
+            .setStackTrace(genStackTrace(exceptionPointers->ContextRecord));
+    error(report.make());
+    report.save();
+    exit(EXCEPTION_CONTINUE_SEARCH);
 }
 
 #elif defined(__linux__) || defined(__APPLE__)
@@ -87,6 +85,6 @@ int main(int argc, char *argv[]) {
 
     currentWorkspace = new Workspace("main");
     while (true) {
-        currentWorkspace->inputPrompt(false);
+        currentWorkspace->inputPrompt(true);
     }
 }

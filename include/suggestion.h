@@ -10,7 +10,6 @@
 
 #include "cmd/commandmgr.h"
 
-using namespace std;
 
 vector<string> findSuggestion(Workspace ws,
                               const string &input,

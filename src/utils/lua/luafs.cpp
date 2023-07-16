@@ -6,7 +6,7 @@
 #include "utils/utils.h"
 #include "console.h"
 
-using namespace std;
+using std::filesystem::directory_iterator;
 
 int lua_exists(lua_State *L) {
     path p = lua_getPath(L, luaL_checkstring(L, 1));

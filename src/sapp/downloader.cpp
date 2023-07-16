@@ -1,8 +1,6 @@
 #include "sapp/downloader.h"
 
 #include <string>
-#include <cstdio>
-#include <curl/curl.h>
 #include <json/json.h>
 #include <filesystem>
 #include <kubazip/zip/zip.h>
@@ -12,8 +10,7 @@
 #include "cmd/commandmgr.h"
 #include "term.h"
 
-using namespace std;
-using namespace std::filesystem;
+using std::to_string, std::filesystem::temp_directory_path, std::filesystem::exists, std::filesystem::remove_all;
 
 Json::Value getRepo() {
     string repo = "https://raw.githubusercontent.com/shflterm/apps/main/repo.json";

@@ -5,8 +5,8 @@
 #include "console.h"
 #include "term.h"
 
-using namespace std;
-using namespace std::filesystem;
+
+
 
 int onExtractEntry(const char *filename, void *arg) {
     string name = path(filename).filename().string();

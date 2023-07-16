@@ -5,7 +5,7 @@
 #include "json/json.h"
 #include "utils/utils.h"
 
-using namespace std;
+using std::map, std::initializer_list, std::to_string, std::string;
 
 string langJson;
 map<string, string> colorMap = {

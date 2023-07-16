@@ -6,7 +6,6 @@
 
 #include "i18n.h"
 
-using namespace std;
 
 bool debugMode = false;
 
@@ -64,6 +63,7 @@ void too_many_arguments() { error("There are too many or too few arguments."); }
 
 #include <Windows.h>
 #include <conio.h>
+
 #elif defined(__linux__) || defined(__APPLE__)
 
 #include <unistd.h>

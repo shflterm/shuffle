@@ -1,26 +1,20 @@
 #include "workspace.h"
 
 #include <iostream>
-#include <regex>
 #include <utility>
-#include <sstream>
 #include <map>
 
 #include "cmd/builtincmd.h"
 #include "console.h"
-#include "cmd/commandmgr.h"
 #include "utils/utils.h"
 #include "suggestion.h"
 #include "sapp/downloader.h"
-#include "sapp/sapp.h"
-#include "utils/credit.h"
 #include "term.h"
 #include "snippetmgr.h"
 #include "cmd/parsedcmd.h"
 #include "cmd/cmdparser.h"
 
-using namespace std;
-using namespace std::filesystem;
+using std::stringstream, std::cin;
 
 map<string, Workspace *> wsMap;
 
@@ -39,7 +33,7 @@ void Workspace::moveDirectory(path newDir) {
         dir = dir.parent_path();
 }
 
-vector<string> Workspace::getHistory() {
+vector <string> Workspace::getHistory() {
     return history;
 }
 
@@ -63,7 +57,7 @@ string Workspace::historyDown() {
 }
 
 void Workspace::execute(const string &input, bool isSnippet) {
-    vector<string> inSpl = splitBySpace(input);
+    vector <string> inSpl = splitBySpace(input);
     if (inSpl.empty()) return;
 
     if (!isSnippet) {
@@ -95,7 +89,7 @@ void Workspace::execute(const string &input, bool isSnippet) {
         return;
     }
 
-    vector<string> args;
+    vector <string> args;
     for (int i = 1; i < inSpl.size(); ++i) args.push_back(inSpl[i]);
 
     ParsedCommand parsed = parseCommand(app, args);
@@ -104,8 +98,8 @@ void Workspace::execute(const string &input, bool isSnippet) {
     parsed.executeApp(*this);
 }
 
-vector<string> makeDictionary(const vector<shared_ptr<Command>> &cmds) {
-    vector<string> dictionary;
+vector <string> makeDictionary(const vector <shared_ptr<Command>> &cmds) {
+    vector <string> dictionary;
     dictionary.reserve(cmds.size());
     for (const auto &item: cmds) {
         dictionary.push_back(item->getName());
@@ -114,20 +108,26 @@ vector<string> makeDictionary(const vector<shared_ptr<Command>> &cmds) {
 }
 
 string getSuggestion(const Workspace &ws, const string &input) {
-    vector<string> args = split(input, regex(R"(\s+)"));
+    vector <string> args = split(input, regex(R"(\s+)"));
     string suggestion;
     if (input[input.length() - 1] == ' ') args.emplace_back("");
 
     if (args.size() == 1) {
         suggestion = findSuggestion(ws, args[0], makeDictionary(commands))[0];
     } else {
-        shared_ptr<Command> cmd = findCommand(args[0]);
+        shared_ptr <Command> cmd = findCommand(args[0]);
 
         size_t cur = args.size() - 1;
         if (args[cur][0] == '-') {
-            suggestion = findSuggestion(ws, args[cur].substr(1), cmd->getOptionNames())[0];
+            vector <string> optionNames;
+            for (const auto &item: cmd->getOptions()) optionNames.push_back(item.name);
+            suggestion = findSuggestion(ws, args[cur].substr(1), optionNames)[0];
         } else {
-            suggestion = "else";
+            vector <string> optionNames;
+            for (const auto &item: cmd->getOptions())
+                if (item.type == BOOL_T)
+                    optionNames.push_back(item.name);
+            suggestion = findSuggestion(ws, args[cur].substr(1), optionNames)[0];
         }
     }
     return suggestion;

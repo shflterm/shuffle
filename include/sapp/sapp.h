@@ -14,7 +14,6 @@
 #include <string>
 #include <json/json.h>
 
-using namespace std;
 
 class SAPPCommand : public Command {
 protected:
