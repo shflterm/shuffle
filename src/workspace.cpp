@@ -96,9 +96,12 @@ void Workspace::execute(const string &input, bool isSnippet) {
     }
 
     vector<string> args;
-    for (int i = 1; i < inSpl.size(); ++i) inSpl.push_back(args[i]);
+    for (int i = 1; i < inSpl.size(); ++i) args.push_back(inSpl[i]);
 
-    parseCommand(app, args).executeApp(*this);
+    ParsedCommand parsed = parseCommand(app, args);
+
+    if (parsed.app == nullptr) return;
+    parsed.executeApp(*this);
 }
 
 vector<string> makeDictionary(const vector<shared_ptr<Command>> &cmds) {

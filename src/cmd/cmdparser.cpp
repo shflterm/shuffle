@@ -1,5 +1,9 @@
 #include "cmd/cmdparser.h"
 
+#include <algorithm>
+
+#include "console.h"
+
 ParsedCommand parseCommand(Command *app, const vector<string>& args) {
     ParsedCommand parsed = ParsedCommand(app);
 
@@ -7,6 +11,7 @@ ParsedCommand parseCommand(Command *app, const vector<string>& args) {
     if (parsedOptions == nullptr) return ParsedCommand(nullptr);
 
     parsed.options = *parsedOptions;
+    return parsed;
 }
 
 map<string, string> *parseOptions(Command *app, const vector<string> &args) {

@@ -5,11 +5,11 @@
 #ifndef SHFL_CMDPARSER_H
 #define SHFL_CMDPARSER_H
 
-#include "commandmgr.h"
-#include "parsedcmd.h"
-
 #include <vector>
 #include <map>
+
+#include "commandmgr.h"
+#include "parsedcmd.h"
 
 using namespace std;
 
