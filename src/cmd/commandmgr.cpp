@@ -17,7 +17,7 @@ void loadDefaultCommands() {
     commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
             "shfl", "Shuffle Command", {
                     CommandOption("reload", BOOL_T, {"rl"}),
-                    CommandOption("update", BOOL_T, {}),
+                    CommandOption("update", BOOL_T, {"upgrade"}),
                     CommandOption("credits", BOOL_T, {"credit"}),
             }, shflCmd
     )));

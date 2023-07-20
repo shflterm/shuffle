@@ -1,6 +1,6 @@
-#include <iostream>
 #include <term.h>
 #include <filesystem>
+#include <csignal>
 
 #include "console.h"
 #include "cmd/commandmgr.h"
@@ -12,20 +12,18 @@
 #ifdef _WIN32
 
 LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exceptionPointers) {
-    term << newLine;
-    error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
-    error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
-    term << newLine;
-    CrashReport report = CrashReport()
-            .setStackTrace(genStackTrace(exceptionPointers->ContextRecord));
-    error(report.make());
-    report.save();
-    exit(EXCEPTION_CONTINUE_SEARCH);
+  term << newLine;
+  error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
+  error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
+  term << newLine;
+  CrashReport report = CrashReport()
+      .setStackTrace(genStackTrace(exceptionPointers->ContextRecord));
+  error(report.make());
+  report.save();
+  exit(EXCEPTION_CONTINUE_SEARCH);
 }
 
 #elif defined(__linux__) || defined(__APPLE__)
-
-#include <csignal>
 
 extern "C" void handleCrash(int sig) {
     term << newLine;
@@ -47,7 +45,6 @@ extern "C" void handleQuit(int sig) {
     exit(sig);
 }
 
-
 int main(int argc, char *argv[]) {
 #ifdef _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
@@ -57,7 +54,6 @@ int main(int argc, char *argv[]) {
     signal(SIGSEGV, &handleCrash);
     signal(SIGABRT, &handleCrash);
 #endif
-    signal(SIGQUIT, &handleQuit);
     signal(SIGINT, &handleQuit);
 
     if (argc > 1) {
@@ -85,6 +81,8 @@ int main(int argc, char *argv[]) {
     term << "Welcome to" << color(FOREGROUND, Blue) << " Shuffle " << SHUFFLE_VERSION.str() << resetColor << "!"
          << newLine
          << "(C) 2023 Kim Sihu. All Rights Reserved." << newLine << newLine;
+
+    if (checkUpdate()) term << newLine;
 
     loadCommands();
     loadSnippets();

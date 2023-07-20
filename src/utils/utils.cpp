@@ -11,8 +11,10 @@
 
 #include "utils/utils.h"
 #include "console.h"
+#include "version.h"
+#include "zip/zip.h"
 
-using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, std::smatch, std::to_string;
+using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, std::smatch, std::to_string, std::filesystem::temp_directory_path;
 
 vector<string> splitBySpace(const string &input) {
     vector<std::string> result;
@@ -176,7 +178,33 @@ bool downloadFile(const string &url, const string &file) {
     return false;
 }
 
+int onExtractEntry(const char *filename, void *arg) {
+    string name = path(filename).filename().string();
+    if (!name.empty()) {
+        term << teleport(0, wherey()) << eraseLine << "Extracting... (" << name << ")" << newLine;
+    }
+    return 0;
+}
+
+path extractZip(const path& zipFile, path extractPath) {
+    int arg = 0;
+    zip_extract(zipFile.string().c_str(), extractPath.string().c_str(), onExtractEntry, &arg);
+    return extractPath;
+}
+
 void updateShuffle() {
+    path temp = temp_directory_path().append("shflupdater.zip");
+#ifdef _WIN32
+    string url = "https://github.com/shflterm/shuffle/releases/download/updater/bin-windows.zip";
+#elif defined(__linux__)
+    string url = "https://github.com/shflterm/shuffle/releases/download/updater/bin-linux.zip";
+#elif defined(__APPLE__)
+    string url = "https://github.com/shflterm/shuffle/releases/download/updater/bin-macos.zip";
+#endif
+    downloadFile(url, temp.string());
+    path extractPath = temp_directory_path().append("shflupdater");
+    extractZip(temp, extractPath);
+
 #ifdef _WIN32
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
@@ -184,8 +212,7 @@ void updateShuffle() {
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
-
-    string command = DOT_SHUFFLE + "/bin/updater.exe";
+    string command = extractPath.append("updater.exe").string();
 
     CreateProcess(nullptr,
                   const_cast<LPSTR>(command.c_str()),
@@ -223,4 +250,18 @@ void setShflJson(const string &part, Json::Value value) {
     root[part] = std::move(value);
 
     writeFile(SHFL_JSON, root.toStyledString());
+}
+
+bool checkUpdate(bool checkBackground) {
+    string latest = trim(readTextFromWeb(
+            "https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
+    if (latest != SHUFFLE_VERSION.str()) {
+        term << "New version available: " << SHUFFLE_VERSION.str() << " -> "
+             << latest << newLine;
+        if (checkBackground) term << "Type 'shfl update' to get new version!" << newLine;
+        return true;
+    } else {
+        if (!checkBackground) term << "You are using the latest version of Shuffle." << newLine;
+        return false;
+    }
 }

@@ -5,16 +5,7 @@
 #include "console.h"
 #include "term.h"
 
-
-
-
-int onExtractEntry(const char *filename, void *arg) {
-    string name = path(filename).filename().string();
-    if (!name.empty()) {
-        term << teleport(0, wherey()) << eraseLine << "Extracting... (" << name << ")" << newLine;
-    }
-    return 0;
-}
+using std::filesystem::exists, std::filesystem::create_directories, std::filesystem::remove, std::filesystem::path, std::filesystem::temp_directory_path;
 
 string SHUFFLE = "   _____ _    _ _    _ ______ ______ _      ______           __        ___  \n"
                  "  / ____| |  | | |  | |  ____|  ____| |    |  ____|         /_ |      / _ \\ \n"
@@ -22,6 +13,31 @@ string SHUFFLE = "   _____ _    _ _    _ ______ ______ _      ______           _
                  "  \\___ \\|  __  | |  | |  __| |  __| | |    |  __|   \\ \\ / /  | |     | | | |\n"
                  "  ____) | |  | | |__| | |    | |    | |____| |____   \\ V /   | |  _  | |_| |\n"
                  " |_____/|_|  |_|\\____/|_|    |_|    |______|______|   \\_/    |_| (_)  \\___/ \n";
+
+void deleteShuffleExecutable(path updatePath) {
+    if (exists(updatePath.string() + "/shuffle.exe")) remove(updatePath.string() + "/shuffle.exe");
+    if (exists(updatePath.string() + "/shuffle")) remove(updatePath.string() + "/shuffle");
+}
+
+bool installNativeApps() {
+    vector<string> apps;
+    string repo = "https://raw.githubusercontent.com/shflterm/shuffle/main/nativeApps.json";
+
+    Json::Value root;
+    Json::Reader reader;
+    reader.parse(readTextFromWeb(repo), root, false);
+
+    bool appInstalled = true;
+    for (const auto &item: root) {
+#if defined(__linux__) || defined(__APPLE__)
+        system(("chmod +x " + DOT_SHUFFLE + "/bin/shuffle").c_str());
+        system((DOT_SHUFFLE + "/bin/shuffle appmgr -add " + item).c_str());
+#endif
+        int status = system((DOT_SHUFFLE + "/bin/shuffle appmgr -add " + item.asString()).c_str());
+        if (status != 0) appInstalled = false;
+    }
+    return appInstalled;
+}
 
 int main(int argc, char *argv[]) {
     term << SHUFFLE << newLine
@@ -36,31 +52,25 @@ int main(int argc, char *argv[]) {
 #endif
 
     path updatePath(DOT_SHUFFLE + "/bin");
-    if (exists(updatePath.string() + "/shuffle.exe")) {
-        remove(updatePath.string() + "/shuffle.exe");
-    }
-    if (exists(updatePath.string() + "/shuffle")) {
-        remove(updatePath.string() + "/shuffle");
-    }
+    deleteShuffleExecutable(updatePath);
+
     create_directories(updatePath);
 
     path temp = temp_directory_path().append("shfl.zip");
-    downloadFile(url, temp.string());
+    if (!downloadFile(url, temp.string())) {
+        error("Failed to download Shuffle.");
+        return 1;
+    }
     term << teleport(0, wherey()) << eraseLine << "Installed!" << newLine;
-    int arg = 0;
-    zip_extract(temp.string().c_str(), updatePath.string().c_str(), onExtractEntry, &arg);
+
+    extractZip(temp, updatePath);
     term << teleport(0, wherey()) << eraseLine << "Extracted!" << newLine;
 
     term << teleport(0, wherey()) << eraseLine << "Install native apps.." << newLine;
-#if defined(__linux__) || defined(__APPLE__)
-    system(("chmod +x " + DOT_SHUFFLE + "/bin/shuffle").c_str());
-#endif
-    int status = system((DOT_SHUFFLE + "/bin/shuffle shfl apps add cd cp dir list mk mv rm").c_str());
-
-    if (status == 0) {
+    if (installNativeApps()) {
         term << teleport(0, wherey()) << eraseLine << "Shuffle has been successfully installed!";
     } else {
-        term << teleport(0, wherey()) << eraseLine << "Shuffle is installed, but the default app is not installed"
+        term << teleport(0, wherey()) << eraseLine << "Shuffle is installed, but the some default app is not installed"
              << newLine
              << "After running Shuffle, you may need to manually install the default apps.";
     }

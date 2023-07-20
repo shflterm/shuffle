@@ -23,15 +23,7 @@ void shflCmd(Workspace &ws, map<string, string> &optionValues) {
             removeSAPP(optionValues["remove"]);
         }
     } else if (optionValues["update"] == "true") {
-        string latest = trim(readTextFromWeb(
-                "https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
-        if (latest != SHUFFLE_VERSION.str()) {
-            term << "New version available: " << SHUFFLE_VERSION.str() << " -> "
-                 << latest << newLine;
-            updateShuffle();
-        } else {
-            term << "You are using the latest version of Shuffle." << newLine;
-        }
+        if (checkUpdate(false)) updateShuffle();
     } else if (optionValues["credits"] == "true") {
         term << createCreditText();
     }

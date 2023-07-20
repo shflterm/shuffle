@@ -17,8 +17,9 @@
 #include <vector>
 #include <regex>
 #include <json/json.h>
+#include <filesystem>
 
-using std::regex;
+using std::regex, std::vector, std::string, std::filesystem::path;
 
 std::vector<std::string> splitBySpace(const std::string &input);
 
@@ -38,6 +39,8 @@ string readTextFromWeb(const string &url);
 
 bool downloadFile(const string &url, const string &file);
 
+path extractZip(const path& zipFile, path extractPath);
+
 void updateShuffle();
 
 void initShflJson();
@@ -45,5 +48,7 @@ void initShflJson();
 Json::Value getShflJson(const string &part);
 
 void setShflJson(const string &part, Json::Value value);
+
+bool checkUpdate(bool checkBackground = true);
 
 #endif //SHUFFLE_INCLUDE_UTILS_H_
