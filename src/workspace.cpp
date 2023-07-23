@@ -52,7 +52,7 @@ string Workspace::historyUp() {
 string Workspace::historyDown() {
     if (history.empty()) return "";
 
-    if (history.size() <= historyIndex + 1) return history[historyIndex];
+    if (history.size() <= historyIndex + 1) return history[history.size() - 1];
     return history[++historyIndex];
 }
 
