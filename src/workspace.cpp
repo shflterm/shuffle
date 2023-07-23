@@ -39,7 +39,7 @@ vector<string> Workspace::getHistory() {
 
 void Workspace::addHistory(const string &s) {
     history.push_back(s);
-    historyIndex = historyIndex + 1;
+    historyIndex = (int) history.size();
 }
 
 string Workspace::historyUp() {

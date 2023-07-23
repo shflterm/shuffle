@@ -61,16 +61,17 @@ int main(int argc, char *argv[]) {
         error("Failed to download Shuffle.");
         return 1;
     }
-    term << teleport(0, wherey()) << eraseLine << "Installed!" << newLine;
+    term << teleport(0, wherey() - 1) << eraseLine << "Installed!" << newLine;
 
     extractZip(temp, updatePath);
-    term << teleport(0, wherey()) << eraseLine << "Extracted!" << newLine;
+    term << teleport(0, wherey() - 1) << eraseLine << "Extracted!" << newLine;
 
-    term << teleport(0, wherey()) << eraseLine << "Install native apps.." << newLine;
+    term << teleport(0, wherey() - 1) << eraseLine << "Install native apps.." << newLine;
     if (installNativeApps()) {
-        term << teleport(0, wherey()) << eraseLine << "Shuffle has been successfully installed!";
+        term << teleport(0, wherey() - 1) << eraseLine << "Shuffle has been successfully installed!";
     } else {
-        term << teleport(0, wherey()) << eraseLine << "Shuffle is installed, but the some default app is not installed"
+        term << teleport(0, wherey() - 1) << eraseLine
+             << "Shuffle is installed, but the some default app is not installed"
              << newLine
              << "After running Shuffle, you may need to manually install the default apps.";
     }
