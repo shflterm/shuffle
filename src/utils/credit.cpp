@@ -1,9 +1,9 @@
-#include "utils/credit.h"
+#include "credit.h"
 
 #include <string>
 #include <sstream>
 #include "version.h"
-#include "utils/utils.h"
+#include "utils.h"
 #include "term.h"
 #include "json/json.h"
 

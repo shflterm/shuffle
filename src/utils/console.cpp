@@ -1,8 +1,7 @@
 #include "console.h"
 
-#include <iostream>
 #include <string>
-#include <term.h>
+#include "term.h"
 
 #include "i18n.h"
 

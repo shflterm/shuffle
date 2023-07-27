@@ -3,7 +3,7 @@
 #include <fstream>
 #include <vector>
 
-#include "utils/utils.h"
+#include "utils.h"
 #include "console.h"
 
 using std::filesystem::directory_iterator;

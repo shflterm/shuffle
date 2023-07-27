@@ -1,4 +1,4 @@
-#include "sapp/downloader.h"
+#include "downloader.h"
 
 #include <string>
 #include <json/json.h>
@@ -6,8 +6,8 @@
 #include <kubazip/zip/zip.h>
 
 #include "console.h"
-#include "utils/utils.h"
-#include "cmd/commandmgr.h"
+#include "utils.h"
+#include "commandmgr.h"
 #include "term.h"
 
 using std::to_string, std::filesystem::temp_directory_path, std::filesystem::exists, std::filesystem::remove_all;

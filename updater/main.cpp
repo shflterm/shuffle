@@ -1,7 +1,7 @@
 #include <kubazip/zip/zip.h>
 #include <filesystem>
 
-#include "utils/utils.h"
+#include "utils.h"
 #include "console.h"
 #include "term.h"
 

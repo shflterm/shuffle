@@ -8,7 +8,7 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include "workspace.h"
+#include "workspace/workspace.h"
 
 using std::pair, std::shared_ptr;
 
@@ -65,13 +65,11 @@ extern vector<shared_ptr<Command>> commands;
 
 void loadDefaultCommands();
 
-void loadCommand(const CommandData &data);
-
 vector<CommandData> getRegisteredCommands();
 
 bool addRegisteredCommand(const CommandData &data);
 
-void loadCommands();
+void clearCommands();
 
 shared_ptr<Command> findCommand(const string &name, const vector<shared_ptr<Command>> &DICTIONARY);
 

@@ -1,14 +1,14 @@
-#include "sapp/sapp.h"
+#include "sapp.h"
 
 #include <vector>
 #include <string>
 #include <json/json.h>
 #include <magic_enum.hpp>
+#include <memory>
 
-#include "cmd/commandmgr.h"
-#include "utils/utils.h"
-#include "console.h"
-#include "utils/lua/luaapi.h"
+#include "lua/luaapi.h"
+
+using std::make_shared;
 
 #ifdef _WIN32
 #define NOMINMAX 1
@@ -156,4 +156,11 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
     } else {
         error("Error: Invalid version number in " + name + ".");
     }
+}
+
+void loadApp(const CommandData &data) {
+    for (const auto &item: commands) {
+        if (item->getName() == data.name) return;
+    }
+    commands.push_back(make_shared<SAPPCommand>(SAPPCommand(data.name)));
 }

@@ -1,5 +1,7 @@
 #define NOMINMAX
 
+#include "utils.h"
+
 #include <vector>
 #include <string>
 #include <regex>
@@ -7,9 +9,8 @@
 #include <fstream>
 #include <cstdlib>
 #include <curl/curl.h>
-#include <term.h>
+#include "term.h"
 
-#include "utils/utils.h"
 #include "console.h"
 #include "version.h"
 #include "zip/zip.h"

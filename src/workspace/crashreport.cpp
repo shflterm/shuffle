@@ -1,10 +1,10 @@
-#include "utils/crashreport.h"
+#include "workspace/crashreport.h"
 
 #include <string>
 #include <ctime>
 #include <fstream>
 
-#include "utils/utils.h"
+#include "utils.h"
 #include "term.h"
 
 #include "version.h"

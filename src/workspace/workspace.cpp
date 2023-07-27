@@ -1,18 +1,17 @@
-#include "workspace.h"
+#include "workspace/workspace.h"
 
 #include <iostream>
 #include <utility>
 #include <map>
-
-#include "cmd/builtincmd.h"
-#include "console.h"
-#include "utils/utils.h"
-#include "suggestion.h"
-#include "sapp/downloader.h"
 #include "term.h"
-#include "snippetmgr.h"
-#include "cmd/parsedcmd.h"
-#include "cmd/cmdparser.h"
+
+#include "builtincmd.h"
+#include "console.h"
+#include "utils.h"
+#include "suggestion.h"
+#include "workspace/snippetmgr.h"
+#include "parsedcmd.h"
+#include "cmdparser.h"
 
 using std::stringstream, std::cin;
 

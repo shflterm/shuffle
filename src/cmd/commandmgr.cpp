@@ -1,51 +1,14 @@
-#include "cmd/commandmgr.h"
+#include "commandmgr.h"
 
 #include <json/json.h>
 #include <memory>
 #include <utility>
 
-#include "console.h"
-#include "utils/utils.h"
-#include "sapp/sapp.h"
-#include "cmd/builtincmd.h"
+#include "utils.h"
 
 using std::make_shared;
 
 vector<shared_ptr<Command>> commands;
-
-void loadDefaultCommands() {
-    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
-            "shfl", "Shuffle Command", {
-                    CommandOption("reload", BOOL_T, {"rl"}),
-                    CommandOption("update", BOOL_T, {"upgrade"}),
-                    CommandOption("credits", BOOL_T, {"credit"}),
-            }, shflCmd
-    )));
-    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
-            "appmgr", "App Manager", {
-                    CommandOption("add", TEXT_T, {"ad", "a"}),
-                    CommandOption("remove", TEXT_T, {"rm", "r"}),
-            }, appMgrCmd
-    )));
-    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
-            "help", "Show help", {
-                    CommandOption("command", TEXT_T, {"cmd", "help"})
-            }, helpCmd
-    )));
-    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
-            "snf", "Manage Snippets", {
-                    CommandOption("create", TEXT_T, {"mk", "c", "new"}),
-                    CommandOption("value", TEXT_T, {"v"}),
-            }, snippetCmd
-    )));
-}
-
-void loadCommand(const CommandData &data) {
-    for (const auto &item: commands) {
-        if (item->getName() == data.name) return;
-    }
-    commands.push_back(make_shared<SAPPCommand>(SAPPCommand(data.name)));
-}
 
 vector<CommandData> getRegisteredCommands() {
     vector<CommandData> res;
@@ -77,14 +40,8 @@ bool addRegisteredCommand(const CommandData &data) {
     return true;
 }
 
-void loadCommands() {
+void clearCommands() {
     commands.clear();
-
-    loadDefaultCommands();
-
-    for (const CommandData &command: getRegisteredCommands()) {
-        loadCommand(command);
-    }
 }
 
 shared_ptr<Command> findCommand(const string &name, const vector<shared_ptr<Command>> &DICTIONARY) {

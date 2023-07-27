@@ -1,5 +1,5 @@
 #include "suggestion.h"
-#include "utils/utils.h"
+#include "utils.h"
 #include "term.h"
 
 #include <iostream>

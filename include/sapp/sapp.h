@@ -8,12 +8,11 @@
 #include "cmd/commandmgr.h"
 #include "lua.hpp"
 #include "utils/utils.h"
-#include "console.h"
+#include "utils/console.h"
 
 #include <vector>
 #include <string>
 #include <json/json.h>
-
 
 class SAPPCommand : public Command {
 protected:
@@ -28,5 +27,7 @@ public:
 
     vector<string> makeDynamicSuggestion(Workspace &ws, const string &suggestId);
 };
+
+void loadApp(const CommandData &data);
 
 #endif //SHUFFLE_INCLUDE_LOADER_H_

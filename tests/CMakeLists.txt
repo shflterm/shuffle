@@ -2,12 +2,12 @@ cmake_minimum_required(VERSION 3.18)
 project(unit_test)
 
 add_executable(test_suggest suggest.cpp)
-add_dependencies(test_suggest shuffle_lib)
-target_link_libraries(test_suggest shuffle_lib)
+target_link_libraries(test_suggest commandmgr sappmgr suggestion utils)
+add_dependencies(test_suggest commandmgr sappmgr suggestion utils)
 
 add_executable(test_history history.cpp)
-add_dependencies(test_history shuffle_lib)
-target_link_libraries(test_history shuffle_lib)
+target_link_libraries(test_history commandmgr sappmgr suggestion utils)
+add_dependencies(test_history commandmgr sappmgr suggestion utils)
 
 include_directories(../include)
 

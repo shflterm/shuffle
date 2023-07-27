@@ -1,9 +1,9 @@
 #include <string>
 #include <initializer_list>
-#include <term.h>
+#include "term.h"
 
 #include "json/json.h"
-#include "utils/utils.h"
+#include "utils.h"
 
 using std::map, std::initializer_list, std::to_string, std::string;
 

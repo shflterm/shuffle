@@ -1,4 +1,4 @@
-#include "utils/lua/luaapi.h"
+#include "lua/luaapi.h"
 
 #include "luafs.cpp"
 #include "console.h"

@@ -1,6 +1,6 @@
-#include "cmd/parsedcmd.h"
+#include "parsedcmd.h"
 
-#include "sapp/sapp.h"
+#include "sapp.h"
 
 #include <utility>
 

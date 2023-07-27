@@ -1,7 +1,7 @@
 #include "suggestion.h"
-#include "utils/utils.h"
+#include "utils.h"
 #include "term.h"
-#include "workspace.h"
+#include "workspace/workspace.h"
 
 #include <iostream>
 

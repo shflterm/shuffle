@@ -10,7 +10,7 @@
 #include <vector>
 #include <map>
 
-#include "workspace.h"
+#include "workspace/workspace.h"
 #include "cmd/commandmgr.h"
 
 typedef void(*cmd_t)(Workspace &, map<string, string> &);
@@ -26,6 +26,8 @@ public:
 
     void run(Workspace &ws, map<string, string> &optionValues) const override;
 };
+
+void loadCommands();
 
 void shflCmd(Workspace &ws, map<string, string> &optionValues);
 
