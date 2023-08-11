@@ -19,4 +19,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE kubazip::kubazip)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ../include ../include/utils)
+target_include_directories(${PROJECT_NAME} PRIVATE ../include ../include/cmd ../include/sapp ../include/suggestion ../include/workspace ../include/utils)

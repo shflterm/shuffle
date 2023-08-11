@@ -1,6 +1,6 @@
 #include "suggestion.h"
 #include "term.h"
-#include "workspace/workspace.h"
+#include "workspace.h"
 
 #include <iostream>
 
