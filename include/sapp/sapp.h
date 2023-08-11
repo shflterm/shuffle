@@ -5,10 +5,10 @@
 #ifndef SHUFFLE_INCLUDE_LOADER_H_
 #define SHUFFLE_INCLUDE_LOADER_H_
 
-#include "cmd/commandmgr.h"
+#include "commandmgr.h"
 #include "lua.hpp"
-#include "utils/utils.h"
-#include "utils/console.h"
+#include "utils.h"
+#include "console.h"
 
 #include <vector>
 #include <string>

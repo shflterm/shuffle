@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "cmd/commandmgr.h"
+#include "commandmgr.h"
 
 
 vector<string> findSuggestion(Workspace ws,

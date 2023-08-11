@@ -2,8 +2,6 @@
 
 #include "sapp.h"
 
-#include <utility>
-
 ParsedCommand::ParsedCommand(Command *app) : app(app) {}
 
 void ParsedCommand::executeApp(Workspace ws) {

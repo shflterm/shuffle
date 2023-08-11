@@ -34,7 +34,7 @@ path lua_getPath(lua_State *L, const string &s) {
     }
 
     return p;
-};
+}
 
 void initLua(lua_State *L) {
     initFileSystem(L);
