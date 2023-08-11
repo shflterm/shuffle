@@ -1,7 +1,7 @@
 #include "suggestion.h"
 #include "utils.h"
 #include "term.h"
-#include "builtincmd.h"
+#include "sapp.h"
 
 #include <iostream>
 
@@ -14,6 +14,14 @@ vector<string> makeDictionary_(const vector<shared_ptr<Command>> &cmds) {
         dictionary.push_back(item->getName());
     }
     return dictionary;
+}
+
+void loadCommands() {
+    clearCommands();
+
+    for (const CommandData &command: getRegisteredCommands()) {
+        loadApp(command);
+    }
 }
 
 int main() {
