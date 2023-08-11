@@ -5,7 +5,7 @@
 #include "console.h"
 #include "term.h"
 
-using std::filesystem::exists, std::filesystem::create_directories, std::filesystem::remove, std::filesystem::path, std::filesystem::temp_directory_path;
+using std::vector, std::string, std::filesystem::exists, std::filesystem::create_directories, std::filesystem::remove, std::filesystem::path, std::filesystem::temp_directory_path;
 
 string SHUFFLE = "   _____ _    _ _    _ ______ ______ _      ______           __        ___  \n"
                  "  / ____| |  | | |  | |  ____|  ____| |    |  ____|         /_ |      / _ \\ \n"
