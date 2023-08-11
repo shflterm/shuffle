@@ -37,4 +37,6 @@ void helpCmd(Workspace &ws, map<string, string> &optionValues);
 
 void snippetCmd(Workspace &ws, map<string, string> &optionValues);
 
+void automationCmd(Workspace &ws, map<string, string> &optionValues);
+
 #endif //SHUFFLE_INCLUDE_BUILTINCMD_H_

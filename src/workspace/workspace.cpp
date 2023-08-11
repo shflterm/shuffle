@@ -12,6 +12,7 @@
 #include "workspace/snippetmgr.h"
 #include "parsedcmd.h"
 #include "cmdparser.h"
+#include "automation.h"
 
 using std::stringstream, std::cin;
 
@@ -291,6 +292,7 @@ void Workspace::inputPrompt(bool enableSuggestion) {
         term << eraseLine;
         addHistory(input);
         execute(input);
+        recordingCommands.push_back(input);
     }
 }
 

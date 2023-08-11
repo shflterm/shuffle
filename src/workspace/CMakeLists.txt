@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 project(workspace)
 
-set(WORKSPACE_SRC workspace.cpp snippetmgr.cpp crashreport.cpp)
+set(WORKSPACE_SRC workspace.cpp snippetmgr.cpp crashreport.cpp automation.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 

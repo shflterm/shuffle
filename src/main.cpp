@@ -8,6 +8,7 @@
 #include "version.h"
 #include "snippetmgr.h"
 #include "builtincmd.h"
+#include "automation.h"
 
 #ifdef _WIN32
 
@@ -65,6 +66,7 @@ int main(int argc, char *argv[]) {
 
         loadCommands();
         loadSnippets();
+        loadAutomations();
         Workspace workspace;
         string cmd;
         for (int i = 1; i < argc; ++i) {
@@ -86,6 +88,7 @@ int main(int argc, char *argv[]) {
 
     loadCommands();
     loadSnippets();
+    loadAutomations();
 
     term << "Type 'help' to get help!" << newLine;
 

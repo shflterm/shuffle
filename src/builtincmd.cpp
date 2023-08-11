@@ -10,6 +10,7 @@
 #include "version.h"
 #include "snippetmgr.h"
 #include "sapp.h"
+#include "automation.h"
 
 using std::make_shared;
 
@@ -39,6 +40,13 @@ void loadCommands() {
                     CommandOption("create", TEXT_T, {"mk", "c", "new"}),
                     CommandOption("value", TEXT_T, {"v"}),
             }, snippetCmd
+    )));
+    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+            "auto", "Manage Automation", {
+                    CommandOption("create", TEXT_T, {"record"}),
+                    CommandOption("stop", BOOL_T, {"end"}),
+                    CommandOption("run", TEXT_T, {"execute"}),
+            }, automationCmd
     )));
 
     for (const CommandData &command: getRegisteredCommands()) {
@@ -121,6 +129,25 @@ void snippetCmd(Workspace &ws, map<string, string> &optionValues) {
 
     addSnippet(snippetName, cmd);
     term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
+}
+
+void automationCmd(Workspace &ws, map<string, string> &optionValues) {
+    if (optionValues.count("create")) {
+        string name = optionValues["create"];
+        term << "Automation recording has started!" << newLine
+             << "Automation is created with the commands you type forward." << newLine
+             << "You can stop recording by typing \"auto stop\"" << newLine;
+        startRecording(name);
+    } else if (optionValues["stop"] == "true") {
+        recordingCommands.pop_back();
+        term << "Automation recorded successfully!" << newLine
+             << "An Automation named '" + recordingName + "' was created." << newLine
+             << "You can run it by typing \"auto -run " + recordingName + "\"." << newLine;
+        stopRecording();
+    } else if (optionValues.count("run")) {
+        string name = optionValues["run"];
+        runAutomation(ws, name);
+    }
 }
 
 void BuiltinCommand::run(Workspace &ws, map<string, string> &optionValues) const {
