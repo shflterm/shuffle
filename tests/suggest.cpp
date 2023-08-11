@@ -1,6 +1,7 @@
 #include "suggestion.h"
 #include "utils.h"
 #include "term.h"
+#include "builtincmd.h"
 
 #include <iostream>
 
