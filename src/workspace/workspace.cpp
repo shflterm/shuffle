@@ -291,8 +291,10 @@ void Workspace::inputPrompt(bool enableSuggestion) {
     if (!input.empty()) {
         term << eraseLine;
         addHistory(input);
+        if (recordingAutomation) {
+            recordingCommands.push_back(input);
+        }
         execute(input);
-        recordingCommands.push_back(input);
     }
 }
 
