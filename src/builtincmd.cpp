@@ -43,8 +43,8 @@ void loadCommands() {
     )));
     commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
             "auto", "Manage Automation", {
-                    CommandOption("create", TEXT_T, {"record"}),
-                    CommandOption("stop", BOOL_T, {"end"}),
+                    CommandOption("record", TEXT_T, {"create"}),
+                    CommandOption("finish", BOOL_T, {"end", "stop"}),
                     CommandOption("run", TEXT_T, {"execute"}),
             }, automationCmd
     )));
@@ -132,13 +132,13 @@ void snippetCmd(Workspace &ws, map<string, string> &optionValues) {
 }
 
 void automationCmd(Workspace &ws, map<string, string> &optionValues) {
-    if (optionValues.count("create")) {
-        string name = optionValues["create"];
+    if (optionValues.count("record")) {
+        string name = optionValues["record"];
         term << "Automation recording has started!" << newLine
              << "Automation is created with the commands you type forward." << newLine
              << "You can stop recording by typing \"auto stop\"" << newLine;
         startRecording(name);
-    } else if (optionValues["stop"] == "true") {
+    } else if (optionValues["finish"] == "true") {
         recordingCommands.pop_back();
         term << "Automation recorded successfully!" << newLine
              << "An Automation named '" + recordingName + "' was created." << newLine
