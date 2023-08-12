@@ -9,6 +9,7 @@
 
 #include "utils.h"
 #include "workspace.h"
+#include "term.h"
 
 using std::vector, std::make_shared;
 
@@ -80,7 +81,9 @@ void runAutomation(Workspace &ws, const string& name) {
     for (const auto &item: automations) {
         if (item->getName() == name) {
             for (const auto &command: item->getCommands()) {
+                term << resetColor << "> " << command << newLine;
                 ws.execute(command);
+                term << newLine;
             }
         }
     }
