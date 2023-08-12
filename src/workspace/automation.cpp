@@ -65,7 +65,7 @@ void loadAutomations() {
     }
 }
 
-void startRecording(const string& name) {
+void startRecording(const string &name) {
     recordingAutomation = true;
     recordingName = name;
 }
@@ -77,11 +77,11 @@ void stopRecording() {
     recordingName = "";
 }
 
-void runAutomation(Workspace &ws, const string& name) {
+void runAutomation(Workspace &ws, const string &name) {
     for (const auto &item: automations) {
         if (item->getName() == name) {
             for (const auto &command: item->getCommands()) {
-                term << resetColor << "> " << command << newLine;
+                term << color(FOREGROUND, Yellow) << "\u2192 " << resetColor << command << newLine;
                 ws.execute(command);
                 term << newLine;
             }
