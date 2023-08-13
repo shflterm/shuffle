@@ -34,7 +34,7 @@ jobs:
           path: |
             ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}
             ${{github.workspace}}/build-${{ matrix.config.os }}
-          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}-${{ hashFiles('**/CMakeLists.txt') }}
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json', '**/CMakeLists.txt') }}
 
       - name: Update Submodule
         run: git submodule update --init --recursive
