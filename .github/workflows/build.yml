@@ -42,9 +42,7 @@ jobs:
 
       - name: Configure and Build
         run: |
-          cmake -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake \
-                -S ${{github.workspace}} -B ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}} \
-                -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+          cmake -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{github.workspace}} -B ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           cmake --build ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}} --config ${{env.BUILD_TYPE}}
 
       - name: Upload Files
