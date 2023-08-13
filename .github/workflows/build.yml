@@ -28,6 +28,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      - name: Cache Vcpkg and Build Directories
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}
+            ${{github.workspace}}/build-${{ matrix.config.os }}
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}-${{ hashFiles('**/CMakeLists.txt') }}
+
       - name: Update Submodule
         run: git submodule update --init --recursive
 
@@ -50,11 +58,3 @@ jobs:
         with:
           name: build-${{ matrix.config.os }}
           path: ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}/**
-
-      - name: Cache Vcpkg and Build Directories
-        uses: actions/cache@v3
-        with:
-          path: |
-            ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}
-            ${{github.workspace}}/build-${{ matrix.config.os }}
-          key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}-${{ hashFiles('**/CMakeLists.txt') }}
