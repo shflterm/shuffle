@@ -3,7 +3,6 @@
 #include <vector>
 #include <string>
 #include <json/json.h>
-#include <magic_enum.hpp>
 #include <memory>
 
 #include "lua/luaapi.h"
@@ -133,7 +132,14 @@ void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
         vector<string> aliases;
         aliases.push_back(optionName);
         for (const auto &item2: item["aliases"]) aliases.push_back(item2.asString());
-        OptionType type = magic_enum::enum_cast<OptionType>(item["type"].asString()).value();
+        OptionType type;
+        if (item["type"].asString() == "TEXT_T") type = TEXT_T;
+        else if (item["type"].asString() == "BOOL_T") type = BOOL_T;
+        else if (item["type"].asString() == "INT_T") type = INT_T;
+        else {
+            error("Error: Invalid option type in " + name + ".");
+            type = TEXT_T;
+        }
 
         options.emplace_back(optionName, type, aliases);
     }
