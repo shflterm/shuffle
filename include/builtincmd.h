@@ -10,8 +10,8 @@
 #include <vector>
 #include <map>
 
-#include "workspace/workspace.h"
-#include "cmd/commandmgr.h"
+#include "workspace.h"
+#include "commandmgr.h"
 
 typedef void(*cmd_t)(Workspace &, map<string, string> &);
 

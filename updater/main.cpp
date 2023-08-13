@@ -5,7 +5,7 @@
 #include "console.h"
 #include "term.h"
 
-using std::filesystem::exists, std::filesystem::create_directories, std::filesystem::remove, std::filesystem::path, std::filesystem::temp_directory_path;
+using std::vector, std::string, std::filesystem::exists, std::filesystem::create_directories, std::filesystem::remove, std::filesystem::path, std::filesystem::temp_directory_path;
 
 string SHUFFLE = "   _____ _    _ _    _ ______ ______ _      ______           __        ___  \n"
                  "  / ____| |  | | |  | |  ____|  ____| |    |  ____|         /_ |      / _ \\ \n"
@@ -31,7 +31,7 @@ bool installNativeApps() {
     for (const auto &item: root) {
 #if defined(__linux__) || defined(__APPLE__)
         system(("chmod +x " + DOT_SHUFFLE + "/bin/shuffle").c_str());
-        system((DOT_SHUFFLE + "/bin/shuffle appmgr -add " + item).c_str());
+        system((DOT_SHUFFLE + "/bin/shuffle appmgr -add " + item.asString()).c_str());
 #endif
         int status = system((DOT_SHUFFLE + "/bin/shuffle appmgr -add " + item.asString()).c_str());
         if (status != 0) appInstalled = false;

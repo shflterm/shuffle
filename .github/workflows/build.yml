@@ -2,7 +2,7 @@ name: Build Shuffle
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "actions-setup" ]
 
 env:
   BUILD_TYPE: Release
@@ -40,48 +40,8 @@ jobs:
 
       - run: cmake --build ${{github.workspace}}/build-${{ matrix.config.os }} --config ${{env.BUILD_TYPE}}
 
-      - name: Archive production artifacts
+      - name: Upload Files
         uses: actions/upload-artifact@v3
         with:
           name: build-${{ matrix.config.os }}
-          path: |
-            build-${{ matrix.config.os }}/
-
-  release:
-    permissions: write-all
-    needs: [ build ]
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Update Submodule
-        run: "git submodule update --init --recursive"
-
-      - name: Download all workflow run artifacts
-        uses: actions/download-artifact@v3
-
-      - name: Compress Linux Release
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r build-ubuntu.zip build-ubuntu
-
-      - name: Compress MacOS Release
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r build-macos.zip build-macos
-
-      - name: Compress Windows Release
-        uses: montudor/action-zip@v1
-        with:
-          args: zip -qq -r build-windows.zip build-windows
-
-      - name: Upload Release
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: ${{ vars.VERSION }}
-          files: |
-            build-ubuntu.zip
-            build-macos.zip
-            build-windows.zip
+          path: build-${{ matrix.config.os }}/**

@@ -8,7 +8,7 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include "workspace/workspace.h"
+#include "workspace.h"
 
 using std::pair, std::shared_ptr;
 

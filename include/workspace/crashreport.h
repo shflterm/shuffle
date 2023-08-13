@@ -7,8 +7,7 @@
 
 #include <string>
 
-#include "workspace/workspace.h"
-
+#include "workspace.h"
 
 #ifdef _WIN32
 

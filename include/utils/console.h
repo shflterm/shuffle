@@ -8,7 +8,7 @@
 #include <string>
 #include <initializer_list>
 
-#include "workspace/workspace.h"
+#include "workspace.h"
 
 using std::initializer_list;
 
