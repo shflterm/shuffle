@@ -184,8 +184,7 @@ void SAPPCommand::loadVersion3(const string &name, const string &appPath, const 
 
     Json::Value subcommandsJson = helpRoot["subcommands"];
     for (const auto &item: optionsJson) {
-        string commandName = item["name"].asString();
-        string commandDescription = item["description"].asString();
+        string commandName = item.asString();
         SAPPCommand subcommand = SAPPCommand(*this, name, description);
         subcommands.push_back(subcommand);
     }
