@@ -67,7 +67,9 @@ const string &Command::getDescription() const {
     return description;
 }
 
-void Command::run(Workspace &ws, map<string, string> &optionValues) const {}
+void Command::run(Workspace &ws, map<string, string> &optionValues) const {
+    cmd(ws, optionValues);
+}
 
 const vector<Command> &Command::getSubcommands() const {
     return subcommands;

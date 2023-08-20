@@ -183,14 +183,15 @@ void SAPPCommand::loadVersion3(const string &name, const string &appPath, const 
     }
 
     Json::Value subcommandsJson = helpRoot["subcommands"];
-    for (const auto &item: optionsJson) {
+    for (const auto &item: subcommandsJson) {
         string commandName = item.asString();
         SAPPCommand subcommand = SAPPCommand(*this, name, description);
         subcommands.push_back(subcommand);
     }
 
-    cmd = [this](Workspace &ws, map<string, string> &optionValues) {
-        run_sapp(this->L, ws, optionValues);
+    lua_State *LL = this->L;
+    cmd = [LL](Workspace &ws, map<string, string> &optionValues) {
+        run_sapp(LL, ws, optionValues);
     };
 }
 
