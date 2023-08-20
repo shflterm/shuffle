@@ -76,7 +76,7 @@ void Workspace::execute(const string &input, bool isSnippet) {
 
     if (app == nullptr) {
         error("Sorry. Command '$0' not found.", {inSpl[0]});
-        pair<int, Command> similarWord = {1000000000, Command("")};
+        pair<int, Command> similarWord = {1000000000, Command("", "")};
         for (const auto &cmd: commands) {
             int dist = levenshteinDist(inSpl[0], cmd->getName());
             if (dist < similarWord.first) similarWord = {dist, *cmd};

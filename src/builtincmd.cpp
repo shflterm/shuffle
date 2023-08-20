@@ -104,13 +104,6 @@ void helpCmd(Workspace &ws, map<string, string> &optionValues) {
         term << "== About '" << cmd->getName() << "' ==" << newLine
              << "Name: " << cmd->getName() << newLine
              << "Description: " << cmd->getDescription() << newLine;
-
-        if (!cmd->getUsage().empty()) term << "Usage: " << newLine;
-        for (const auto &item: cmd->getUsage()) {
-            string example = item.first;
-            string description = item.second;
-            term << "  " << example << " : " << description << newLine;
-        }
     }
 }
 

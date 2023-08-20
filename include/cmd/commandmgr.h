@@ -31,7 +31,7 @@ class Command {
 protected:
     string name;
     string description;
-    vector<pair<string, string>> usage;
+    vector<Command> subcommands;
     vector<CommandOption> options;
 
 public:
@@ -39,21 +39,21 @@ public:
 
     [[nodiscard]] const string &getDescription() const;
 
-    [[nodiscard]] const vector<pair<string, string>> &getUsage() const;
+    [[nodiscard]] const vector<Command> &getSubcommands() const;
 
     [[nodiscard]] const vector<CommandOption> &getOptions() const;
 
     virtual void run(Workspace &ws, map<string, string> &optionValues) const;
 
-    Command(string name, string description, vector<CommandOption> options, vector<pair<string, string>> usage);
+    Command(string name, string description, const vector<Command> &subcommands, const vector<CommandOption> &options);
 
-    Command(string name, string description, vector<CommandOption> options);
+    Command(string name, string description, const vector<Command> &subcommands);
+
+    Command(string name, string description, const vector<CommandOption> &options);
 
     Command(string name, string description);
 
-    Command(string name, vector<CommandOption> options);
-
-    explicit Command(string name);
+    Command(string name);
 };
 
 class CommandData {

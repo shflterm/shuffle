@@ -104,7 +104,7 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
     return {};
 }
 
-void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
+void SAPPCommand::loadVersion2(const Json::Value &root, const string &name) {
     string appPath = DOT_SHUFFLE + "/apps/" + name + ".app/";
 
     string value = appPath + "/lib/entrypoint.lua";
@@ -144,8 +144,56 @@ void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
         options.emplace_back(optionName, type, aliases);
     }
 
-    for (const auto &item: helpRoot["example"]) {
-        usage.emplace_back(item["usage"].asString(), item["description"].asString());
+//    for (const auto &item: helpRoot["example"]) {
+//        usage.emplace_back(item["usage"].asString(), item["description"].asString());
+//    }
+}
+
+void SAPPCommand::loadVersion3(const Json::Value &root, const string &name) {
+    string appPath = DOT_SHUFFLE + "/apps/" + name + ".app/";
+
+    string value = appPath + "/lib/entrypoint.lua";
+    L = luaL_newstate();
+
+    luaL_openlibs(L);
+    initLua(L);
+    int err = luaL_loadfile(L, value.c_str());
+    if (err) error("Error: " + string(lua_tostring(L, -1)));
+
+    err = lua_pcall(L, 0, 0, 0);
+    if (err) error("Error: " + string(lua_tostring(L, -1)));
+
+    //Read help.shfl
+    string helpDotShfl = appPath + "/help.shfl";
+    Json::Value helpRoot;
+    Json::Reader helpReader;
+    helpReader.parse(readFile(helpDotShfl), helpRoot, false);
+
+    description = helpRoot["description"].asString();
+
+    Json::Value optionsJson = helpRoot["options"];
+    for (const auto &item: optionsJson) {
+        string optionName = item["name"].asString();
+        vector<string> aliases;
+        aliases.push_back(optionName);
+        for (const auto &item2: item["aliases"]) aliases.push_back(item2.asString());
+        OptionType type;
+        if (item["type"].asString() == "TEXT_T") type = TEXT_T;
+        else if (item["type"].asString() == "BOOL_T") type = BOOL_T;
+        else if (item["type"].asString() == "INT_T") type = INT_T;
+        else {
+            error("Error: Invalid option type in " + name + ".");
+            type = TEXT_T;
+        }
+
+        options.emplace_back(optionName, type, aliases);
+    }
+
+    Json::Value subcommandsJson = helpRoot["subcommands"];
+    for (const auto &item: optionsJson) {
+        string commandName = item["name"].asString();
+        string commandDescription= item["description"].asString();
+        subcommands.emplace_back(commandName, commandDescription);
     }
 }
 
@@ -159,6 +207,8 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
         error("This app(" + name + ") is no longer supported. Please upgrade the app.");
     } else if (root["version"].asInt() == 2) {
         loadVersion2(root, name);
+    } else if (root["version"].asInt() == 3) {
+        loadVersion3(root, name);
     } else {
         error("Error: Invalid version number in " + name + ".");
     }

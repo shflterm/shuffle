@@ -67,38 +67,32 @@ const string &Command::getDescription() const {
 
 void Command::run(Workspace &ws, map<string, string> &optionValues) const {}
 
-Command::Command(string name, string description, vector<CommandOption> options,
-                 vector<pair<string, string>> usage)
-        : name(std::move(name)),
-          description(std::move(description)),
-          options(std::move(options)),
-          usage(std::move(usage)) {}
-
-Command::Command(string name, string description, vector<CommandOption> options)
-        : name(std::move(name)),
-          description(std::move(description)),
-          options(std::move(options)) {}
-
-Command::Command(string name, string description)
-        : name(std::move(name)),
-          description(std::move(description)) {}
-
-Command::Command(string name, vector<CommandOption> options)
-        : name(std::move(name)),
-          description("-"),
-          options(std::move(options)) {}
-
-Command::Command(string name)
-        : name(std::move(name)),
-          description("-") {}
-
-const vector<pair<string, string>> &Command::getUsage() const {
-    return usage;
+const vector<Command> &Command::getSubcommands() const {
+    return subcommands;
 }
 
 const vector<CommandOption> &Command::getOptions() const {
     return options;
 }
+
+Command::Command(string name, string description, const vector<Command> &subcommands,
+                 const vector<CommandOption> &options) : name(std::move(name)),
+                                                         description(std::move(
+                                                                 description)),
+                                                         subcommands(subcommands),
+                                                         options(options) {}
+
+Command::Command(string name, string description,
+                 const vector<Command> &subcommands) : name(std::move(name)), description(std::move(description)),
+                                                       subcommands(subcommands) {}
+
+Command::Command(string name, string description,
+                 const vector<CommandOption> &options) : name(std::move(name)), description(std::move(description)),
+                                                         options(options) {}
+
+Command::Command(string name, string description) : name(std::move(name)), description(std::move(description)) {}
+
+Command::Command(string name) : name(std::move(name)) {}
 
 CommandOption::CommandOption(string name, OptionType type, const vector<string> &aliases) : name(std::move(name)),
                                                                                             type(type),
