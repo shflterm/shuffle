@@ -67,7 +67,7 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
     return {};
 }
 
-void SAPPCommand::loadVersion2(const Json::Value &root, const string &name) {
+void SAPPCommand::loadVersion2(const string &name) {
     string appPath = DOT_SHUFFLE + "/apps/" + name + ".app/";
 
     string value = appPath + "/lib/entrypoint.lua";
@@ -204,7 +204,7 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
     if (root["version"].asInt() == 1) {
         error("This app(" + name + ") is no longer supported. Please upgrade the app.");
     } else if (root["version"].asInt() == 2) {
-        loadVersion2(root, name);
+        loadVersion2(name);
     } else if (root["version"].asInt() == 3) {
         string appPath = DOT_SHUFFLE + "/apps/" + name + ".app/";
         string value = appPath + "/lib/entrypoint.lua";

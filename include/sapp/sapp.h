@@ -23,7 +23,7 @@ protected:
 public:
     explicit SAPPCommand(const string &name);
 
-    void loadVersion2(const Json::Value& root, const string &name);
+    void loadVersion2(const string &name);
 
     void loadVersion3(const string &name, const string &appPath, const string &value);
 
