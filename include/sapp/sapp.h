@@ -21,7 +21,7 @@ protected:
 public:
     explicit SAPPCommand(const string &name);
 
-    void loadVersion2(Json::Value root, const string &name);
+    void loadVersion2(const string &name);
 
     void run(Workspace &ws, map<string, string> &optionValues) const override;
 

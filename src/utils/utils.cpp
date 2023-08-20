@@ -136,6 +136,8 @@ string readTextFromWeb(const string &url) {
 
 int lastPercent = -1;
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "ConstantFunctionResult"
 int progressCallback([[maybe_unused]] void *clientp, curl_off_t dltotal,
                      curl_off_t dlnow, [[maybe_unused]] curl_off_t ultotal,
                      [[maybe_unused]] curl_off_t ulnow) {
@@ -151,6 +153,7 @@ int progressCallback([[maybe_unused]] void *clientp, curl_off_t dltotal,
 
     return 0;
 }
+#pragma clang diagnostic pop
 
 size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) {
     size_t written = fwrite(ptr, size, nmemb, stream);
@@ -179,7 +182,7 @@ bool downloadFile(const string &url, const string &file) {
     return false;
 }
 
-int onExtractEntry(const char *filename, void *arg) {
+int onExtractEntry(const char *filename, [[maybe_unused]] void *arg) {
     string name = path(filename).filename().string();
     if (!name.empty()) {
         term << teleport(0, wherey()) << eraseLine << "Extracting... (" << name << ")" << newLine;

@@ -29,7 +29,7 @@ public:
 
 void loadCommands();
 
-void shflCmd(Workspace &ws, map<string, string> &optionValues);
+void shflCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues);
 
 void appMgrCmd(Workspace &ws, map<string, string> &optionValues);
 

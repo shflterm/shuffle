@@ -4,10 +4,10 @@
 
 using std::vector, std::string;
 
-vector<string> findSuggestion(Workspace ws,
+vector<string> findSuggestion(const Workspace& ws,
                               const string &input,
                               const vector<string> &DICTIONARY) {
-    vector<string> suggestions = createSuggestions(std::move(ws), input, DICTIONARY);
+    vector<string> suggestions = createSuggestions(ws, input, DICTIONARY);
     if (suggestions.empty()) return {""};
 
     vector<string> res;
@@ -20,7 +20,7 @@ vector<string> findSuggestion(Workspace ws,
     return res;
 }
 
-vector<string> createSuggestions(Workspace ws,
+vector<string> createSuggestions([[maybe_unused]] const Workspace& ws,
                                  const string &str,
                                  const vector<string> &DICTIONARY) {
     vector<string> res;

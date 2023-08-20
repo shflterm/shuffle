@@ -151,7 +151,7 @@ string getSuggestion(const Workspace &ws, const string &input) {
     return suggestion;
 }
 
-string getHint(const Workspace &ws, const string &input) {
+string getHint([[maybe_unused]] const Workspace &ws, [[maybe_unused]] const string &input) {
 //    vector<string> args = split(input, regex(R"(\s+)"));
 //
 //    if (args.size() == 1) {
@@ -222,17 +222,16 @@ void Workspace::inputPrompt(bool enableSuggestion) {
             } else if (c == 224) {
                 int i = readChar();
                 int mv = (int) input.size();
-                mv *= -1;
                 switch (i) {
                     case 72: {
-                        term << teleport(wherex() - (int) input.size(), wherey());
+                        term << teleport(wherex() - mv, wherey());
                         term << eraseFromCursorToLineEnd;
                         input = historyUp();
                         term << input;
                         break;
                     }
                     case 80: {
-                        term << teleport(wherex() - (int) input.size(), wherey());
+                        term << teleport(wherex() - mv, wherey());
                         term << eraseFromCursorToLineEnd;
                         input = historyDown();
                         term << input;

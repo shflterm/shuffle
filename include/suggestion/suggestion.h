@@ -11,11 +11,11 @@
 #include "commandmgr.h"
 
 
-vector<string> findSuggestion(Workspace ws,
+vector<string> findSuggestion(const Workspace& ws,
                               const string &input,
                               const vector<string> &DICTIONARY);
 
-vector<string> createSuggestions(Workspace ws,
+vector<string> createSuggestions(const Workspace& ws,
                                  const string &str,
                                  const vector<string> &DICTIONARY);
 

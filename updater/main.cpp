@@ -39,7 +39,7 @@ bool installNativeApps() {
     return appInstalled;
 }
 
-int main(int argc, char *argv[]) {
+int main() {
     term << SHUFFLE << newLine
          << "Installing Shuffle..." << newLine;
     string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));

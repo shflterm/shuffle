@@ -104,7 +104,7 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
     return {};
 }
 
-void SAPPCommand::loadVersion2(Json::Value root, const string &name) {
+void SAPPCommand::loadVersion2(const string &name) {
     string appPath = DOT_SHUFFLE + "/apps/" + name + ".app/";
 
     string value = appPath + "/lib/entrypoint.lua";

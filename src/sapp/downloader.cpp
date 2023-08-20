@@ -22,7 +22,7 @@ Json::Value getRepo() {
     return root;
 }
 
-int _onExtractEntry(const char *filename, void *arg) {
+int _onExtractEntry(const char *filename, [[maybe_unused]] void *arg) {
     string name = path(filename).filename().string();
     if (!name.empty()) {
         term << teleport(0, wherey()) << eraseLine << "Extracting... (" << name << ")";

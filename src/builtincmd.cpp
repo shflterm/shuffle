@@ -46,7 +46,7 @@ void loadCommands() {
     }
 }
 
-void shflCmd(Workspace &ws, map<string, string> &optionValues) {
+void shflCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
     if (optionValues["reload"] == "true") {
         info("Reloading command...");
 
@@ -66,7 +66,7 @@ void shflCmd(Workspace &ws, map<string, string> &optionValues) {
     }
 }
 
-void appMgrCmd(Workspace &ws, map<string, string> &optionValues) {
+void appMgrCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
     if (optionValues.count("add")) {
         addSAPP(optionValues["add"]);
     } else if (optionValues.count("remove")) {
@@ -74,7 +74,7 @@ void appMgrCmd(Workspace &ws, map<string, string> &optionValues) {
     }
 }
 
-void helpCmd(Workspace &ws, map<string, string> &optionValues) {
+void helpCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
     if (optionValues.count("command") == 0) {
         term << "== Shuffle Help ==" << newLine
              << "Version: " << SHUFFLE_VERSION.str() << newLine << newLine
@@ -114,7 +114,7 @@ void helpCmd(Workspace &ws, map<string, string> &optionValues) {
     }
 }
 
-void snippetCmd(Workspace &ws, map<string, string> &optionValues) {
+void snippetCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
     //snf create aa help cd
     string snippetName = optionValues["create"];
     string cmd = optionValues["value"];
