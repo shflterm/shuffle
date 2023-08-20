@@ -183,10 +183,10 @@ void SAPPCommand::loadVersion3(const string &name, const string &appPath, const 
     }
 
     Json::Value subcommandsJson = helpRoot["subcommands"];
+    string test = subcommandsJson.toStyledString();
     for (const auto &item: subcommandsJson) {
-        string commandName = item.asString();
-        SAPPCommand subcommand = SAPPCommand(*this, name, description);
-        subcommands.push_back(subcommand);
+        string subcommandName = item.asString();
+        subcommands.push_back(make_shared<SAPPCommand>(SAPPCommand(*this, subcommandName)));
     }
 
     lua_State *LL = this->L;
@@ -214,8 +214,27 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
     }
 }
 
-SAPPCommand::SAPPCommand(const SAPPCommand& parent, const string &name, const string &description) : Command(name) {
-    string appPath = DOT_SHUFFLE + "/apps/" + parent.name + ".app/" + name;
+SAPPCommand::SAPPCommand(const SAPPCommand &newParent, const string &name) : Command(name) {
+    parent = make_shared<SAPPCommand>(newParent);
+
+    shared_ptr<Command> parentPtr = parent;
+    shared_ptr<Command> prevParentPtr;
+
+    vector<string> subcommandTree;
+
+    while (parentPtr != nullptr) {
+        subcommandTree.push_back(parentPtr->getName());
+        prevParentPtr = parentPtr;
+        parentPtr = parentPtr->parent;
+    }
+    parentPtr = prevParentPtr;
+    subcommandTree.pop_back();
+    std::reverse(subcommandTree.begin(), subcommandTree.end());
+
+    string appPath = DOT_SHUFFLE + "/apps/" + parentPtr->getName() + ".app/";
+    for (const auto &item: subcommandTree) appPath += item + "/";
+    appPath += name;
+
     string value = appPath + "/lib/entrypoint.lua";
     loadVersion3(name, appPath, value);
 }

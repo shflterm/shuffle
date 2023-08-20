@@ -16,7 +16,7 @@
 
 class SAPPCommand : public Command {
 protected:
-    SAPPCommand(const SAPPCommand& parent, const string &name, const string &description);
+    SAPPCommand(const SAPPCommand& parent, const string &name);
 
     lua_State *L{};
 

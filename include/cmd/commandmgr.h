@@ -14,7 +14,7 @@
 
 using std::pair, std::shared_ptr;
 
-typedef std::function<void(Workspace&, std::map<std::string, std::string>&)> cmd_t;
+typedef std::function<void(Workspace &, std::map<std::string, std::string> &)> cmd_t;
 
 void do_nothing(Workspace &ws, map<string, string> &optionValues);
 
@@ -37,7 +37,7 @@ class Command {
 protected:
     string name;
     string description;
-    vector<Command> subcommands;
+    vector<shared_ptr<Command>> subcommands;
     vector<CommandOption> options;
     cmd_t cmd;
 
@@ -46,21 +46,24 @@ public:
 
     [[nodiscard]] const string &getDescription() const;
 
-    [[nodiscard]] const vector<Command> &getSubcommands() const;
+    [[nodiscard]] const vector<shared_ptr<Command>> &getSubcommands() const;
 
     [[nodiscard]] const vector<CommandOption> &getOptions() const;
 
     virtual void run(Workspace &ws, map<string, string> &optionValues) const;
 
-    Command(string name, string description, const vector<Command> &subcommands, const vector<CommandOption> &options, cmd_t cmd);
+    Command(string name, string description, const vector<shared_ptr<Command>> &subcommands, const vector<CommandOption> &options,
+            cmd_t cmd);
 
-    Command(string name, string description, const vector<Command> &subcommands, cmd_t cmd);
+    Command(string name, string description, const vector<shared_ptr<Command>> &subcommands, cmd_t cmd);
 
     Command(string name, string description, const vector<CommandOption> &options, cmd_t cmd);
 
     Command(string name, string description, cmd_t cmd);
 
     Command(string name);
+
+    shared_ptr<Command> parent;
 };
 
 class CommandData {
