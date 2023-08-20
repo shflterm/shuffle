@@ -3,10 +3,19 @@
 #include <algorithm>
 
 #include "console.h"
+#include "utils.h"
 
 ParsedCommand parseCommand(Command *app, const vector<string> &args) {
-    ParsedCommand parsed = ParsedCommand(app);
+    for (const auto &item: args) {
+        for (const auto &subcommand: app->getSubcommands()) {
+            if (subcommand->getName() == trim(item)) {
+                app = subcommand.get();
+                break;
+            }
+        }
+    }
 
+    ParsedCommand parsed = ParsedCommand(app);
     map<string, string> *parsedOptions = parseOptions(app, args);
     if (parsedOptions == nullptr) return ParsedCommand(nullptr);
 

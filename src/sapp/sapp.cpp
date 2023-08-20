@@ -25,43 +25,6 @@ using std::make_shared;
 
 #endif
 
-typedef void (*entrypoint_t)(Workspace &workspace, const vector<string> &args);
-
-typedef vector<string> (*suggest_t)(Workspace &workspace, const string &suggestId);
-
-void SAPPCommand::run(Workspace &ws, map<string, string> &optionValues) const {
-    // Create workspace table
-    lua_newtable(L);
-    {
-        lua_pushstring(L, ws.currentDirectory().string().c_str());
-        lua_setfield(L, -2, "dir");
-    } // ws.dir
-
-    lua_setglobal(L, "workspace");
-
-    // Create args list
-    for (const auto &item: optionValues) {
-        lua_pushstring(L, item.second.c_str());
-        lua_setglobal(L, item.first.c_str());
-    }
-
-    lua_getglobal(L, "entrypoint");
-    if (lua_type(L, -1) != LUA_TFUNCTION) {
-        error("Error: 'entrypoint' is not a function!");
-        return;
-    }
-    int err = lua_pcall(L, 0, 0, 0);
-    if (err) error("Error: " + string(lua_tostring(L, -1)));
-
-    // Update workspace
-    lua_getglobal(L, "workspace");
-    lua_getfield(L, -1, "dir");
-
-    path newDir = lua_tostring(L, -1);
-    if (newDir.is_relative()) newDir = ws.currentDirectory() / newDir;
-    ws.moveDirectory(newDir);
-}
-
 vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &suggestId) {
     // Create workspace table
     lua_newtable(L);
@@ -144,9 +107,92 @@ void SAPPCommand::loadVersion2(const string &name) {
         options.emplace_back(optionName, type, aliases);
     }
 
-    for (const auto &item: helpRoot["example"]) {
-        usage.emplace_back(item["usage"].asString(), item["description"].asString());
+//    for (const auto &item: helpRoot["example"]) {
+//        usage.emplace_back(item["usage"].asString(), item["description"].asString());
+//    }
+}
+
+void run_sapp(lua_State *L, Workspace &ws, map<string, string> &optionValues) {
+    // Create workspace table
+    lua_newtable(L);
+    {
+        lua_pushstring(L, ws.currentDirectory().string().c_str());
+        lua_setfield(L, -2, "dir");
+    } // ws.dir
+
+    lua_setglobal(L, "workspace");
+
+    // Create args list
+    for (const auto &item: optionValues) {
+        lua_pushstring(L, item.second.c_str());
+        lua_setglobal(L, item.first.c_str());
     }
+
+    lua_getglobal(L, "entrypoint");
+    if (lua_type(L, -1) != LUA_TFUNCTION) {
+        error("Error: 'entrypoint' is not a function!");
+        return;
+    }
+    int err = lua_pcall(L, 0, 0, 0);
+    if (err) error("Error: " + string(lua_tostring(L, -1)));
+
+    // Update workspace
+    lua_getglobal(L, "workspace");
+    lua_getfield(L, -1, "dir");
+
+    path newDir = lua_tostring(L, -1);
+    if (newDir.is_relative()) newDir = ws.currentDirectory() / newDir;
+    ws.moveDirectory(newDir);
+}
+
+void SAPPCommand::loadVersion3(const string &name, const string &appPath, const string &value) {
+    L = luaL_newstate();
+
+    luaL_openlibs(L);
+    initLua(L);
+    int err = luaL_loadfile(L, value.c_str());
+    if (err) error("Error: " + string(lua_tostring(L, -1)));
+
+    err = lua_pcall(L, 0, 0, 0);
+    if (err) error("Error: " + string(lua_tostring(L, -1)));
+
+    //Read help.shfl
+    string helpDotShfl = appPath + "/help.shfl";
+    Json::Value helpRoot;
+    Json::Reader helpReader;
+    helpReader.parse(readFile(helpDotShfl), helpRoot, false);
+
+    description = helpRoot["description"].asString();
+
+    Json::Value optionsJson = helpRoot["options"];
+    for (const auto &item: optionsJson) {
+        string optionName = item["name"].asString();
+        vector<string> aliases;
+        aliases.push_back(optionName);
+        for (const auto &item2: item["aliases"]) aliases.push_back(item2.asString());
+        OptionType type;
+        if (item["type"].asString() == "TEXT_T") type = TEXT_T;
+        else if (item["type"].asString() == "BOOL_T") type = BOOL_T;
+        else if (item["type"].asString() == "INT_T") type = INT_T;
+        else {
+            error("Error: Invalid option type in " + name + ".");
+            type = TEXT_T;
+        }
+
+        options.emplace_back(optionName, type, aliases);
+    }
+
+    Json::Value subcommandsJson = helpRoot["subcommands"];
+    string test = subcommandsJson.toStyledString();
+    for (const auto &item: subcommandsJson) {
+        string subcommandName = item.asString();
+        subcommands.push_back(make_shared<SAPPCommand>(SAPPCommand(*this, subcommandName)));
+    }
+
+    lua_State *LL = this->L;
+    cmd = [LL](Workspace &ws, map<string, string> &optionValues) {
+        run_sapp(LL, ws, optionValues);
+    };
 }
 
 SAPPCommand::SAPPCommand(const string &name) : Command(name) {
@@ -158,10 +204,39 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
     if (root["version"].asInt() == 1) {
         error("This app(" + name + ") is no longer supported. Please upgrade the app.");
     } else if (root["version"].asInt() == 2) {
-        loadVersion2(root, name);
+        loadVersion2(name);
+    } else if (root["version"].asInt() == 3) {
+        string appPath = DOT_SHUFFLE + "/apps/" + name + ".app/";
+        string value = appPath + "/lib/entrypoint.lua";
+        loadVersion3(name, appPath, value);
     } else {
         error("Error: Invalid version number in " + name + ".");
     }
+}
+
+SAPPCommand::SAPPCommand(const SAPPCommand &newParent, const string &name) : Command(name) {
+    parent = make_shared<SAPPCommand>(newParent);
+
+    shared_ptr<Command> parentPtr = parent;
+    shared_ptr<Command> prevParentPtr;
+
+    vector<string> subcommandTree;
+
+    while (parentPtr != nullptr) {
+        subcommandTree.push_back(parentPtr->getName());
+        prevParentPtr = parentPtr;
+        parentPtr = parentPtr->parent;
+    }
+    parentPtr = prevParentPtr;
+    subcommandTree.pop_back();
+    std::reverse(subcommandTree.begin(), subcommandTree.end());
+
+    string appPath = DOT_SHUFFLE + "/apps/" + parentPtr->getName() + ".app/";
+    for (const auto &item: subcommandTree) appPath += item + "/";
+    appPath += name;
+
+    string value = appPath + "/lib/entrypoint.lua";
+    loadVersion3(name, appPath, value);
 }
 
 void loadApp(const CommandData &data) {

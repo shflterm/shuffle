@@ -10,6 +10,8 @@ using std::make_shared;
 
 vector<shared_ptr<Command>> commands;
 
+void do_nothing(Workspace &ws, map<string, string> &optionValues) {}
+
 vector<CommandData> getRegisteredCommands() {
     vector<CommandData> res;
 
@@ -65,40 +67,40 @@ const string &Command::getDescription() const {
     return description;
 }
 
-void Command::run(Workspace &ws, map<string, string> &optionValues) const {}
+void Command::run(Workspace &ws, map<string, string> &optionValues) const {
+    cmd(ws, optionValues);
+}
 
-Command::Command(string name, string description, vector<CommandOption> options,
-                 vector<pair<string, string>> usage)
-        : name(std::move(name)),
-          description(std::move(description)),
-          options(std::move(options)),
-          usage(std::move(usage)) {}
-
-Command::Command(string name, string description, vector<CommandOption> options)
-        : name(std::move(name)),
-          description(std::move(description)),
-          options(std::move(options)) {}
-
-Command::Command(string name, string description)
-        : name(std::move(name)),
-          description(std::move(description)) {}
-
-Command::Command(string name, vector<CommandOption> options)
-        : name(std::move(name)),
-          description("-"),
-          options(std::move(options)) {}
-
-Command::Command(string name)
-        : name(std::move(name)),
-          description("-") {}
-
-const vector<pair<string, string>> &Command::getUsage() const {
-    return usage;
+const vector<shared_ptr<Command>> &Command::getSubcommands() const {
+    return subcommands;
 }
 
 const vector<CommandOption> &Command::getOptions() const {
     return options;
 }
+
+Command::Command(string name, string description, const vector<shared_ptr<Command>> &subcommands,
+                 const vector<CommandOption> &options, cmd_t cmd) : name(std::move(name)),
+                                                                    description(std::move(
+                                                                            description)),
+                                                                    subcommands(subcommands),
+                                                                    options(options), cmd(std::move(cmd)) {}
+
+Command::Command(string name, string description,
+                 const vector<shared_ptr<Command>> &subcommands, cmd_t cmd) : name(std::move(name)),
+                                                                    description(std::move(description)),
+                                                                    subcommands(subcommands), cmd(std::move(cmd)) {}
+
+Command::Command(string name, string description,
+                 const vector<CommandOption> &options, cmd_t cmd) : name(std::move(name)),
+                                                                    description(std::move(description)),
+                                                                    options(options), cmd(std::move(cmd)) {}
+
+Command::Command(string name, string description, cmd_t cmd) : name(std::move(name)),
+                                                               description(std::move(description)),
+                                                               cmd(std::move(cmd)) {}
+
+Command::Command(string name) : name(std::move(name)), cmd(do_nothing) {}
 
 CommandOption::CommandOption(string name, OptionType type, const vector<string> &aliases) : name(std::move(name)),
                                                                                             type(type),

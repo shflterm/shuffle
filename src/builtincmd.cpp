@@ -16,25 +16,25 @@ using std::make_shared;
 void loadCommands() {
     clearCommands();
 
-    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+    commands.push_back(make_shared<Command>(Command(
             "shfl", "Shuffle Command", {
                     CommandOption("reload", BOOL_T, {"rl"}),
                     CommandOption("update", BOOL_T, {"upgrade"}),
                     CommandOption("credits", BOOL_T, {"credit"}),
             }, shflCmd
     )));
-    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+    commands.push_back(make_shared<Command>(Command(
             "appmgr", "App Manager", {
                     CommandOption("add", TEXT_T, {"ad", "a"}),
                     CommandOption("remove", TEXT_T, {"rm", "r"}),
             }, appMgrCmd
     )));
-    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+    commands.push_back(make_shared<Command>(Command(
             "help", "Show help", {
                     CommandOption("command", TEXT_T, {"cmd", "help"})
             }, helpCmd
     )));
-    commands.push_back(make_shared<BuiltinCommand>(BuiltinCommand(
+    commands.push_back(make_shared<Command>(Command(
             "snf", "Manage Snippets", {
                     CommandOption("create", TEXT_T, {"mk", "c", "new"}),
                     CommandOption("value", TEXT_T, {"v"}),
@@ -104,13 +104,6 @@ void helpCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) 
         term << "== About '" << cmd->getName() << "' ==" << newLine
              << "Name: " << cmd->getName() << newLine
              << "Description: " << cmd->getDescription() << newLine;
-
-        if (!cmd->getUsage().empty()) term << "Usage: " << newLine;
-        for (const auto &item: cmd->getUsage()) {
-            string example = item.first;
-            string description = item.second;
-            term << "  " << example << " : " << description << newLine;
-        }
     }
 }
 
@@ -121,8 +114,4 @@ void snippetCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValue
 
     addSnippet(snippetName, cmd);
     term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
-}
-
-void BuiltinCommand::run(Workspace &ws, map<string, string> &optionValues) const {
-    cmd(ws, optionValues);
 }
