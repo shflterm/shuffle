@@ -8,9 +8,15 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <functional>
+
 #include "workspace.h"
 
 using std::pair, std::shared_ptr;
+
+typedef std::function<void(Workspace&, std::map<std::string, std::string>&)> cmd_t;
+
+void do_nothing(Workspace &ws, map<string, string> &optionValues);
 
 enum OptionType {
     TEXT_T,
@@ -33,6 +39,7 @@ protected:
     string description;
     vector<Command> subcommands;
     vector<CommandOption> options;
+    cmd_t cmd;
 
 public:
     [[nodiscard]] const string &getName() const;
@@ -45,13 +52,13 @@ public:
 
     virtual void run(Workspace &ws, map<string, string> &optionValues) const;
 
-    Command(string name, string description, const vector<Command> &subcommands, const vector<CommandOption> &options);
+    Command(string name, string description, const vector<Command> &subcommands, const vector<CommandOption> &options, cmd_t cmd);
 
-    Command(string name, string description, const vector<Command> &subcommands);
+    Command(string name, string description, const vector<Command> &subcommands, cmd_t cmd);
 
-    Command(string name, string description, const vector<CommandOption> &options);
+    Command(string name, string description, const vector<CommandOption> &options, cmd_t cmd);
 
-    Command(string name, string description);
+    Command(string name, string description, cmd_t cmd);
 
     Command(string name);
 };

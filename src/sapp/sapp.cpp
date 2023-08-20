@@ -25,43 +25,6 @@ using std::make_shared;
 
 #endif
 
-typedef void (*entrypoint_t)(Workspace &workspace, const vector<string> &args);
-
-typedef vector<string> (*suggest_t)(Workspace &workspace, const string &suggestId);
-
-void SAPPCommand::run(Workspace &ws, map<string, string> &optionValues) const {
-    // Create workspace table
-    lua_newtable(L);
-    {
-        lua_pushstring(L, ws.currentDirectory().string().c_str());
-        lua_setfield(L, -2, "dir");
-    } // ws.dir
-
-    lua_setglobal(L, "workspace");
-
-    // Create args list
-    for (const auto &item: optionValues) {
-        lua_pushstring(L, item.second.c_str());
-        lua_setglobal(L, item.first.c_str());
-    }
-
-    lua_getglobal(L, "entrypoint");
-    if (lua_type(L, -1) != LUA_TFUNCTION) {
-        error("Error: 'entrypoint' is not a function!");
-        return;
-    }
-    int err = lua_pcall(L, 0, 0, 0);
-    if (err) error("Error: " + string(lua_tostring(L, -1)));
-
-    // Update workspace
-    lua_getglobal(L, "workspace");
-    lua_getfield(L, -1, "dir");
-
-    path newDir = lua_tostring(L, -1);
-    if (newDir.is_relative()) newDir = ws.currentDirectory() / newDir;
-    ws.moveDirectory(newDir);
-}
-
 vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &suggestId) {
     // Create workspace table
     lua_newtable(L);
@@ -149,10 +112,40 @@ void SAPPCommand::loadVersion2(const Json::Value &root, const string &name) {
 //    }
 }
 
-void SAPPCommand::loadVersion3(const Json::Value &root, const string &name) {
-    string appPath = DOT_SHUFFLE + "/apps/" + name + ".app/";
+void run_sapp(lua_State *L, Workspace &ws, map<string, string> &optionValues) {
+    // Create workspace table
+    lua_newtable(L);
+    {
+        lua_pushstring(L, ws.currentDirectory().string().c_str());
+        lua_setfield(L, -2, "dir");
+    } // ws.dir
 
-    string value = appPath + "/lib/entrypoint.lua";
+    lua_setglobal(L, "workspace");
+
+    // Create args list
+    for (const auto &item: optionValues) {
+        lua_pushstring(L, item.second.c_str());
+        lua_setglobal(L, item.first.c_str());
+    }
+
+    lua_getglobal(L, "entrypoint");
+    if (lua_type(L, -1) != LUA_TFUNCTION) {
+        error("Error: 'entrypoint' is not a function!");
+        return;
+    }
+    int err = lua_pcall(L, 0, 0, 0);
+    if (err) error("Error: " + string(lua_tostring(L, -1)));
+
+    // Update workspace
+    lua_getglobal(L, "workspace");
+    lua_getfield(L, -1, "dir");
+
+    path newDir = lua_tostring(L, -1);
+    if (newDir.is_relative()) newDir = ws.currentDirectory() / newDir;
+    ws.moveDirectory(newDir);
+}
+
+void SAPPCommand::loadVersion3(const string &name, const string &appPath, const string &value) {
     L = luaL_newstate();
 
     luaL_openlibs(L);
@@ -192,9 +185,14 @@ void SAPPCommand::loadVersion3(const Json::Value &root, const string &name) {
     Json::Value subcommandsJson = helpRoot["subcommands"];
     for (const auto &item: optionsJson) {
         string commandName = item["name"].asString();
-        string commandDescription= item["description"].asString();
-        subcommands.emplace_back(commandName, commandDescription);
+        string commandDescription = item["description"].asString();
+        SAPPCommand subcommand = SAPPCommand(*this, name, description);
+        subcommands.push_back(subcommand);
     }
+
+    cmd = [this](Workspace &ws, map<string, string> &optionValues) {
+        run_sapp(this->L, ws, optionValues);
+    };
 }
 
 SAPPCommand::SAPPCommand(const string &name) : Command(name) {
@@ -208,10 +206,18 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
     } else if (root["version"].asInt() == 2) {
         loadVersion2(root, name);
     } else if (root["version"].asInt() == 3) {
-        loadVersion3(root, name);
+        string appPath = DOT_SHUFFLE + "/apps/" + name + ".app/";
+        string value = appPath + "/lib/entrypoint.lua";
+        loadVersion3(name, appPath, value);
     } else {
         error("Error: Invalid version number in " + name + ".");
     }
+}
+
+SAPPCommand::SAPPCommand(const SAPPCommand& parent, const string &name, const string &description) : Command(name) {
+    string appPath = DOT_SHUFFLE + "/apps/" + parent.name + ".app/" + name;
+    string value = appPath + "/lib/entrypoint.lua";
+    loadVersion3(name, appPath, value);
 }
 
 void loadApp(const CommandData &data) {

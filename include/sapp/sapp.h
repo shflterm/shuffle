@@ -16,6 +16,8 @@
 
 class SAPPCommand : public Command {
 protected:
+    SAPPCommand(const SAPPCommand& parent, const string &name, const string &description);
+
     lua_State *L{};
 
 public:
@@ -23,9 +25,7 @@ public:
 
     void loadVersion2(const Json::Value& root, const string &name);
 
-    void loadVersion3(const Json::Value& root, const string &name);
-
-    void run(Workspace &ws, map<string, string> &optionValues) const override;
+    void loadVersion3(const string &name, const string &appPath, const string &value);
 
     vector<string> makeDynamicSuggestion(Workspace &ws, const string &suggestId);
 };
