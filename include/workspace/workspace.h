@@ -41,6 +41,8 @@ public:
 
     void inputPrompt(bool enableSuggestion);
 
+    string getName();
+
     explicit Workspace(const string &name);
 
     Workspace();

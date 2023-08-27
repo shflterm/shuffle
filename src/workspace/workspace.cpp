@@ -293,6 +293,10 @@ void Workspace::inputPrompt(bool enableSuggestion) {
     }
 }
 
+string Workspace::getName() {
+    return name;
+}
+
 Workspace::Workspace(
         const string &name) : name(name) {
     wsMap[name] = this;

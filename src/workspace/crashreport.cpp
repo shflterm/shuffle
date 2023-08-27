@@ -8,6 +8,8 @@
 #include "term.h"
 
 #include "version.h"
+#include "console.h"
+#include "commandmgr.h"
 
 using std::endl, std::to_string, std::ofstream;
 
@@ -133,10 +135,14 @@ string CrashReport::make() {
     ss << "Version: " << SHUFFLE_VERSION.str() << endl;
     ss << "Time: " << time(nullptr) << endl;
     ss << "Signal Number: " << sig << endl;
+    ss << "Apps: " << endl;
+    for (const auto &item: commands) {
+        ss << "  " << item->getName() << endl;
+    }
     ss << "========================" << endl;
     ss << "Workspaces: " << endl;
     for (auto &ws: wsMap) {
-        ss << "  " << ws.first << endl;
+        ss << "  " << ws.first << (ws.first == currentWorkspace->getName() ? " (current)" : "") << endl;
         ss << "    Current Directory: " << ws.second->currentDirectory().string() << endl;
         ss << "    History: " << endl;
         for (int i = 0; i < ws.second->getHistory().size(); ++i) {
@@ -152,10 +158,10 @@ string CrashReport::make() {
 }
 
 void CrashReport::save() {
-    ofstream file(DOT_SHUFFLE + "/crash-report-" + to_string(time(nullptr)) + ".txt");
+    string filePath = DOT_SHUFFLE + "/crash-report-" + to_string(time(nullptr)) + ".txt";
+    ofstream file(filePath);
     file << make();
     file.close();
 
-    term << "Stack trace saved to \"" << DOT_SHUFFLE << "/crash-report-" << to_string(time(nullptr)) << ".txt" << "\"."
-         << newLine;
+    term << "Stack trace saved to \"" << filePath << "\"." << newLine;
 }
