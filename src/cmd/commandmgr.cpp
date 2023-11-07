@@ -88,8 +88,9 @@ Command::Command(string name, string description, const vector<shared_ptr<Comman
 
 Command::Command(string name, string description,
                  const vector<shared_ptr<Command>> &subcommands, cmd_t cmd) : name(std::move(name)),
-                                                                    description(std::move(description)),
-                                                                    subcommands(subcommands), cmd(std::move(cmd)) {}
+                                                                              description(std::move(description)),
+                                                                              subcommands(subcommands),
+                                                                              cmd(std::move(cmd)) {}
 
 Command::Command(string name, string description,
                  const vector<CommandOption> &options, cmd_t cmd) : name(std::move(name)),
@@ -101,6 +102,10 @@ Command::Command(string name, string description, cmd_t cmd) : name(std::move(na
                                                                cmd(std::move(cmd)) {}
 
 Command::Command(string name) : name(std::move(name)), cmd(do_nothing) {}
+
+CommandOption::CommandOption(string name, OptionType type) : name(std::move(name)),
+                                                             type(type),
+                                                             aliases({}) {}
 
 CommandOption::CommandOption(string name, OptionType type, const vector<string> &aliases) : name(std::move(name)),
                                                                                             type(type),

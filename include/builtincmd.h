@@ -15,8 +15,16 @@
 
 void loadCommands();
 
+void shflReloadCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues);
+
+void shflUpgradeCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues);
+
+void shflCreditsCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues);
+
 void shflCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues);
 
+void appMgrAddCmd(Workspace &ws, map<string, string> &optionValues);
+void appMgrRemoveCmd(Workspace &ws, map<string, string> &optionValues);
 void appMgrCmd(Workspace &ws, map<string, string> &optionValues);
 
 void helpCmd(Workspace &ws, map<string, string> &optionValues);

@@ -30,6 +30,7 @@ public:
     OptionType type;
     vector<string> aliases;
 
+    CommandOption(string name, OptionType type);
     CommandOption(string name, OptionType type, const vector<string> &aliases);
 };
 

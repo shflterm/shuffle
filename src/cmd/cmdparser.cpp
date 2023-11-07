@@ -6,17 +6,21 @@
 #include "utils.h"
 
 ParsedCommand parseCommand(Command *app, const vector<string> &args) {
-    for (const auto &item: args) {
+    vector<string> newArgs = args;
+    for (int i = 0; i < args.size(); ++i) {
+        const string& item = args[i];
         for (const auto &subcommand: app->getSubcommands()) {
             if (subcommand->getName() == trim(item)) {
                 app = subcommand.get();
+                newArgs.clear();
+                newArgs.insert(newArgs.begin(), args.begin() + i + 1, args.end());
                 break;
             }
         }
     }
 
     ParsedCommand parsed = ParsedCommand(app);
-    map<string, string> *parsedOptions = parseOptions(app, args);
+    map<string, string> *parsedOptions = parseOptions(app, newArgs);
     if (parsedOptions == nullptr) return ParsedCommand(nullptr);
 
     parsed.options = *parsedOptions;
@@ -30,6 +34,7 @@ map<string, string> *parseOptions(Command *app, const vector<string> &args) {
 
     map<string, vector<string>> optionAbbreviations;
     for (auto &option: options) {
+        optionAbbreviations[option.name].push_back(option.name);
         for (auto &abbr: option.aliases) {
             optionAbbreviations[option.name].push_back(abbr);
         }
