@@ -44,6 +44,9 @@ void loadCommands() {
                     CommandOption("value", TEXT_T, {"v"}),
             }, snippetCmd
     )));
+    commands.push_back(make_shared<Command>(Command(
+            "clear", "Manage Snippets", clearCmd
+    )));
 
     for (const CommandData &command: getRegisteredCommands()) {
         loadApp(command);
@@ -126,4 +129,8 @@ void snippetCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValue
 
     addSnippet(snippetName, cmd);
     term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
+}
+
+void clearCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
+    term << eraseAll;
 }

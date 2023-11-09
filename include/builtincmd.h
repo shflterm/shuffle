@@ -24,11 +24,15 @@ void shflCreditsCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionV
 void shflCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues);
 
 void appMgrAddCmd(Workspace &ws, map<string, string> &optionValues);
+
 void appMgrRemoveCmd(Workspace &ws, map<string, string> &optionValues);
+
 void appMgrCmd(Workspace &ws, map<string, string> &optionValues);
 
 void helpCmd(Workspace &ws, map<string, string> &optionValues);
 
 void snippetCmd(Workspace &ws, map<string, string> &optionValues);
+
+void clearCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues);
 
 #endif //SHUFFLE_INCLUDE_BUILTINCMD_H_
