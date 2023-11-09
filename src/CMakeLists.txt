@@ -36,7 +36,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE kubazip::kubazip)
 
 add_dependencies(${PROJECT_NAME} oai)
 include_directories(../liboai/include)
-target_link_libraries(${PROJECT_NAME} oai)
+target_link_libraries(${PROJECT_NAME} PRIVATE oai)
 
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 

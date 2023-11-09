@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 project(suggestion)
 
-set(SUGGESTION_SRC suggestion.cpp)
+set(SUGGESTION_SRC suggestion.cpp hash_suggestion.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -26,6 +26,10 @@ target_link_libraries(${PROJECT_NAME} CURL::libcurl)
 
 find_package(kubazip CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} kubazip::kubazip)
+
+add_dependencies(${PROJECT_NAME} oai)
+include_directories(../../liboai/include)
+target_link_libraries(${PROJECT_NAME} oai)
 
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 

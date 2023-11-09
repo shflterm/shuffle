@@ -1,9 +1,13 @@
 #include "hash_suggestion.h"
 
 #include <vector>
+#include <term.h>
 
+#include "liboai.h"
 #include "console.h"
 #include "commandmgr.h"
+
+using namespace liboai;
 
 OpenAI oai;
 Conversation convo;
@@ -85,9 +89,9 @@ string createHashSuggestion(const string &prompt) {
 
     if (countAccentGrave == 3) {
       if (!codeOpened) {
-        newRes += BG_GREEN;
+        newRes += color(FOREGROUND, Green);
       } else {
-        newRes += RESET;
+        newRes += resetColor;
       }
 
       countAccentGrave = 0;

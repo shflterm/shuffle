@@ -12,6 +12,7 @@
 #include "workspace/snippetmgr.h"
 #include "parsedcmd.h"
 #include "cmdparser.h"
+#include "hash_suggestion.h"
 
 using std::stringstream, std::cin;
 
@@ -263,6 +264,15 @@ void Workspace::inputPrompt(bool enableSuggestion) {
                 getline(cin, command);
 
                 system(command.c_str());
+                return;
+            } else if (c == '#' && input.empty()) {
+                term << teleport(wherex() - 2, wherey());
+                cout << color(FOREGROUND, Yellow) << "# " << resetColor;
+                string prompt;
+                getline(cin, prompt);
+
+                info(createHashSuggestion(prompt));
+                warning("This answer may not be accurate. You are responsible for executing this command.");
                 return;
             } else {
                 string character(1, (char) c);
