@@ -1,20 +1,14 @@
 cmake_minimum_required(VERSION 3.18)
-project(shuffle)
+project(sappmgr)
 
-set(APP_SOURCES main.cpp builtincmd.cpp)
+set(SAPP_SRC sapp.cpp downloader.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-add_executable(${PROJECT_NAME} ${APP_SOURCES})
+add_library(${PROJECT_NAME} ${SAPP_SRC})
 
-add_subdirectory(cmd)
-add_subdirectory(sapp)
-add_subdirectory(suggestion)
-add_subdirectory(workspace)
-add_subdirectory(utils)
-
-add_dependencies(${PROJECT_NAME} commandmgr sappmgr suggestion workspace utils)
-target_link_libraries(${PROJECT_NAME} PRIVATE commandmgr sappmgr suggestion workspace utils)
+add_dependencies(${PROJECT_NAME} utils commandmgr workspace)
+target_link_libraries(${PROJECT_NAME} PUBLIC utils commandmgr workspace)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 
@@ -34,10 +28,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE CURL::libcurl)
 find_package(kubazip CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE kubazip::kubazip)
 
-add_dependencies(${PROJECT_NAME} oai)
-include_directories(../liboai/include)
-target_link_libraries(${PROJECT_NAME} oai)
-
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ../include ../include/cmd ../include/sapp ../include/suggestion ../include/workspace ../include/utils)
+target_include_directories(${PROJECT_NAME} PRIVATE ../../include ../../include/cmd ../../include/sapp ../../include/suggestion ../../include/workspace ../../include/utils)

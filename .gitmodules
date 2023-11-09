@@ -1,3 +1,6 @@
+[submodule "termcpp"]
+	path = termcpp
+	url = https://github.com/shflterm/termcpp
 [submodule "liboai"]
 	path = liboai
 	url = https://github.com/shflterm/liboai

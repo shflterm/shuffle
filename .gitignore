@@ -9,9 +9,8 @@ build/
 cmake-build-debug/
 cmake-build-debug-visual-studio/
 cmake-build-debug-wsl/
-cmake-build-release-visual-studio/
+cmake-build-release-visual-studio
 cmake-build-release-wsl/
-include/version.h
 lib/Debug/
 lib/Release/
 bin/Debug/
@@ -29,3 +28,10 @@ ZERO_CHECK.vcxproj
 ZERO_CHECK.vcxproj.filters
 key.txt
 .cmake/
+vcpkg/
+vcpkg_installed/
+.cache/
+build-wsl/
+build-wsl-dbg/
+build-mingw/
+build-mingw-dbg/

@@ -7,22 +7,48 @@
 
 #ifdef _WIN32
 #define HOME string(getenv("APPDATA"))
-#elif __linux__ || __APPLE__
+#elif defined(__linux__) || defined(__APPLE__)
 #define HOME string(getenv("HOME"))
 #endif
 #define DOT_SHUFFLE (HOME + "/.shuffle")
+#define SHFL_JSON (DOT_SHUFFLE + "/shfl.json")
 
 #include <string>
 #include <vector>
 #include <regex>
+#include <json/json.h>
+#include <filesystem>
 
-using namespace std;
+using std::regex, std::vector, std::string, std::filesystem::path;
+
+std::vector<std::string> splitBySpace(const std::string &input);
 
 vector<string> split(const string &s, const regex &delimiter_regex);
+
 string trim(const string &s);
+
 int levenshteinDist(const string &str1, const string &str2);
+
 string replace(string str, const string &from, const string &to);
+
 string readFile(const string &path);
-void writeFile(const string &path, const string& value);
+
+void writeFile(const string &path, const string &value);
+
+string readTextFromWeb(const string &url);
+
+bool downloadFile(const string &url, const string &file);
+
+path extractZip(const path& zipFile, path extractPath);
+
+void updateShuffle();
+
+void initShflJson();
+
+Json::Value getShflJson(const string &part);
+
+void setShflJson(const string &part, Json::Value value);
+
+bool checkUpdate(bool checkBackground = true);
 
 #endif //SHUFFLE_INCLUDE_UTILS_H_

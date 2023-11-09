@@ -1,0 +1,11 @@
+{
+  "created_by": ["@ssyuk"],
+  "contributors": [],
+  "special_thanks": ["@NY0510", "@norhu1130", "@NOOBNUBY", "@aidenlee33", "@Quema100"],
+  "libraries": [
+    {"name": "JsonCPP", "by": "@open-source-parsers"},
+    {"name": "curl", "by": "https://curl.se"},
+    {"name": "zip", "by": "@kuba--"},
+    {"name": "lua", "by": "https://lua.org/"}
+  ]
+}
