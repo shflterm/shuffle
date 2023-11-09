@@ -94,7 +94,7 @@ void Workspace::execute(const string &input, bool isSnippet) {
     ParsedCommand parsed = parseCommand(app, args);
 
     if (parsed.app == nullptr) return;
-    parsed.executeApp(*this);
+    parsed.executeApp(this);
 }
 
 vector<string> makeDictionary(const vector<shared_ptr<Command>> &cmds) {
@@ -195,7 +195,7 @@ string Workspace::prompt() {
     else if (dir.parent_path() == dir.root_path())
         ss << dir.root_name().string() << "/" << dir.filename().string();
     else
-        ss << dir.root_name().string() << "/../" << dir.filename().string();
+        ss << dir.root_name().string() << "/.../" << dir.filename().string();
     ss << ")";
 
     ss << color(FOREGROUND, Yellow) << " \u2192 " << resetColor;

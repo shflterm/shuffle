@@ -112,11 +112,11 @@ void SAPPCommand::loadVersion2(const string &name) {
 //    }
 }
 
-void run_sapp(lua_State *L, Workspace &ws, map<string, string> &optionValues) {
+void run_sapp(lua_State *L, Workspace *ws, map<string, string> &optionValues) {
     // Create workspace table
     lua_newtable(L);
     {
-        lua_pushstring(L, ws.currentDirectory().string().c_str());
+        lua_pushstring(L, ws->currentDirectory().string().c_str());
         lua_setfield(L, -2, "dir");
     } // ws.dir
 
@@ -141,8 +141,8 @@ void run_sapp(lua_State *L, Workspace &ws, map<string, string> &optionValues) {
     lua_getfield(L, -1, "dir");
 
     path newDir = lua_tostring(L, -1);
-    if (newDir.is_relative()) newDir = ws.currentDirectory() / newDir;
-    ws.moveDirectory(newDir);
+    if (newDir.is_relative()) newDir = ws->currentDirectory() / newDir;
+    ws->moveDirectory(newDir);
 }
 
 void SAPPCommand::loadVersion3(const string &name, const string &appPath, const string &value) {
@@ -190,7 +190,7 @@ void SAPPCommand::loadVersion3(const string &name, const string &appPath, const 
     }
 
     lua_State *LL = this->L;
-    cmd = [LL](Workspace &ws, map<string, string> &optionValues) {
+    cmd = [LL](Workspace *ws, map<string, string> &optionValues) {
         run_sapp(LL, ws, optionValues);
     };
 }

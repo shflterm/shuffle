@@ -10,7 +10,7 @@ using std::make_shared;
 
 vector<shared_ptr<Command>> commands;
 
-void do_nothing(Workspace &ws, map<string, string> &optionValues) {}
+void do_nothing(Workspace *ws, map<string, string> &optionValues) {}
 
 vector<CommandData> getRegisteredCommands() {
     vector<CommandData> res;
@@ -67,7 +67,7 @@ const string &Command::getDescription() const {
     return description;
 }
 
-void Command::run(Workspace &ws, map<string, string> &optionValues) const {
+void Command::run(Workspace *ws, map<string, string> &optionValues) const {
     cmd(ws, optionValues);
 }
 

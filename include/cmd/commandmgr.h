@@ -14,9 +14,9 @@
 
 using std::pair, std::shared_ptr;
 
-typedef std::function<void(Workspace &, std::map<std::string, std::string> &)> cmd_t;
+typedef std::function<void(Workspace *, std::map<std::string, std::string> &)> cmd_t;
 
-void do_nothing(Workspace &ws, map<string, string> &optionValues);
+void do_nothing(Workspace *ws, map<string, string> &optionValues);
 
 enum OptionType {
     TEXT_T,
@@ -51,7 +51,7 @@ public:
 
     [[nodiscard]] const vector<CommandOption> &getOptions() const;
 
-    virtual void run(Workspace &ws, map<string, string> &optionValues) const;
+    virtual void run(Workspace *ws, map<string, string> &optionValues) const;
 
     Command(string name, string description, const vector<shared_ptr<Command>> &subcommands, const vector<CommandOption> &options,
             cmd_t cmd);

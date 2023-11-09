@@ -53,37 +53,37 @@ void loadCommands() {
     }
 }
 
-void shflReloadCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
+void shflReloadCmd([[maybe_unused]] Workspace *ws, map<string, string> &optionValues) {
     info("Reloading command...");
     loadCommands();
     success("Reloaded all commands!");
 }
 
-void shflUpgradeCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
+void shflUpgradeCmd([[maybe_unused]] Workspace *ws, map<string, string> &optionValues) {
     if (checkUpdate(false)) updateShuffle();
 }
 
-void shflCreditsCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
+void shflCreditsCmd([[maybe_unused]] Workspace *ws, map<string, string> &optionValues) {
     term << createCreditText();
 }
 
-void shflCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
+void shflCmd([[maybe_unused]] Workspace *ws, map<string, string> &optionValues) {
     // TODO: Print How to use
 }
 
-void appMgrAddCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
+void appMgrAddCmd([[maybe_unused]] Workspace *ws, map<string, string> &optionValues) {
     addSAPP(optionValues["app"]);
 }
 
-void appMgrRemoveCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
+void appMgrRemoveCmd([[maybe_unused]] Workspace *ws, map<string, string> &optionValues) {
     removeSAPP(optionValues["app"]);
 }
 
-void appMgrCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
+void appMgrCmd([[maybe_unused]] Workspace *ws, map<string, string> &optionValues) {
     // TODO: Print How to use
 }
 
-void helpCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
+void helpCmd([[maybe_unused]] Workspace *ws, map<string, string> &optionValues) {
     if (optionValues.count("command") == 0) {
         term << "== Shuffle Help ==" << newLine
              << "Version: " << SHUFFLE_VERSION.str() << newLine << newLine
@@ -122,7 +122,7 @@ void helpCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) 
     }
 }
 
-void snippetCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
+void snippetCmd([[maybe_unused]] Workspace *ws, map<string, string> &optionValues) {
     //snf create aa help cd
     string snippetName = optionValues["create"];
     string cmd = optionValues["value"];
@@ -131,6 +131,6 @@ void snippetCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValue
     term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
 }
 
-void clearCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) {
+void clearCmd([[maybe_unused]] Workspace *ws, map<string, string> &optionValues) {
     term << eraseAll;
 }
