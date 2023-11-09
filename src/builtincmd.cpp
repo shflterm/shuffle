@@ -27,10 +27,10 @@ void loadCommands() {
             "appmgr", "App Manager", {
                     make_shared<Command>(Command("add", "Get new apps from the repository.", {
                             CommandOption("app", TEXT_T)
-                        }, appMgrAddCmd)),
+                    }, appMgrAddCmd)),
                     make_shared<Command>(Command("remove", "Delete the app from your device.", {
                             CommandOption("app", TEXT_T)
-                        }, appMgrRemoveCmd)),
+                    }, appMgrRemoveCmd)),
             }, appMgrCmd
     )));
     commands.push_back(make_shared<Command>(Command(
@@ -107,9 +107,15 @@ void helpCmd([[maybe_unused]] Workspace &ws, map<string, string> &optionValues) 
             return;
         }
 
+        string subcommands;
+        for (const auto &item: cmd->getSubcommands()) {
+            subcommands += item->getName() + ", ";
+        }
+
         term << "== About '" << cmd->getName() << "' ==" << newLine
              << "Name: " << cmd->getName() << newLine
-             << "Description: " << cmd->getDescription() << newLine;
+             << "Description: " << cmd->getDescription() << newLine
+             << "Subcommands: " << subcommands.substr(0, subcommands.size() - 2) << newLine;
     }
 }
 

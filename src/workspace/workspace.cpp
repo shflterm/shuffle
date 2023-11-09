@@ -132,20 +132,29 @@ string getSuggestion(const Workspace &ws, const string &input) {
         }
 
         if (args[cur][0] == '-') {
-            vector<string> optionNames;
+            // Find unused options
+            vector<string> dict;
             for (const auto &item: cmd->getOptions()) {
                 if (std::find(usedOptions.begin(), usedOptions.end(), item.name) == usedOptions.end()) {
-                    optionNames.push_back(item.name);
+                    dict.push_back(item.name);
                 }
             }
-            suggestion = findSuggestion(ws, args[cur].substr(1), optionNames)[0];
+
+            suggestion = findSuggestion(ws, args[cur].substr(1), dict)[0];
         } else {
-            vector<string> optionNames;
+            vector<string> dict;
+
+            // For boolean options
             for (const auto &item: cmd->getOptions())
                 if (item.type == BOOL_T &&
                     std::find(usedOptions.begin(), usedOptions.end(), item.name) == usedOptions.end())
-                    optionNames.push_back(item.name);
-            suggestion = findSuggestion(ws, args[cur], optionNames)[0];
+                    dict.push_back(item.name);
+
+            // For subcommands
+            for (const auto &item: cmd->getSubcommands())
+                dict.push_back(item->getName());
+
+            suggestion = findSuggestion(ws, args[cur], dict)[0];
         }
     }
     return suggestion;
