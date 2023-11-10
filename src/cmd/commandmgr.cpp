@@ -10,7 +10,7 @@ using std::make_shared;
 
 vector<shared_ptr<Command>> commands;
 
-void do_nothing(Workspace *ws, map<string, string> &optionValues) {}
+void do_nothing([[maybe_unused]]Workspace *ws, [[maybe_unused]]map<string, string> &optionValues) {}
 
 vector<CommandData> getRegisteredCommands() {
     vector<CommandData> res;
@@ -103,10 +103,10 @@ Command::Command(string name, string description, cmd_t cmd) : name(std::move(na
 
 Command::Command(string name) : name(std::move(name)), cmd(do_nothing) {}
 
-CommandOption::CommandOption(string name, OptionType type) : name(std::move(name)),
-                                                             type(type),
-                                                             aliases({}) {}
+CommandOption::CommandOption(string name, const OptionType type) : name(std::move(name)),
+                                                                   type(type),
+                                                                   aliases({}) {}
 
-CommandOption::CommandOption(string name, OptionType type, const vector<string> &aliases) : name(std::move(name)),
-                                                                                            type(type),
-                                                                                            aliases(aliases) {}
+CommandOption::CommandOption(string name, const OptionType type, const vector<string> &aliases) : name(std::move(name)),
+                                                                                                  type(type),
+                                                                                                  aliases(aliases) {}

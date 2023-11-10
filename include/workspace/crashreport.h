@@ -31,16 +31,16 @@ string genStackTrace();
 class CrashReport {
     vector<Workspace *> workspaces;
     string stackTrace;
-    int sig;
+    int sig = 0;
 
 public:
     CrashReport setStackTrace(const string &stackTrace_);
 
-    CrashReport setSignalNumber(int sig);
+    CrashReport setSignalNumber(int sig_);
 
-    string make();
+    [[nodiscard]] string make() const;
 
-    void save();
+    void save() const;
 };
 
 #endif //SHFL_INCLUDE_UTILS_CRASHREPORT_H_

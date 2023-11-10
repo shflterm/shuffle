@@ -22,7 +22,7 @@ class Workspace {
     int historyIndex = 0;
     string name;
 
-    string prompt();
+    [[nodiscard]] string prompt() const;
 
 public:
     path currentDirectory();

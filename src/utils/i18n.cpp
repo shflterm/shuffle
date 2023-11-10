@@ -48,8 +48,8 @@ string translate(const string &translate_code, const initializer_list<string> &a
         i++;
     }
 
-    for (const auto &item: colorMap) {
-        str = replace(str, "{" + item.first + "}", item.second);
+    for (const auto & [name, value]: colorMap) {
+        str = replace(str, "{" + name + "}", value);
     }
 
     return str;

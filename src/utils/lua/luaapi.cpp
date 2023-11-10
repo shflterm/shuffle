@@ -1,7 +1,6 @@
 #include "lua/luaapi.h"
 
 #include "luafs.cpp"
-#include "console.h"
 
 #ifdef _WIN32
 
@@ -46,7 +45,7 @@ void initLua(lua_State *L) {
 #ifdef _WIN32
         HINSTANCE lib = LoadLibrary((DOT_SHUFFLE + "/libs/" + name + ".dll").c_str());
         if (!lib) continue;
-        auto initialize = (initialize_t) GetProcAddress(lib, "initialize");
+        auto initialize = reinterpret_cast<initialize_t>(GetProcAddress(lib, "initialize"));
 
         if (initialize == nullptr) continue;
 

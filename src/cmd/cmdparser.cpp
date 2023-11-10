@@ -20,7 +20,7 @@ ParsedCommand parseCommand(Command *app, const vector<string> &args) {
     }
 
     ParsedCommand parsed = ParsedCommand(app);
-    map<string, string> *parsedOptions = parseOptions(app, newArgs);
+    const map<string, string> *parsedOptions = parseOptions(app, newArgs);
     if (parsedOptions == nullptr) return ParsedCommand(nullptr);
 
     parsed.options = *parsedOptions;
@@ -55,8 +55,7 @@ map<string, string> *parseOptions(Command *app, const vector<string> &args) {
         const string &arg = args[i];
         string key, value;
 
-        size_t delimiterPos = arg.find('=');
-        if (delimiterPos != string::npos) {
+        if (size_t delimiterPos = arg.find('='); delimiterPos != string::npos) {
             key = arg.substr(0, delimiterPos);
             value = arg.substr(delimiterPos + 1);
         } else if (arg[0] == '-' && arg.size() > 1) {
@@ -98,14 +97,14 @@ map<string, string> *parseOptions(Command *app, const vector<string> &args) {
         }
 
         bool foundAbbreviation = false;
-        for (const auto &entry: optionAbbreviations) {
-            if (entry.first == key) {
+        for (const auto & [optionName, abbrs]: optionAbbreviations) {
+            if (optionName == key) {
                 foundAbbreviation = true;
                 break;
             }
-            for (const auto &abbreviation: entry.second) {
+            for (const auto &abbreviation: abbrs) {
                 if (abbreviation == key) {
-                    key = entry.first;
+                    key = optionName;
                     foundAbbreviation = true;
                     break;
                 }

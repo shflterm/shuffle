@@ -15,14 +15,13 @@ using std::endl, std::to_string, std::ofstream;
 
 #ifdef _WIN32
 
-string genStackTrace(CONTEXT *context) {
+string genStackTrace(CONTEXT* context) {
     stringstream ss;
 
-    const HANDLE hProcess = GetCurrentProcess();
-    const HANDLE hThread = GetCurrentThread();
+    void* const hProcess = GetCurrentProcess();
+    void* const hThread = GetCurrentThread();
 
-    STACKFRAME64 stackFrame;
-    memset(&stackFrame, 0, sizeof(STACKFRAME64));
+    STACKFRAME64 stackFrame = {};
     DWORD machineType;
 
 #ifdef _M_IX86
@@ -56,27 +55,27 @@ string genStackTrace(CONTEXT *context) {
         // Print the frame number, module name, and function name
         ss << "    [" << std::dec << frameCount << "] ";
 
-        DWORD64 moduleBase = SymGetModuleBase64(hProcess, stackFrame.AddrPC.Offset);
-        char moduleName[MAX_PATH];
-        if (GetModuleFileNameA(reinterpret_cast<HMODULE>(moduleBase), moduleName, MAX_PATH) != 0) {
+        const DWORD64 moduleBase = SymGetModuleBase64(hProcess, stackFrame.AddrPC.Offset);
+        if (char moduleName[MAX_PATH]; GetModuleFileNameA(reinterpret_cast<HMODULE>(moduleBase), moduleName, MAX_PATH)
+                                       != 0) {
             ss << moduleName;
         }
 
         ss << "! ";
 
         DWORD64 displacement = 0;
-        const DWORD maxSymbolNameLen = 256;
+        constexpr DWORD maxSymbolNameLen = 256;
         BYTE symbolBuffer[sizeof(IMAGEHLP_SYMBOL64) + maxSymbolNameLen];
-        auto *symbol = reinterpret_cast<IMAGEHLP_SYMBOL64 *>(symbolBuffer);
+        auto* symbol = reinterpret_cast<IMAGEHLP_SYMBOL64 *>(symbolBuffer);
         symbol->SizeOfStruct = sizeof(IMAGEHLP_SYMBOL64);
         symbol->MaxNameLength = maxSymbolNameLen;
 
         SymGetSymFromAddr64(hProcess, stackFrame.AddrPC.Offset, &displacement, symbol);
-//    if (SymGetSymFromAddr64(hProcess, stackFrame.AddrPC.Offset, &displacement, symbol)) {
-//      ss << symbol->Name;
-//    } else {
-//      ss << "Unknown Symbol";
-//    }
+        //    if (SymGetSymFromAddr64(hProcess, stackFrame.AddrPC.Offset, &displacement, symbol)) {
+        //      ss << symbol->Name;
+        //    } else {
+        //      ss << "Unknown Symbol";
+        //    }
         ss << symbol->Name;
 
         ss << endl;
@@ -118,17 +117,17 @@ string getOSName() {
 #endif
 }
 
-CrashReport CrashReport::setStackTrace(const string &stackTrace_) {
+CrashReport CrashReport::setStackTrace(const string&stackTrace_) {
     stackTrace = stackTrace_;
     return *this;
 }
 
-CrashReport CrashReport::setSignalNumber(int sig_) {
+CrashReport CrashReport::setSignalNumber(const int sig_) {
     sig = sig_;
     return *this;
 }
 
-string CrashReport::make() {
+string CrashReport::make() const {
     stringstream ss;
     ss << "[ Shuffle Crash Report ]" << endl;
     ss << "OS: " << getOSName() << endl;
@@ -136,20 +135,20 @@ string CrashReport::make() {
     ss << "Time: " << time(nullptr) << endl;
     ss << "Signal Number: " << sig << endl;
     ss << "Apps: " << endl;
-    for (const auto &item: commands) {
+    for (const auto&item: commands) {
         ss << "  " << item->getName() << endl;
     }
     ss << "========================" << endl;
     ss << "Workspaces: " << endl;
-    for (auto &ws: wsMap) {
-        ss << "  " << ws.first << (ws.first == currentWorkspace->getName() ? " (current)" : "") << endl;
-        ss << "    Current Directory: " << ws.second->currentDirectory().string() << endl;
+    for (auto&[name, workspace]: wsMap) {
+        ss << "  " << name << (name == currentWorkspace->getName() ? " (current)" : "") << endl;
+        ss << "    Current Directory: " << workspace->currentDirectory().string() << endl;
         ss << "    History: " << endl;
-        for (int i = 0; i < ws.second->getHistory().size(); ++i) {
-            auto item = ws.second->getHistory()[i];
+        for (int i = 0; i < workspace->getHistory().size(); ++i) {
+            auto item = workspace->getHistory()[i];
             ss << "      " << i << ". " << item << endl;
         }
-        if (ws.second->getHistory().empty()) ss << "      (empty)" << endl;
+        if (workspace->getHistory().empty()) ss << "      (empty)" << endl;
     }
     ss << "========================" << endl;
     ss << "Stack Trace: " << endl;
@@ -157,8 +156,8 @@ string CrashReport::make() {
     return ss.str();
 }
 
-void CrashReport::save() {
-    string filePath = DOT_SHUFFLE + "/crash-report-" + to_string(time(nullptr)) + ".txt";
+void CrashReport::save() const {
+    const string filePath = DOT_SHUFFLE + "/crash-report-" + to_string(time(nullptr)) + ".txt";
     ofstream file(filePath);
     file << make();
     file.close();

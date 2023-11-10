@@ -16,7 +16,7 @@
 
 class SAPPCommand : public Command {
 protected:
-    SAPPCommand(const SAPPCommand& parent, const string &name);
+    SAPPCommand(const SAPPCommand& new_parent, const string &name);
 
     lua_State *L{};
 
@@ -27,7 +27,7 @@ public:
 
     void loadVersion3(const string &name, const string &appPath, const string &value);
 
-    vector<string> makeDynamicSuggestion(Workspace &ws, const string &suggestId);
+    vector<string> makeDynamicSuggestion(Workspace &ws, const string &suggestId) const;
 };
 
 void loadApp(const CommandData &data);

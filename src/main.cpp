@@ -11,12 +11,13 @@
 
 #ifdef _WIN32
 
-LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS *exceptionPointers) {
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
+LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS* exceptionPointers) {
     term << newLine;
     error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
     error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
     term << newLine;
-    CrashReport report = CrashReport()
+    const CrashReport report = CrashReport()
             .setStackTrace(genStackTrace(exceptionPointers->ContextRecord));
     error(report.make());
     report.save();
@@ -40,12 +41,12 @@ extern "C" void handleCrash(int sig) {
 
 #endif
 
-extern "C" void handleQuit(int sig) {
+extern "C" void handleQuit(const int sig) {
     term << newLine << "Bye." << newLine;
     exit(sig);
 }
 
-int main(int argc, char *argv[]) {
+[[noreturn]] int main(const int argc, char* argv[]) {
 #ifdef _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 
@@ -57,8 +58,8 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, &handleQuit);
 
     if (argc > 1) {
-        string arg = argv[1];
-        if (arg == "--version" || arg == "-v") {
+        if (const string arg = argv[1];
+            arg == "--version" || arg == "-v") {
             term << "Shuffle " << SHUFFLE_VERSION.str() << newLine;
             return 0;
         }
@@ -79,8 +80,8 @@ int main(int argc, char *argv[]) {
     initShflJson();
 
     term << "Welcome to" << color(FOREGROUND, Blue) << " Shuffle " << SHUFFLE_VERSION.str() << resetColor << "!"
-         << newLine
-         << "(C) 2023 Kim Sihu. All Rights Reserved." << newLine << newLine;
+            << newLine
+            << "(C) 2023 Kim Sihu. All Rights Reserved." << newLine << newLine;
 
     if (checkUpdate()) term << newLine;
 

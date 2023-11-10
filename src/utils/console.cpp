@@ -56,7 +56,6 @@ void error(const string &text) {
 #define NOMINMAX 1
 #define byte win_byte_override
 #define WIN32_LEAN_AND_MEAN
-#define _HAS_STD_BYTE 0
 
 #include <Windows.h>
 #include <conio.h>

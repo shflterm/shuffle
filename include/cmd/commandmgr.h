@@ -62,7 +62,7 @@ public:
 
     Command(string name, string description, cmd_t cmd);
 
-    Command(string name);
+    explicit Command(string name);
 
     shared_ptr<Command> parent;
 };

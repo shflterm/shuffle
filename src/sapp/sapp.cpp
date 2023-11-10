@@ -13,7 +13,6 @@ using std::make_shared;
 #define NOMINMAX 1
 #define byte win_byte_override
 #define WIN32_LEAN_AND_MEAN
-#define _HAS_STD_BYTE 0
 
 #include <Windows.h>
 
@@ -25,10 +24,9 @@ using std::make_shared;
 
 #endif
 
-vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &suggestId) {
+vector<string> SAPPCommand::makeDynamicSuggestion(Workspace&ws, const string&suggestId) const {
     // Create workspace table
-    lua_newtable(L);
-    {
+    lua_newtable(L); {
         lua_pushstring(L, ws.currentDirectory().string().c_str());
         lua_setfield(L, -2, "dir");
     } // ws.dir
@@ -44,12 +42,11 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
         error("Error: 'suggest' is not a function!");
         return {};
     }
-    int err = lua_pcall(L, 0, 0, 0);
-    if (err) {
+    if (lua_pcall(L, 0, 0, 0)) {
         error("\nAn error occurred while generating suggestion.\n\n" + string(lua_tostring(L, -1)));
     }
 
-    lua_Unsigned tableSize = lua_rawlen(L, -1);
+    const lua_Unsigned tableSize = lua_rawlen(L, -1);
 
     if (lua_istable(L, -1)) {
         vector<string> resultArray;
@@ -67,7 +64,7 @@ vector<string> SAPPCommand::makeDynamicSuggestion(Workspace &ws, const string &s
     return {};
 }
 
-void SAPPCommand::loadVersion2(const string &name) {
+void SAPPCommand::loadVersion2(const string&name) {
     string appPath = DOT_SHUFFLE + "/apps/" + name + ".app/";
 
     string value = appPath + "/lib/entrypoint.lua";
@@ -90,11 +87,11 @@ void SAPPCommand::loadVersion2(const string &name) {
     description = helpRoot["description"].asString();
 
     Json::Value optionsJson = helpRoot["options"];
-    for (const auto &item: optionsJson) {
+    for (const auto&item: optionsJson) {
         string optionName = item["name"].asString();
         vector<string> aliases;
         aliases.push_back(optionName);
-        for (const auto &item2: item["aliases"]) aliases.push_back(item2.asString());
+        for (const auto&item2: item["aliases"]) aliases.push_back(item2.asString());
         OptionType type;
         if (item["type"].asString() == "TEXT_T") type = TEXT_T;
         else if (item["type"].asString() == "BOOL_T") type = BOOL_T;
@@ -107,15 +104,14 @@ void SAPPCommand::loadVersion2(const string &name) {
         options.emplace_back(optionName, type, aliases);
     }
 
-//    for (const auto &item: helpRoot["example"]) {
-//        usage.emplace_back(item["usage"].asString(), item["description"].asString());
-//    }
+    //    for (const auto &item: helpRoot["example"]) {
+    //        usage.emplace_back(item["usage"].asString(), item["description"].asString());
+    //    }
 }
 
-void run_sapp(lua_State *L, Workspace *ws, map<string, string> &optionValues) {
+void run_sapp(lua_State* L, Workspace* ws, const map<string, string>&optionValues) {
     // Create workspace table
-    lua_newtable(L);
-    {
+    lua_newtable(L); {
         lua_pushstring(L, ws->currentDirectory().string().c_str());
         lua_setfield(L, -2, "dir");
     } // ws.dir
@@ -123,9 +119,9 @@ void run_sapp(lua_State *L, Workspace *ws, map<string, string> &optionValues) {
     lua_setglobal(L, "workspace");
 
     // Create args list
-    for (const auto &item: optionValues) {
-        lua_pushstring(L, item.second.c_str());
-        lua_setglobal(L, item.first.c_str());
+    for (const auto& [key, value]: optionValues) {
+        lua_pushstring(L, value.c_str());
+        lua_setglobal(L, key.c_str());
     }
 
     lua_getglobal(L, "entrypoint");
@@ -133,8 +129,7 @@ void run_sapp(lua_State *L, Workspace *ws, map<string, string> &optionValues) {
         error("Error: 'entrypoint' is not a function!");
         return;
     }
-    int err = lua_pcall(L, 0, 0, 0);
-    if (err) error("Error: " + string(lua_tostring(L, -1)));
+    if (lua_pcall(L, 0, 0, 0)) error("Error: " + string(lua_tostring(L, -1)));
 
     // Update workspace
     lua_getglobal(L, "workspace");
@@ -145,7 +140,7 @@ void run_sapp(lua_State *L, Workspace *ws, map<string, string> &optionValues) {
     ws->moveDirectory(newDir);
 }
 
-void SAPPCommand::loadVersion3(const string &name, const string &appPath, const string &value) {
+auto SAPPCommand::loadVersion3(const string&name, const string&appPath, const string&value) -> void { // NOLINT(*-no-recursion)
     L = luaL_newstate();
 
     luaL_openlibs(L);
@@ -165,11 +160,11 @@ void SAPPCommand::loadVersion3(const string &name, const string &appPath, const 
     description = helpRoot["description"].asString();
 
     Json::Value optionsJson = helpRoot["options"];
-    for (const auto &item: optionsJson) {
+    for (const auto&item: optionsJson) {
         string optionName = item["name"].asString();
         vector<string> aliases;
         aliases.push_back(optionName);
-        for (const auto &item2: item["aliases"]) aliases.push_back(item2.asString());
+        for (const auto&item2: item["aliases"]) aliases.push_back(item2.asString());
         OptionType type;
         if (item["type"].asString() == "TEXT_T") type = TEXT_T;
         else if (item["type"].asString() == "BOOL_T") type = BOOL_T;
@@ -183,19 +178,18 @@ void SAPPCommand::loadVersion3(const string &name, const string &appPath, const 
     }
 
     Json::Value subcommandsJson = helpRoot["subcommands"];
-    string test = subcommandsJson.toStyledString();
-    for (const auto &item: subcommandsJson) {
+    for (const auto&item: subcommandsJson) {
         string subcommandName = item.asString();
         subcommands.push_back(make_shared<SAPPCommand>(SAPPCommand(*this, subcommandName)));
     }
 
-    lua_State *LL = this->L;
-    cmd = [LL](Workspace *ws, map<string, string> &optionValues) {
+    lua_State* LL = this->L;
+    cmd = [LL](Workspace* ws, const map<string, string>&optionValues) {
         run_sapp(LL, ws, optionValues);
     };
 }
 
-SAPPCommand::SAPPCommand(const string &name) : Command(name) {
+SAPPCommand::SAPPCommand(const string&name) : Command(name) {
     string runDotShfl = DOT_SHUFFLE + "/apps/" + name + ".app/run.shfl";
 
     Json::Value root;
@@ -203,19 +197,22 @@ SAPPCommand::SAPPCommand(const string &name) : Command(name) {
     reader.parse(readFile(runDotShfl), root, false);
     if (root["version"].asInt() == 1) {
         error("This app(" + name + ") is no longer supported. Please upgrade the app.");
-    } else if (root["version"].asInt() == 2) {
+    }
+    else if (root["version"].asInt() == 2) {
         loadVersion2(name);
-    } else if (root["version"].asInt() == 3) {
+    }
+    else if (root["version"].asInt() == 3) {
         string appPath = DOT_SHUFFLE + "/apps/" + name + ".app/";
         string value = appPath + "/lib/entrypoint.lua";
         loadVersion3(name, appPath, value);
-    } else {
+    }
+    else {
         error("Error: Invalid version number in " + name + ".");
     }
 }
 
-SAPPCommand::SAPPCommand(const SAPPCommand &newParent, const string &name) : Command(name) {
-    parent = make_shared<SAPPCommand>(newParent);
+SAPPCommand::SAPPCommand(const SAPPCommand&new_parent, const string&name) : Command(name) { // NOLINT(*-no-recursion)
+    parent = make_shared<SAPPCommand>(new_parent);
 
     shared_ptr<Command> parentPtr = parent;
     shared_ptr<Command> prevParentPtr;
@@ -232,15 +229,15 @@ SAPPCommand::SAPPCommand(const SAPPCommand &newParent, const string &name) : Com
     std::reverse(subcommandTree.begin(), subcommandTree.end());
 
     string appPath = DOT_SHUFFLE + "/apps/" + parentPtr->getName() + ".app/";
-    for (const auto &item: subcommandTree) appPath += item + "/";
+    for (const auto&item: subcommandTree) appPath += item + "/";
     appPath += name;
 
-    string value = appPath + "/lib/entrypoint.lua";
+    const string value = appPath + "/lib/entrypoint.lua";
     loadVersion3(name, appPath, value);
 }
 
-void loadApp(const CommandData &data) {
-    for (const auto &item: commands) {
+void loadApp(const CommandData&data) {
+    for (const auto&item: commands) {
         if (item->getName() == data.name) return;
     }
     commands.push_back(make_shared<SAPPCommand>(SAPPCommand(data.name)));

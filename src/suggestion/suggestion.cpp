@@ -7,7 +7,7 @@ using std::vector, std::string;
 vector<string> findSuggestion(const Workspace& ws,
                               const string &input,
                               const vector<string> &DICTIONARY) {
-    vector<string> suggestions = createSuggestions(ws, input, DICTIONARY);
+    const vector<string> suggestions = createSuggestions(ws, input, DICTIONARY);
     if (suggestions.empty()) return {""};
 
     vector<string> res;

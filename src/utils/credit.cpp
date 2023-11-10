@@ -11,7 +11,7 @@ using std::endl;
 
 map<string, vector<string>> getCredits() {
     map<string, vector<string>> credits;
-    string repo = "https://raw.githubusercontent.com/shflterm/shuffle/main/credits.json";
+    const string repo = "https://raw.githubusercontent.com/shflterm/shuffle/main/credits.json";
 
     Json::Value root;
     Json::Reader reader;
