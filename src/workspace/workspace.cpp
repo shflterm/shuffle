@@ -293,7 +293,7 @@ void Workspace::inputPrompt(const bool enableSuggestion) {
 
             string hint = getHint(*this, input);
             term << saveCursorPosition
-                    << teleport(wherex() - (static_cast<int>(hint.size()) / 2), wherey() + 1)
+                    << teleport(wherex() - static_cast<int>(hint.size()) / 2, wherey() + 1)
                     << eraseLine
                     << color(FOREGROUND_BRIGHT, Black) << hint
                     << loadCursorPosition;

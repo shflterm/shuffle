@@ -78,8 +78,7 @@ Command::Command(string name, string description, cmd_t cmd) : name(std::move(na
 Command::Command(string name) : name(std::move(name)), cmd(do_nothing) {
 }
 
-Command::Command(Json::Value info, const string&libPath) {
-    // NOLINT(*-no-recursion)
+Command::Command(Json::Value info, const string&libPath) { // NOLINT(*-no-recursion)
     name = info["name"].asString();
     usage = info["usage"].asString();
     description = info["description"].asString();
