@@ -15,7 +15,7 @@ string SHUFFLE = "   _____ _    _ _    _ ______ ______ _      ______           _
         "  ____) | |  | | |__| | |    | |    | |____| |____   \\ V /   | |  _  | |_| |\n"
         " |_____/|_|  |_|\\____/|_|    |_|    |______|______|   \\_/    |_| (_)  \\___/ \n";
 
-void deleteShuffleExecutable(const path&&updatePath) {
+void deleteShuffleExecutable(const path&updatePath) {
     if (exists(updatePath.string() + "/shuffle.exe")) remove(updatePath.string() + "/shuffle.exe");
     if (exists(updatePath.string() + "/shuffle")) remove(updatePath.string() + "/shuffle");
 }
@@ -32,9 +32,9 @@ bool installNativeApps() {
     for (const auto&item: root) {
 #if defined(__linux__) || defined(__APPLE__)
         system(("chmod +x " + DOT_SHUFFLE + "/bin/shuffle").c_str());
-        system((DOT_SHUFFLE + "/bin/shuffle appmgr -add " + item.asString()).c_str());
+        system((DOT_SHUFFLE + "/bin/shuffle appmgr add " + item.asString()).c_str());
 #endif
-        if (const int status = system((DOT_SHUFFLE + "/bin/shuffle appmgr -add " + item.asString()).c_str());
+        if (const int status = system((DOT_SHUFFLE + "/bin/shuffle appmgr add " + item.asString()).c_str());
             status != 0)
             appInstalled = false;
     }
