@@ -9,8 +9,8 @@
 
 using std::string;
 
-void addSAPP(const string &name);
+void installApp(const string &name);
 
-void removeSAPP(const string &name);
+void removeApp(const string &name);
 
 #endif //SHUFFLE_INCLUDE_SAPP_DOWNLOADER_H_

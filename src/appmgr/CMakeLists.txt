@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
-project(sappmgr)
+project(appmgr)
 
-set(SAPP_SRC sapp.cpp downloader.cpp)
+set(APPMGR_SRC appmgr.cpp downloader.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-add_library(${PROJECT_NAME} ${SAPP_SRC})
+add_library(${PROJECT_NAME} ${APPMGR_SRC})
 
 add_dependencies(${PROJECT_NAME} utils commandmgr workspace)
 target_link_libraries(${PROJECT_NAME} PUBLIC utils commandmgr workspace)
@@ -30,4 +30,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE kubazip::kubazip)
 
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ../../include ../../include/cmd ../../include/sapp ../../include/suggestion ../../include/workspace ../../include/utils)
+target_include_directories(${PROJECT_NAME} PRIVATE ../../include ../../include/cmd ../../include/app ../../include/suggestion ../../include/workspace ../../include/utils)
