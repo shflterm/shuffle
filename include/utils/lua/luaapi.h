@@ -7,13 +7,12 @@
 
 #include "lua.hpp"
 #include <filesystem>
-#include <fstream>
 #include <vector>
 
-using namespace std;
-using namespace std::filesystem;
+using std::vector, std::string, std::filesystem::path;
 
-void pushStringArray(lua_State *L, const vector<string> &strings);
+void pushStringArray(lua_State *L, const vector <string> &strings);
+
 path lua_getPath(lua_State *L, const string &s);
 
 void initLua(lua_State *L);

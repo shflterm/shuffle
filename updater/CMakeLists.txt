@@ -1,21 +1,22 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.22)
 project(updater)
 
-set(SOURCES )
+set(SOURCES ../include/cmd/parsedcmd.h)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_executable(${PROJECT_NAME} ${SOURCES} main.cpp)
 
+add_dependencies(${PROJECT_NAME} utils)
+target_link_libraries(${PROJECT_NAME} PRIVATE utils)
+
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 
-add_dependencies(${PROJECT_NAME} shuffle_lib)
-target_include_directories(${PROJECT_NAME} PRIVATE ../include)
-target_link_libraries(${PROJECT_NAME} shuffle_lib)
-
 find_package(CURL CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} CURL::libcurl)
+target_link_libraries(${PROJECT_NAME} PRIVATE CURL::libcurl)
 
 find_package(kubazip CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} kubazip::kubazip)
+target_link_libraries(${PROJECT_NAME} PRIVATE kubazip::kubazip)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+
+target_include_directories(${PROJECT_NAME} PRIVATE ../include ../include/cmd ../include/app ../include/suggestion ../include/workspace ../include/utils)

@@ -30,3 +30,8 @@ key.txt
 .cmake/
 vcpkg/
 vcpkg_installed/
+.cache/
+build-wsl/
+build-wsl-dbg/
+build-mingw/
+build-mingw-dbg/

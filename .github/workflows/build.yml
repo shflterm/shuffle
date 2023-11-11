@@ -2,14 +2,17 @@ name: Build Shuffle
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+      - actions-setup
+      - release/1.0.0.0
 
 env:
   BUILD_TYPE: Release
+  VCPKG_INSTALL_DIR: vcpkg_installed
 
 jobs:
   build:
-    permissions: write-all
     runs-on: ${{ matrix.config.os }}-latest
     strategy:
       matrix:
@@ -22,20 +25,36 @@ jobs:
             configure: .\vcpkg\bootstrap-vcpkg.bat
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Cache Vcpkg and Build Directories
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}
+            ${{github.workspace}}/build-${{ matrix.config.os }}
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json', '**/CMakeLists.txt') }}
 
       - name: Update Submodule
-        run: "git submodule update --init --recursive"
+        run: git submodule update --init --recursive
 
       - name: Download vcpkg
         run: git clone https://github.com/Microsoft/vcpkg.git
+
       - name: Configure vcpkg
         run: ${{ matrix.config.configure }}
 
       - name: Install Packages
-        run: "./vcpkg/vcpkg install"
+        run: ./vcpkg/vcpkg install
 
-      - name: Configure CMake
-        run: cmake -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{github.workspace}} -B ${{github.workspace}}/build-${{ matrix.config.os }} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Configure and Build
+        run: |
+          cmake -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{github.workspace}} -B ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+          cmake --build ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}} --config ${{env.BUILD_TYPE}}
 
-      - run: cmake --build ${{github.workspace}}/build-${{ matrix.config.os }} --config ${{env.BUILD_TYPE}}
+      - name: Upload Files
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ matrix.config.os }}
+          path: ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}/**
