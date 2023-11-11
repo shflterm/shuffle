@@ -140,8 +140,6 @@ string readTextFromWeb(const string&url) {
 
 int lastPercent = -1;
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "ConstantFunctionResult"
 // ReSharper disable once CppDFAConstantFunctionResult
 int progress_callback([[maybe_unused]] void* clientp, const curl_off_t dltotal,
                       const curl_off_t dlnow, [[maybe_unused]] curl_off_t ultotal,
@@ -158,7 +156,6 @@ int progress_callback([[maybe_unused]] void* clientp, const curl_off_t dltotal,
 
     return 0;
 }
-#pragma clang diagnostic pop
 
 size_t write_data(const void* ptr, const size_t size, const size_t nmemb, FILE* stream) {
     return fwrite(ptr, size, nmemb, stream);
