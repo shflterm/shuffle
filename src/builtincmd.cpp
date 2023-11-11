@@ -56,6 +56,7 @@ void loadCommands() {
 void shflReloadCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
     info("Reloading command...");
     loadCommands();
+    loadSnippets();
     success("Reloaded all commands!");
 }
 

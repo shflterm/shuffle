@@ -67,7 +67,7 @@ vector<shared_ptr<App>> loadedApps;
 // }
 
 void App::loadVersion1(const string&name) {
-    string appPath = DOT_SHUFFLE + "/apps/" + name + ".app";
+    string appPath = DOT_SHUFFLE + "/apps/" + name + ".shflapp";
     string appShfl = appPath + "/app.shfl";
 
     Json::Value appRoot;

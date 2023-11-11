@@ -6,12 +6,9 @@
 #define SHUFFLE_INCLUDE_BUILTINCMD_H_
 
 #include <string>
-#include <utility>
-#include <vector>
 #include <map>
 
 #include "workspace.h"
-#include "commandmgr.h"
 
 void loadCommands();
 

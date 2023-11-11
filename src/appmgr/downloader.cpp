@@ -33,7 +33,7 @@ void installApp(const string&name) {
     info(message);
 
     const int ver = repo["version"].asInt();
-    const string downloadTo = temp_directory_path().append("app.app").string();
+    const string downloadTo = temp_directory_path().append("app.shflapp").string();
     if (ver == 1) {
         if (const string downloadFrom = replace(repo["download_at"].asString(), "{APP}", name); downloadFile(downloadFrom, downloadTo)) {
             term << teleport(0, wherey() - 1) << eraseLine;
@@ -52,7 +52,7 @@ void installApp(const string&name) {
     }
 
     term << teleport(0, wherey() - 1) << eraseLine;
-    extractZip(downloadTo, DOT_SHUFFLE + "/apps/" + name + ".app");
+    extractZip(downloadTo, DOT_SHUFFLE + "/apps/" + name + ".shflapp");
     term << teleport(0, wherey()) << eraseLine;
     success("Extracted!");
 
@@ -72,7 +72,7 @@ void installApp(const string&name) {
 void removeApp(const string&name) {
     info("Deleting '" + name + "'...");
 
-    if (const string path = DOT_SHUFFLE + "/apps/" + name + ".app"; exists(path)) {
+    if (const string path = DOT_SHUFFLE + "/apps/" + name + ".shflapp"; exists(path)) {
         remove_all(path);
 
         Json::Value json = getShflJson("apps");
