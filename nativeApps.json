@@ -1,1 +1,1 @@
-["cd", "cp", "dir", "list", "mk", "mv", "rm"]
+["filesystem", "textutilities"]
