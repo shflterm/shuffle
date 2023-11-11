@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.22)
 project(utils)
 
 set(UTILS_SRC utils.cpp lua/luaapi.cpp credit.cpp console.cpp i18n.cpp)

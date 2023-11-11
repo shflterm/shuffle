@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.22)
 project(workspace)
 
 set(WORKSPACE_SRC workspace.cpp snippetmgr.cpp crashreport.cpp)

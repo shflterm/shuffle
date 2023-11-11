@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.22)
 project(commandmgr)
 
 set(COMMAND_SRC commandmgr.cpp parsedcmd.cpp cmdparser.cpp)
