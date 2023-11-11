@@ -78,7 +78,8 @@ Command::Command(string name, string description, cmd_t cmd) : name(std::move(na
 Command::Command(string name) : name(std::move(name)), cmd(do_nothing) {
 }
 
-Command::Command(Json::Value info, const string&libPath) { // NOLINT(*-no-recursion)
+Command::Command(Json::Value info, const string&libPath) {
+    // NOLINT(*-no-recursion)
     name = info["name"].asString();
     usage = info["usage"].asString();
     description = info["description"].asString();
@@ -102,7 +103,9 @@ Command::Command(Json::Value info, const string&libPath) { // NOLINT(*-no-recurs
             type = TEXT_T;
         }
         const string description = option["description"].asString();
-        options.emplace_back(name, description, type);
+        vector<string> aliases;
+        for (const auto&alias: option["aliases"]) aliases.push_back(alias.asString());
+        options.emplace_back(name, description, type, aliases);
     }
 
     for (const auto&alias: info["aliases"]) aliases.push_back(alias.asString());
