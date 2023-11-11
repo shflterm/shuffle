@@ -78,11 +78,19 @@ Command::Command(string name, string description, cmd_t cmd) : name(std::move(na
 Command::Command(string name) : name(std::move(name)), cmd(do_nothing) {
 }
 
-Command::Command(Json::Value info, const string&libPath) {
+Command::Command(Json::Value info, const string&libPath) { // NOLINT(*-no-recursion)
     name = info["name"].asString();
     usage = info["usage"].asString();
     description = info["description"].asString();
-    // TODO subcommands
+
+    const string commandPath = libPath + name + "/";
+
+    for (const auto&subcommandInfo: info["subcommands"]) {
+        subcommands.push_back(make_shared<Command>(
+            Command(subcommandInfo, commandPath + "/")
+        ));
+    }
+
     for (const auto&option: info["options"]) {
         const string name = option["name"].asString();
         OptionType type;
@@ -96,13 +104,15 @@ Command::Command(Json::Value info, const string&libPath) {
         const string description = option["description"].asString();
         options.emplace_back(name, description, type);
     }
+
     for (const auto&alias: info["aliases"]) aliases.push_back(alias.asString());
+
     for (const auto&example: info["examples"]) examples.push_back(example.asString());
 
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
     initLua(L);
-    int err = luaL_loadfile(L, libPath.c_str());
+    int err = luaL_loadfile(L, (commandPath + "command.lua").c_str());
     if (err) error("Error: " + string(lua_tostring(L, -1)));
 
     err = lua_pcall(L, 0, 0, 0);

@@ -83,7 +83,7 @@ void App::loadVersion1(const string&name) {
     Json::Value commandsJson = appRoot["commands"];
     for (const auto&commandInfo: commandsJson) {
         commands.push_back(
-            make_shared<Command>(Command(commandInfo, appPath + "/lib/" + commandInfo["name"].asString() + ".lua")));
+            make_shared<Command>(Command(commandInfo, appPath + "/lib/")));
     }
 }
 
