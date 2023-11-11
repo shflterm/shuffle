@@ -56,6 +56,10 @@ public:
 
     [[nodiscard]] const vector<CommandOption> &getOptions() const;
 
+    [[nodiscard]] const vector<string> &getAliases() const;
+
+    [[nodiscard]] const vector<string> &getExamples() const;
+
     virtual void run(Workspace *ws, map<string, string> &optionValues) const;
 
     Command(string name, string description, const vector<shared_ptr<Command>> &subcommands, const vector<CommandOption> &options,

@@ -49,6 +49,14 @@ const vector<CommandOption>& Command::getOptions() const {
     return options;
 }
 
+const vector<string>& Command::getAliases() const {
+    return aliases;
+}
+
+const vector<string>& Command::getExamples() const {
+    return examples;
+}
+
 Command::Command(string name, string description, const vector<shared_ptr<Command>>&subcommands,
                  const vector<CommandOption>&options, cmd_t cmd) : name(std::move(name)),
                                                                    description(std::move(
@@ -78,7 +86,8 @@ Command::Command(string name, string description, cmd_t cmd) : name(std::move(na
 Command::Command(string name) : name(std::move(name)), cmd(do_nothing) {
 }
 
-Command::Command(Json::Value info, const string&libPath) { // NOLINT(*-no-recursion)
+Command::Command(Json::Value info, const string&libPath) {
+    // NOLINT(*-no-recursion)
     name = info["name"].asString();
     usage = info["usage"].asString();
     description = info["description"].asString();

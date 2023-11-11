@@ -116,10 +116,18 @@ void helpCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues) {
             subcommands += item->getName() + ", ";
         }
 
-        term << "== About '" << cmd->getName() << "' ==" << newLine
-                << "Name: " << cmd->getName() << newLine
-                << "Description: " << cmd->getDescription() << newLine
-                << "Subcommands: " << subcommands.substr(0, subcommands.size() - 2) << newLine;
+        string examples;
+        for (const auto&item: cmd->getExamples()) {
+            examples += "\n  - " + item;
+        }
+
+        term << "== About '" << cmd->getName() << "' ==" << newLine;
+        term << "Name: " << cmd->getName() << newLine;
+        if (!cmd->getDescription().empty())
+            term << "Description: " << cmd->getDescription() << newLine;
+        if (!subcommands.empty())
+            term << "Subcommands: " << subcommands.substr(0, subcommands.size() - 2) << newLine;
+        term << "Examples: " << examples << newLine;
     }
 }
 
