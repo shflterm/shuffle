@@ -9,6 +9,7 @@
 #include <string>
 #include <memory>
 #include <functional>
+#include <json/value.h>
 
 #include "workspace.h"
 
@@ -26,20 +27,24 @@ enum OptionType {
 
 class CommandOption {
 public:
-    string name;
+    string name, description;
     OptionType type;
     vector<string> aliases;
 
-    CommandOption(string name, OptionType type);
-    CommandOption(string name, OptionType type, const vector<string> &aliases);
+    CommandOption(string name, string description, OptionType type);
+    CommandOption(string name, string description, OptionType type, const vector<string> &aliases);
 };
 
 class Command {
 protected:
     string name;
+    string usage;
     string description;
     vector<shared_ptr<Command>> subcommands;
     vector<CommandOption> options;
+    vector<string> aliases;
+    vector<string> examples;
+
     cmd_t cmd;
 
 public:
@@ -64,23 +69,12 @@ public:
 
     explicit Command(string name);
 
+    Command(Json::Value info, const string&libPath);
+
     shared_ptr<Command> parent;
 };
 
-class CommandData {
-public:
-    string name;
-};
-
 extern vector<shared_ptr<Command>> commands;
-
-void loadDefaultCommands();
-
-vector<CommandData> getRegisteredCommands();
-
-bool addRegisteredCommand(const CommandData &data);
-
-void clearCommands();
 
 shared_ptr<Command> findCommand(const string &name, const vector<shared_ptr<Command>> &DICTIONARY);
 

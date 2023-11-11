@@ -9,12 +9,12 @@
 #include "utils.h"
 #include "version.h"
 #include "snippetmgr.h"
-#include "sapp.h"
+#include "appmgr.h"
 
 using std::make_shared;
 
 void loadCommands() {
-    clearCommands();
+    commands.clear();
 
     commands.push_back(make_shared<Command>(Command(
         "shfl", "Shuffle Command", {
@@ -26,30 +26,30 @@ void loadCommands() {
     commands.push_back(make_shared<Command>(Command(
         "appmgr", "App Manager", {
             make_shared<Command>(Command("add", "Get new apps from the repository.", {
-                                             CommandOption("app", TEXT_T)
+                                             CommandOption("app", "", TEXT_T)
                                          }, appMgrAddCmd)),
             make_shared<Command>(Command("remove", "Delete the app from your device.", {
-                                             CommandOption("app", TEXT_T)
+                                             CommandOption("app", "", TEXT_T)
                                          }, appMgrRemoveCmd)),
         }, appMgrCmd
     )));
     commands.push_back(make_shared<Command>(Command(
         "help", "Show help", {
-            CommandOption("command", TEXT_T, {"cmd", "help"})
+            CommandOption("command", "", TEXT_T, {"cmd", "help"})
         }, helpCmd
     )));
     commands.push_back(make_shared<Command>(Command(
         "snf", "Manage Snippets", {
-            CommandOption("create", TEXT_T, {"mk", "c", "new"}),
-            CommandOption("value", TEXT_T, {"v"}),
+            CommandOption("create", "", TEXT_T, {"mk", "c", "new"}),
+            CommandOption("value", "", TEXT_T, {"v"}),
         }, snippetCmd
     )));
     commands.push_back(make_shared<Command>(Command(
         "clear", "Manage Snippets", clearCmd
     )));
 
-    for (const CommandData&command: getRegisteredCommands()) {
-        loadApp(command);
+    for (const string&appName: getApps()) {
+        loadApp(appName);
     }
 }
 
@@ -72,11 +72,11 @@ void shflCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string
 }
 
 void appMgrAddCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
-    addSAPP(optionValues["app"]);
+    installApp(optionValues["app"]);
 }
 
 void appMgrRemoveCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues) {
-    removeSAPP(optionValues["app"]);
+    removeApp(optionValues["app"]);
 }
 
 void appMgrCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {

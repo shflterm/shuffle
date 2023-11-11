@@ -6,7 +6,7 @@
 
 #include "console.h"
 #include "utils.h"
-#include "commandmgr.h"
+#include "appmgr.h"
 #include "term.h"
 
 using std::to_string, std::filesystem::temp_directory_path, std::filesystem::exists, std::filesystem::remove_all;
@@ -21,7 +21,7 @@ Json::Value getRepo() {
     return root;
 }
 
-void addSAPP(const string&name) {
+void installApp(const string&name) {
     info("Downloading Repository information...");
 
     Json::Value repo = getRepo();
@@ -33,7 +33,7 @@ void addSAPP(const string&name) {
     info(message);
 
     const int ver = repo["version"].asInt();
-    const string downloadTo = temp_directory_path().append("app.sapp").string();
+    const string downloadTo = temp_directory_path().append("app.app").string();
     if (ver == 1) {
         if (const string downloadFrom = replace(repo["download_at"].asString(), "{APP}", name); downloadFile(downloadFrom, downloadTo)) {
             term << teleport(0, wherey() - 1) << eraseLine;
@@ -59,7 +59,7 @@ void addSAPP(const string&name) {
     term << teleport(0, wherey() - 1) << eraseLine;
     info("Adding to config...");
 
-    if (!addRegisteredCommand({name})) {
+    if (!addApp(name)) {
         term << teleport(0, wherey() - 1) << eraseLine;
         error("Failed to add app. (The app has already been added.)");
     }
@@ -69,7 +69,7 @@ void addSAPP(const string&name) {
     }
 }
 
-void removeSAPP(const string&name) {
+void removeApp(const string&name) {
     info("Deleting '" + name + "'...");
 
     if (const string path = DOT_SHUFFLE + "/apps/" + name + ".app"; exists(path)) {

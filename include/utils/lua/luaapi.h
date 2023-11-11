@@ -7,7 +7,6 @@
 
 #include "lua.hpp"
 #include <filesystem>
-#include <fstream>
 #include <vector>
 
 using std::vector, std::string, std::filesystem::path;
