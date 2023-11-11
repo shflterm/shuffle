@@ -1,4 +1,3 @@
-#include "lua.hpp"
 #include <filesystem>
 #include <fstream>
 #include <vector>

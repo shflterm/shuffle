@@ -1,6 +1,6 @@
 #include "parsedcmd.h"
 
-#include "sapp.h"
+#include "appmgr.h"
 
 ParsedCommand::ParsedCommand(Command *app) : app(app) {}
 
