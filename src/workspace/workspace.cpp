@@ -215,122 +215,120 @@ void Workspace::inputPrompt(const bool enableSuggestion) {
         term << teleport(x, wherey() - 1);
 
         while (true) {
-            const int c = readChar();
+            int c = readChar();
             term << eraseFromCursorToLineEnd;
 
-            if (c == '\b' || c == 127) {
-                if (!input.empty()) {
-                    term << teleport(wherex() - 1, wherey());
-                    term << eraseFromCursorToLineEnd;
-                    input = input.substr(0, input.length() - 1);
+            switch (c) {
+                case '\b':
+                case 127: {
+                    if (!input.empty()) {
+                        term << teleport(wherex() - 1, wherey());
+                        term << eraseFromCursorToLineEnd;
+                        input = input.substr(0, input.length() - 1);
+                    }
+                    break;
                 }
-            }
-            else if (c == '\n' || c == '\r') {
-                break;
-            }
-            else if (c == '\t') {
-                string suggestion = getSuggestion(*this, input);
-                input += suggestion;
-                term << "\033[0m" << suggestion;
-            }
+                case '\n':
+                case '\r': {
+                    break;
+                }
+                case '\t': {
+                    string suggestion = getSuggestion(*this, input);
+                    input += suggestion;
+                    term << "\033[0m" << suggestion;
+                    break;
+                }
 #ifdef _WIN32
-            else if (c == 224) {
-                const int i = readChar();
-                const int mv = static_cast<int>(input.size());
-                switch (i) {
-                    case 72: {
-                        term << teleport(wherex() - mv, wherey());
-                        term << eraseFromCursorToLineEnd;
-                        input = historyUp();
-                        term << input;
-                        break;
+                case 224: {
+                    const int i = readChar();
+                    const int mv = static_cast<int>(input.size());
+                    switch (i) {
+                        case 72: {
+                            term << teleport(wherex() - mv, wherey());
+                            term << eraseFromCursorToLineEnd;
+                            input = historyUp();
+                            term << input;
+                            break;
+                        }
+                        case 80: {
+                            term << teleport(wherex() - mv, wherey());
+                            term << eraseFromCursorToLineEnd;
+                            input = historyDown();
+                            term << input;
+                            break;
+                        }
+                        default:
+                            break;
                     }
-                    case 80: {
-                        term << teleport(wherex() - mv, wherey());
-                        term << eraseFromCursorToLineEnd;
-                        input = historyDown();
-                        term << input;
-                        break;
-                    }
-                    default:
-                        break;
+                    break;
                 }
-            }
 #elif defined(__linux__) || defined(__APPLE__)
-            else if (c == 27) {
-                const int mv = static_cast<int>(input.size());
-                switch (readChar()) {
-                    case 91: {
-                        switch (readChar()) {
-                            case 65: {
-                                term << teleport(wherex() - mv, wherey());
-                                term << eraseFromCursorToLineEnd;
-                                input = historyUp();
-                                term << input;
-                                break;
+                case 27: {
+                    const int mv = static_cast<int>(input.size());
+                    switch (readChar()) {
+                        case 91: {
+                            switch (readChar()) {
+                                case 65: {
+                                    term << teleport(wherex() - mv, wherey());
+                                    term << eraseFromCursorToLineEnd;
+                                    input = historyUp();
+                                    term << input;
+                                    break;
+                                }
+                                case 66: {
+                                    term << teleport(wherex() - mv, wherey());
+                                    term << eraseFromCursorToLineEnd;
+                                    input = historyDown();
+                                    term << input;
+                                    break;
+                                }
+                                default:
+                                    break;
                             }
-                            case 66: {
-                                term << teleport(wherex() - mv, wherey());
-                                term << eraseFromCursorToLineEnd;
-                                input = historyDown();
-                                term << input;
-                                break;
-                            }
-                            default:
-                                break;
+                            break;
                         }
-                        break;
+                        default:
+                            break;
                     }
-                    case 94: {
-                        switch (readChar()) {
-                            case 86:
-                            case 118: {
-                                break;
-                            }
-                            default:
-                                break;
-                        }
-                        break;
-                    }
-                    default:
-                        break;
+                    break;
                 }
-            }
-            else if (c == 94) {
-                        term << "C";
-            }
+                case 94: {
+                    term << "C";
+                    break;
+                }
 #endif
-            else if (c == '@') {
-                term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
-                term << eraseFromCursorToLineEnd;
-                term << color(FOREGROUND, Yellow) << "@ " << resetColor;
-                string wsName;
-                getline(cin, wsName);
+                case '@': {
+                    term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
+                    term << eraseFromCursorToLineEnd;
+                    term << color(FOREGROUND, Yellow) << "@ " << resetColor;
+                    string wsName;
+                    getline(cin, wsName);
 
-                term << newLine;
-                if (wsMap.find(wsName) != wsMap.end()) {
-                    currentWorkspace = wsMap[wsName];
+                    term << newLine;
+                    if (wsMap.find(wsName) != wsMap.end()) {
+                        currentWorkspace = wsMap[wsName];
+                    }
+                    else {
+                        info("{FG_BLUE}New workspace created: {BG_GREEN}$0", {wsName});
+                        currentWorkspace = new Workspace(wsName);
+                    }
+                    return;
                 }
-                else {
-                    info("{FG_BLUE}New workspace created: {BG_GREEN}$0", {wsName});
-                    currentWorkspace = new Workspace(wsName);
-                }
-                return;
-            }
-            else if (c == '&') {
-                term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
-                term << eraseFromCursorToLineEnd;
-                term << color(FOREGROUND, Yellow) << "& " << resetColor;
-                string command;
-                getline(cin, command);
+                case '&': {
+                    term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
+                    term << eraseFromCursorToLineEnd;
+                    term << color(FOREGROUND, Yellow) << "& " << resetColor;
+                    string command;
+                    getline(cin, command);
 
-                system(command.c_str());
-                return;
-            }
-            else {
-                string character(1, static_cast<char>(c));
-                term << resetColor << character;
-                input += character;
+                    system(command.c_str());
+                    return;
+                }
+                default: {
+                    string character(1, static_cast<char>(c));
+                    term << resetColor << character;
+                    input += character;
+                }
             }
 
             string suggestion = getSuggestion(*this, input);
