@@ -39,7 +39,7 @@ public:
 
     void execute(const string &input, bool isSnippet = false);
 
-    void inputPrompt(bool enableSuggestion);
+    void inputPrompt();
 
     string getName();
 

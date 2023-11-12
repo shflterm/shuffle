@@ -205,63 +205,69 @@ string Workspace::prompt() const {
     return ss.str();
 }
 
-void Workspace::inputPrompt(const bool enableSuggestion) {
+void Workspace::inputPrompt() {
     term << prompt();
 
     string input;
-    if (enableSuggestion) {
-        const int x = wherex();
-        term << newLine;
-        term << teleport(x, wherey() - 1);
+    const int x = wherex();
+    term << newLine;
+    term << teleport(x, wherey() - 1);
 
-        while (true) {
-            int c = readChar();
-            term << eraseFromCursorToLineEnd;
+    while (true) {
+        int c = readChar();
+        term << eraseFromCursorToLineEnd;
 
-            switch (c) {
-                case '\b':
-                case 127: {
-                    if (!input.empty()) {
-                        term << teleport(wherex() - 1, wherey());
-                        term << eraseFromCursorToLineEnd;
-                        input = input.substr(0, input.length() - 1);
-                    }
-                    break;
+        switch (c) {
+            case '\b':
+            case 127: {
+                if (!input.empty()) {
+                    term << teleport(wherex() - 1, wherey());
+                    term << eraseFromCursorToLineEnd;
+                    input = input.substr(0, input.length() - 1);
                 }
-                case '\n':
+                break;
+            }
+            case '\n':
                 case '\r': {
-                    break;
+                term << newLine;
+
+                if (!input.empty()) {
+                    term << eraseLine;
+                    addHistory(input);
+                    execute(input);
                 }
-                case '\t': {
-                    string suggestion = getSuggestion(*this, input);
-                    input += suggestion;
-                    term << "\033[0m" << suggestion;
-                    break;
-                }
+                return;
+            }
+            case '\t': {
+                string suggestion = getSuggestion(*this, input);
+                input += suggestion;
+                term << "\033[0m" << suggestion;
+                break;
+            }
 #ifdef _WIN32
-                case 224: {
-                    const int i = readChar();
-                    const int mv = static_cast<int>(input.size());
-                    switch (i) {
-                        case 72: {
-                            term << teleport(wherex() - mv, wherey());
-                            term << eraseFromCursorToLineEnd;
-                            input = historyUp();
-                            term << input;
-                            break;
-                        }
-                        case 80: {
-                            term << teleport(wherex() - mv, wherey());
-                            term << eraseFromCursorToLineEnd;
-                            input = historyDown();
-                            term << input;
-                            break;
-                        }
-                        default:
-                            break;
+            case 224: {
+                const int i = readChar();
+                const int mv = static_cast<int>(input.size());
+                switch (i) {
+                    case 72: {
+                        term << teleport(wherex() - mv, wherey());
+                        term << eraseFromCursorToLineEnd;
+                        input = historyUp();
+                        term << input;
+                        break;
                     }
-                    break;
+                    case 80: {
+                        term << teleport(wherex() - mv, wherey());
+                        term << eraseFromCursorToLineEnd;
+                        input = historyDown();
+                        term << input;
+                        break;
+                    }
+                    default:
+                        break;
                 }
+                break;
+            }
 #elif defined(__linux__) || defined(__APPLE__)
                 case 27: {
                     const int mv = static_cast<int>(input.size());
@@ -297,61 +303,50 @@ void Workspace::inputPrompt(const bool enableSuggestion) {
                     break;
                 }
 #endif
-                case '@': {
-                    term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
-                    term << eraseFromCursorToLineEnd;
-                    term << color(FOREGROUND, Yellow) << "@ " << resetColor;
-                    string wsName;
-                    getline(cin, wsName);
+            case '@': {
+                term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
+                term << eraseFromCursorToLineEnd;
+                term << color(FOREGROUND, Yellow) << "@ " << resetColor;
+                string wsName;
+                getline(cin, wsName);
 
-                    term << newLine;
-                    if (wsMap.find(wsName) != wsMap.end()) {
-                        currentWorkspace = wsMap[wsName];
-                    }
-                    else {
-                        info("{FG_BLUE}New workspace created: {BG_GREEN}$0", {wsName});
-                        currentWorkspace = new Workspace(wsName);
-                    }
-                    return;
+                term << newLine;
+                if (wsMap.find(wsName) != wsMap.end()) {
+                    currentWorkspace = wsMap[wsName];
                 }
-                case '&': {
-                    term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
-                    term << eraseFromCursorToLineEnd;
-                    term << color(FOREGROUND, Yellow) << "& " << resetColor;
-                    string command;
-                    getline(cin, command);
-
-                    system(command.c_str());
-                    return;
+                else {
+                    info("{FG_BLUE}New workspace created: {BG_GREEN}$0", {wsName});
+                    currentWorkspace = new Workspace(wsName);
                 }
-                default: {
-                    string character(1, static_cast<char>(c));
-                    term << resetColor << character;
-                    input += character;
-                }
+                return;
             }
+            case '&': {
+                term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
+                term << eraseFromCursorToLineEnd;
+                term << color(FOREGROUND, Yellow) << "& " << resetColor;
+                string command;
+                getline(cin, command);
 
-            string suggestion = getSuggestion(*this, input);
-            term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
-            term << teleport(wherex() - static_cast<int>(suggestion.size()), wherey());
-
-            string hint = getHint(*this, input);
-            term << saveCursorPosition
-                    << teleport(wherex() - static_cast<int>(hint.size()) / 2, wherey() + 1)
-                    << eraseLine
-                    << color(FOREGROUND_BRIGHT, Black) << hint
-                    << loadCursorPosition;
+                system(command.c_str());
+                return;
+            }
+            default: {
+                string character(1, static_cast<char>(c));
+                term << resetColor << character;
+                input += character;
+            }
         }
-        term << newLine;
-    }
-    else {
-        getline(cin, input);
-    }
 
-    if (!input.empty()) {
-        term << eraseLine;
-        addHistory(input);
-        execute(input);
+        string suggestion = getSuggestion(*this, input);
+        term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
+        term << teleport(wherex() - static_cast<int>(suggestion.size()), wherey());
+
+        string hint = getHint(*this, input);
+        term << saveCursorPosition
+                << teleport(wherex() - static_cast<int>(hint.size()) / 2, wherey() + 1)
+                << eraseLine
+                << color(FOREGROUND_BRIGHT, Black) << hint
+                << loadCursorPosition;
     }
 }
 

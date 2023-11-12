@@ -108,6 +108,6 @@ extern "C" void handleQuit(const int sig) {
 
     currentWorkspace = new Workspace("main");
     while (true) {
-        currentWorkspace->inputPrompt(true);
+        currentWorkspace->inputPrompt();
     }
 }
