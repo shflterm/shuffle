@@ -54,7 +54,8 @@ string Workspace::historyDown() {
     return history[++historyIndex];
 }
 
-void Workspace::execute(const string&input, const bool isSnippet) { // NOLINT(*-no-recursion)
+void Workspace::execute(const string&input, const bool isSnippet) {
+    // NOLINT(*-no-recursion)
     vector<string> inSpl = splitBySpace(input);
     if (inSpl.empty()) return;
 
@@ -232,6 +233,7 @@ void Workspace::inputPrompt(const bool enableSuggestion) {
                 input += suggestion;
                 term << "\033[0m" << suggestion;
             }
+#ifdef _WIN32
             else if (c == 224) {
                 const int i = readChar();
                 const int mv = static_cast<int>(input.size());
@@ -254,6 +256,50 @@ void Workspace::inputPrompt(const bool enableSuggestion) {
                         break;
                 }
             }
+#elif defined(__linux__) || defined(__APPLE__)
+            else if (c == 27) {
+                const int mv = static_cast<int>(input.size());
+                switch (readChar()) {
+                    case 91: {
+                        switch (readChar()) {
+                            case 65: {
+                                term << teleport(wherex() - mv, wherey());
+                                term << eraseFromCursorToLineEnd;
+                                input = historyUp();
+                                term << input;
+                                break;
+                            }
+                            case 66: {
+                                term << teleport(wherex() - mv, wherey());
+                                term << eraseFromCursorToLineEnd;
+                                input = historyDown();
+                                term << input;
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                        break;
+                    }
+                    case 94: {
+                        switch (readChar()) {
+                            case 86:
+                            case 118: {
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+            else if (c == 94) {
+                        term << "C";
+            }
+#endif
             else if (c == '@') {
                 term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
                 term << eraseFromCursorToLineEnd;

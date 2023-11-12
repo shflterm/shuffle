@@ -26,6 +26,9 @@ LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS* exceptionPointers) {
 
 #elif defined(__linux__) || defined(__APPLE__)
 
+#include <unistd.h>
+#include <termios.h>
+
 extern "C" void handleCrash(int sig) {
     term << newLine;
     error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
@@ -54,6 +57,13 @@ extern "C" void handleQuit(const int sig) {
 #elif defined(__linux__) || defined(__APPLE__)
     signal(SIGSEGV, &handleCrash);
     signal(SIGABRT, &handleCrash);
+
+    setlocale(LC_ALL, "");
+
+    termios raw{};
+    tcgetattr(STDIN_FILENO, &raw);
+    raw.c_lflag &= ~(ECHO | ICANON);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 #endif
     signal(SIGINT, &handleQuit);
 
