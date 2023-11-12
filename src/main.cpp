@@ -57,6 +57,12 @@ extern "C" void handleQuit(const int sig) {
 #endif
     signal(SIGINT, &handleQuit);
 
+    if (getShflJson("repos").empty()) {
+        Json::Value repos;
+        repos.append("https://raw.githubusercontent.com/shflterm/apps/main/repo.json");
+        setShflJson("repos", repos);
+    }
+
     if (argc > 1) {
         if (const string arg = argv[1];
             arg == "--version" || arg == "-v") {

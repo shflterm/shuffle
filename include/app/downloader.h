@@ -13,4 +13,8 @@ void installApp(const string &name);
 
 void removeApp(const string &name);
 
+void addRepo(const string &url);
+
+void removeRepo(const string &url);
+
 #endif //SHUFFLE_INCLUDE_SAPP_DOWNLOADER_H_

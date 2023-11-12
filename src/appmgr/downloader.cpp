@@ -11,9 +11,7 @@
 
 using std::to_string, std::filesystem::temp_directory_path, std::filesystem::exists, std::filesystem::remove_all;
 
-Json::Value getRepo() {
-    const string repo = "https://raw.githubusercontent.com/shflterm/apps/main/repo.json";
-
+Json::Value getRepo(const string&repo) {
     Json::Value root;
     Json::Reader reader;
     reader.parse(readTextFromWeb(repo), root, false);
@@ -21,33 +19,46 @@ Json::Value getRepo() {
     return root;
 }
 
+vector<string> getRepos() {
+    vector<string> result;
+    Json::Value repos = getShflJson("repos");
+    for (const auto&repo: repos) result.push_back(repo.asString());
+    return result;
+}
+
 void installApp(const string&name) {
     info("Downloading Repository information...");
 
-    Json::Value repo = getRepo();
-
-    term << teleport(0, wherey() - 1) << eraseLine;
-    string message = R"(Start downloading '{APP}' from '{REPO}'...)";
-    message = replace(message, "{APP}", name);
-    message = replace(message, "{REPO}", repo["repo"].asString());
-    info(message);
-
-    const int ver = repo["version"].asInt();
+    bool appFounded = false;
     const string downloadTo = temp_directory_path().append("app.shflapp").string();
-    if (ver == 1) {
-        if (const string downloadFrom = replace(repo["download_at"].asString(), "{APP}", name); downloadFile(downloadFrom, downloadTo)) {
-            term << teleport(0, wherey() - 1) << eraseLine;
-            success("Download Completed!");
+
+    for (const auto&repoUrl: getRepos()) {
+        Json::Value repo = getRepo(repoUrl);
+
+        term << teleport(0, wherey() - 1) << eraseLine;
+        string message = R"(Start downloading '{APP}' from '{REPO}'...)";
+        message = replace(message, "{APP}", name);
+        message = replace(message, "{REPO}", repo["repo"].asString());
+        info(message);
+
+        if (const int ver = repo["version"].asInt(); ver == 1) {
+            if (const string downloadFrom = replace(repo["download_at"].asString(), "{APP}", name); downloadFile(
+                downloadFrom, downloadTo)) {
+                term << teleport(0, wherey() - 1) << eraseLine;
+                success("Download Completed!");
+                appFounded = true;
+                break;
+            }
         }
         else {
             term << teleport(0, wherey() - 1) << eraseLine;
-            error("The app could not be found in the repository.");
-            return;
+            error("Unknown repository version: " + to_string(ver));
         }
     }
-    else {
+
+    if (!appFounded) {
         term << teleport(0, wherey() - 1) << eraseLine;
-        error("Unknown repository version: " + to_string(ver));
+        error("The app could not be found in the repository.");
         return;
     }
 
@@ -88,4 +99,20 @@ void removeApp(const string&name) {
     else {
         error("App not found!");
     }
+}
+
+
+void addRepo(const string&url) {
+    Json::Value repos = getShflJson("repos");
+    repos.append(url);
+    setShflJson("repos", repos);
+    info("Repository " + url + " added!");
+}
+
+
+void removeRepo(const string&url) {
+    Json::Value repos = getShflJson("repos");
+    repos.removeMember(url);
+    setShflJson("repos", repos);
+    info("Repository " + url + " removed!");
 }

@@ -13,46 +13,6 @@
 
 using std::make_shared;
 
-void loadCommands() {
-    commands.clear();
-
-    commands.push_back(make_shared<Command>(Command(
-        "shfl", "Shuffle Command", {
-            make_shared<Command>(Command("reload", "Reload all commands.", shflReloadCmd)),
-            make_shared<Command>(Command("upgrade", "Upgrade Shuffle to a new version.", shflUpgradeCmd)),
-            make_shared<Command>(Command("credits", "Shuffle Credits", shflCreditsCmd)),
-        }, shflCmd
-    )));
-    commands.push_back(make_shared<Command>(Command(
-        "appmgr", "App Manager", {
-            make_shared<Command>(Command("add", "Get new apps from the repository.", {
-                                             CommandOption("app", "", TEXT_T)
-                                         }, appMgrAddCmd)),
-            make_shared<Command>(Command("remove", "Delete the app from your device.", {
-                                             CommandOption("app", "", TEXT_T)
-                                         }, appMgrRemoveCmd)),
-        }, appMgrCmd
-    )));
-    commands.push_back(make_shared<Command>(Command(
-        "help", "Show help", {
-            CommandOption("command", "", TEXT_T, {"cmd", "help"})
-        }, helpCmd
-    )));
-    commands.push_back(make_shared<Command>(Command(
-        "snf", "Manage Snippets", {
-            CommandOption("create", "", TEXT_T, {"mk", "c", "new"}),
-            CommandOption("value", "", TEXT_T, {"v"}),
-        }, snippetCmd
-    )));
-    commands.push_back(make_shared<Command>(Command(
-        "clear", "Manage Snippets", clearCmd
-    )));
-
-    for (const string&appName: getApps()) {
-        loadApp(appName);
-    }
-}
-
 void shflReloadCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
     info("Reloading command...");
     loadCommands();
@@ -78,6 +38,14 @@ void appMgrAddCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, s
 
 void appMgrRemoveCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues) {
     removeApp(optionValues["app"]);
+}
+
+void appMgrRepoAddCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
+    addRepo(optionValues["repo"]);
+}
+
+void appMgrRepoRemoveCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues) {
+    removeRepo(optionValues["repo"]);
 }
 
 void appMgrCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
@@ -142,4 +110,53 @@ void snippetCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues
 
 void clearCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
     term << eraseAll;
+}
+
+
+void loadCommands() {
+    commands.clear();
+
+    commands.push_back(make_shared<Command>(Command(
+        "shfl", "Shuffle Command", {
+            make_shared<Command>(Command("reload", "Reload all commands.", shflReloadCmd)),
+            make_shared<Command>(Command("upgrade", "Upgrade Shuffle to a new version.", shflUpgradeCmd)),
+            make_shared<Command>(Command("credits", "Shuffle Credits", shflCreditsCmd)),
+        }, shflCmd
+    )));
+    commands.push_back(make_shared<Command>(Command(
+        "appmgr", "App Manager", {
+            make_shared<Command>(Command("add", "Get new apps from the repository.", {
+                                             CommandOption("app", "", TEXT_T)
+                                         }, appMgrAddCmd)),
+            make_shared<Command>(Command("remove", "Delete the app from your device.", {
+                                             CommandOption("app", "", TEXT_T)
+                                         }, appMgrRemoveCmd)),
+            make_shared<Command>(Command("repo", "Repository Management", {
+                                             make_shared<Command>(Command("add", "Add Repository", {
+                                                                              CommandOption("repo", "", TEXT_T)
+                                                                          }, appMgrRepoAddCmd)),
+                                             make_shared<Command>(Command("remove", "Remove Repository", {
+                                                                              CommandOption("repo", "", TEXT_T)
+                                                                          }, appMgrRepoRemoveCmd))
+                                         }, do_nothing)),
+        }, appMgrCmd
+    )));
+    commands.push_back(make_shared<Command>(Command(
+        "help", "Show help", {
+            CommandOption("command", "", TEXT_T, {"cmd", "help"})
+        }, helpCmd
+    )));
+    commands.push_back(make_shared<Command>(Command(
+        "snf", "Manage Snippets", {
+            CommandOption("create", "", TEXT_T, {"mk", "c", "new"}),
+            CommandOption("value", "", TEXT_T, {"v"}),
+        }, snippetCmd
+    )));
+    commands.push_back(make_shared<Command>(Command(
+        "clear", "Manage Snippets", clearCmd
+    )));
+
+    for (const string&appName: getApps()) {
+        loadApp(appName);
+    }
 }
