@@ -118,27 +118,27 @@ void loadCommands() {
 
     commands.push_back(make_shared<Command>(Command(
         "shfl", "Shuffle Command", {
-            make_shared<Command>(Command("reload", "Reload all commands.", shflReloadCmd)),
-            make_shared<Command>(Command("upgrade", "Upgrade Shuffle to a new version.", shflUpgradeCmd)),
-            make_shared<Command>(Command("credits", "Shuffle Credits", shflCreditsCmd)),
+            Command("reload", "Reload all commands.", shflReloadCmd),
+            Command("upgrade", "Upgrade Shuffle to a new version.", shflUpgradeCmd),
+            Command("credits", "Shuffle Credits", shflCreditsCmd),
         }, shflCmd
     )));
     commands.push_back(make_shared<Command>(Command(
         "appmgr", "App Manager", {
-            make_shared<Command>(Command("add", "Get new apps from the repository.", {
-                                             CommandOption("app", "", TEXT_T)
-                                         }, appMgrAddCmd)),
-            make_shared<Command>(Command("remove", "Delete the app from your device.", {
-                                             CommandOption("app", "", TEXT_T)
-                                         }, appMgrRemoveCmd)),
-            make_shared<Command>(Command("repo", "Repository Management", {
-                                             make_shared<Command>(Command("add", "Add Repository", {
-                                                                              CommandOption("repo", "", TEXT_T)
-                                                                          }, appMgrRepoAddCmd)),
-                                             make_shared<Command>(Command("remove", "Remove Repository", {
-                                                                              CommandOption("repo", "", TEXT_T)
-                                                                          }, appMgrRepoRemoveCmd))
-                                         }, do_nothing)),
+            Command("add", "Get new apps from the repository.", {
+                        CommandOption("app", "", TEXT_T)
+                    }, appMgrAddCmd),
+            Command("remove", "Delete the app from your device.", {
+                        CommandOption("app", "", TEXT_T)
+                    }, appMgrRemoveCmd),
+            Command("repo", "Repository Management", {
+                        Command("add", "Add Repository", {
+                                    CommandOption("repo", "", TEXT_T)
+                                }, appMgrRepoAddCmd),
+                        Command("remove", "Remove Repository", {
+                                    CommandOption("repo", "", TEXT_T)
+                                }, appMgrRepoRemoveCmd)
+                    }, do_nothing),
         }, appMgrCmd
     )));
     commands.push_back(make_shared<Command>(Command(

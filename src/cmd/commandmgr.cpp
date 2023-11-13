@@ -57,33 +57,39 @@ const vector<string>& Command::getExamples() const {
     return examples;
 }
 
-Command::Command(string name, string description, const vector<shared_ptr<Command>>&subcommands,
-                 const vector<CommandOption>&options, cmd_t cmd) : name(std::move(name)),
-                                                                   description(std::move(
-                                                                       description)),
-                                                                   subcommands(subcommands),
-                                                                   options(options), cmd(std::move(cmd)) {
+Command::Command(string name, string description, const vector<Command>&subcommands,
+                 const vector<CommandOption>&options, cmd_t cmd)
+    : name(std::move(name)),
+      description(std::move(description)),
+      options(options), cmd(std::move(cmd)) {
+    for (const auto&subcommand: subcommands) {
+        this->subcommands.push_back(make_shared<Command>(subcommand));
+    }
 }
 
-Command::Command(string name, string description,
-                 const vector<shared_ptr<Command>>&subcommands, cmd_t cmd) : name(std::move(name)),
-                                                                             description(std::move(description)),
-                                                                             subcommands(subcommands),
-                                                                             cmd(std::move(cmd)) {
+Command::Command(string name, string description, const vector<Command>&subcommands, cmd_t cmd)
+    : name(std::move(name)),
+      description(std::move(description)),
+      cmd(std::move(cmd)) {
+    for (const auto&subcommand: subcommands) {
+        this->subcommands.push_back(make_shared<Command>(subcommand));
+    }
 }
 
-Command::Command(string name, string description,
-                 const vector<CommandOption>&options, cmd_t cmd) : name(std::move(name)),
-                                                                   description(std::move(description)),
-                                                                   options(options), cmd(std::move(cmd)) {
+Command::Command(string name, string description, const vector<CommandOption>&options, cmd_t cmd)
+    : name(std::move(name)),
+      description(std::move(description)),
+      options(options), cmd(std::move(cmd)) {
 }
 
-Command::Command(string name, string description, cmd_t cmd) : name(std::move(name)),
-                                                               description(std::move(description)),
-                                                               cmd(std::move(cmd)) {
+Command::Command(string name, string description, cmd_t cmd)
+    : name(std::move(name)),
+      description(std::move(description)),
+      cmd(std::move(cmd)) {
 }
 
-Command::Command(string name) : name(std::move(name)), cmd(do_nothing) {
+Command::Command(string name)
+    : name(std::move(name)), cmd(do_nothing) {
 }
 
 Command::Command(Json::Value info, const string&libPath) {

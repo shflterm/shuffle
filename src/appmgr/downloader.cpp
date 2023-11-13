@@ -9,7 +9,7 @@
 #include "appmgr.h"
 #include "term.h"
 
-using std::to_string, std::filesystem::temp_directory_path, std::filesystem::exists, std::filesystem::remove_all;
+using std::to_string, std::filesystem::temp_directory_path, std::filesystem::exists, std::filesystem::remove_all, std::filesystem::copy_options;
 
 Json::Value getRepo(const string&repo) {
     Json::Value root;
@@ -26,46 +26,59 @@ vector<string> getRepos() {
     return result;
 }
 
-void installApp(const string&name) {
-    info("Downloading Repository information...");
+void installApp(string&name) {
+    bool installed = false;
 
-    bool appFounded = false;
-    const string downloadTo = temp_directory_path().append("app.shflapp").string();
+    const path localApp = currentWorkspace->currentDirectory() / name;
+    if (const path appShfl = localApp / "app.shfl";
+        exists(localApp) && exists(appShfl)) {
+         name = path(name).filename().string();
+        info("Start downloading '" + name + "' from '" + absolute(localApp).parent_path().string() +
+             "'...");
+        const path targetPath = path(DOT_SHUFFLE) / "apps" / (name + ".shflapp");
+        copy(absolute(localApp), absolute(targetPath), copy_options::overwrite_existing | copy_options::recursive);
+        success("Load Completed!");
+        installed = true;
+    }
+    else {
+        const string downloadTo = temp_directory_path().append("app.shflapp").string();
 
-    for (const auto&repoUrl: getRepos()) {
-        Json::Value repo = getRepo(repoUrl);
+        info("Downloading Repository information...");
+        for (const auto&repoUrl: getRepos()) {
+            Json::Value repo = getRepo(repoUrl);
 
-        term << teleport(0, wherey() - 1) << eraseLine;
-        string message = R"(Start downloading '{APP}' from '{REPO}'...)";
-        message = replace(message, "{APP}", name);
-        message = replace(message, "{REPO}", repo["repo"].asString());
-        info(message);
-
-        if (const int ver = repo["version"].asInt(); ver == 1) {
-            if (const string downloadFrom = replace(repo["download_at"].asString(), "{APP}", name); downloadFile(
-                downloadFrom, downloadTo)) {
-                term << teleport(0, wherey() - 1) << eraseLine;
-                success("Download Completed!");
-                appFounded = true;
-                break;
-            }
-        }
-        else {
             term << teleport(0, wherey() - 1) << eraseLine;
-            error("Unknown repository version: " + to_string(ver));
+            string message = R"(Start downloading '{APP}' from '{REPO}'...)";
+            message = replace(message, "{APP}", name);
+            message = replace(message, "{REPO}", repo["repo"].asString());
+            info(message);
+
+            if (const int ver = repo["version"].asInt(); ver == 1) {
+                if (const string downloadFrom = replace(repo["download_at"].asString(), "{APP}", name); downloadFile(
+                    downloadFrom, downloadTo)) {
+                    term << teleport(0, wherey() - 1) << eraseLine;
+                    success("Download Completed!");
+
+                    term << teleport(0, wherey() - 1) << eraseLine;
+                    extractZip(downloadTo, DOT_SHUFFLE + "/apps/" + name + ".shflapp");
+                    term << teleport(0, wherey()) << eraseLine;
+                    success("Extracted!");
+                    installed = true;
+                    break;
+                }
+            }
+            else {
+                term << teleport(0, wherey() - 1) << eraseLine;
+                warning("Unknown repository version: " + to_string(ver));
+            }
         }
     }
 
-    if (!appFounded) {
+    if (!installed) {
         term << teleport(0, wherey() - 1) << eraseLine;
         error("The app could not be found in the repository.");
         return;
     }
-
-    term << teleport(0, wherey() - 1) << eraseLine;
-    extractZip(downloadTo, DOT_SHUFFLE + "/apps/" + name + ".shflapp");
-    term << teleport(0, wherey()) << eraseLine;
-    success("Extracted!");
 
     term << teleport(0, wherey() - 1) << eraseLine;
     info("Adding to config...");

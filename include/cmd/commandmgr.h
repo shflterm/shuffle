@@ -62,16 +62,16 @@ public:
 
     virtual void run(Workspace *ws, map<string, string> &optionValues) const;
 
-    Command(string name, string description, const vector<shared_ptr<Command>> &subcommands, const vector<CommandOption> &options,
+    Command(string name, string description, const vector<Command> &subcommands, const vector<CommandOption> &options,
             cmd_t cmd);
 
-    Command(string name, string description, const vector<shared_ptr<Command>> &subcommands, cmd_t cmd);
+    Command(string name, string description, const vector<Command> &subcommands, cmd_t cmd);
 
     Command(string name, string description, const vector<CommandOption> &options, cmd_t cmd);
 
     Command(string name, string description, cmd_t cmd);
 
-    explicit Command(string name);
+    explicit Command( string name);
 
     Command(Json::Value info, const string&libPath);
 
