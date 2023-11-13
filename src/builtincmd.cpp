@@ -156,6 +156,7 @@ void loadCommands() {
         "clear", "Manage Snippets", clearCmd
     )));
 
+    unloadAllApps();
     for (const string&appName: getApps()) {
         loadApp(appName);
     }

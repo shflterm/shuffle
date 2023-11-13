@@ -120,6 +120,10 @@ bool addApp(const string&name) {
     return true;
 }
 
+void unloadAllApps() {
+    loadedApps.clear();
+}
+
 vector<string> getApps() {
     vector<string> res;
 

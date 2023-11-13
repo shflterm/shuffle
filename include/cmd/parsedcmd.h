@@ -10,7 +10,6 @@
 
 #include "commandmgr.h"
 
-
 class ParsedCommand {
 public:
     Command *app;
