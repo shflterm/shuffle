@@ -62,6 +62,8 @@ public:
 
     virtual void run(Workspace *ws, map<string, string> &optionValues) const;
 
+    [[nodiscard]] string createHint() const;
+
     Command(string name, string description, const vector<Command> &subcommands, const vector<CommandOption> &options,
             cmd_t cmd);
 
