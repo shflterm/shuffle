@@ -37,6 +37,10 @@ const string& Command::getDescription() const {
     return description;
 }
 
+const string& Command::getUsage() const {
+    return usage;
+}
+
 void Command::run(Workspace* ws, map<string, string>&optionValues) const {
     cmd(ws, optionValues);
 }

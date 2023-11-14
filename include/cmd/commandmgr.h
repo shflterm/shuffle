@@ -38,8 +38,8 @@ public:
 class Command {
 protected:
     string name;
-    string usage;
     string description;
+    string usage;
     vector<shared_ptr<Command>> subcommands;
     vector<CommandOption> options;
     vector<string> aliases;
@@ -51,6 +51,8 @@ public:
     [[nodiscard]] const string &getName() const;
 
     [[nodiscard]] const string &getDescription() const;
+
+    [[nodiscard]] const string &getUsage() const;
 
     [[nodiscard]] const vector<shared_ptr<Command>> &getSubcommands() const;
 
