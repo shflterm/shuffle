@@ -72,11 +72,16 @@ void helpCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues) {
         term << "Thanks to: " << color(BACKGROUND, Green) << "shfl credits" << resetColor << newLine;
     }
     else {
-        const string cmdName = optionValues["command"];
-        const shared_ptr<Command> cmd = findCommand(cmdName);
+        vector<string> cmdName = splitBySpace(optionValues["command"]);
+        shared_ptr<Command> cmd = findCommand(cmdName.front());
         if (cmd == nullptr) {
-            term << "Command '" << cmdName << "' not found." << newLine;
+            term << "Command '" << cmdName.front() << "' not found." << newLine;
             return;
+        }
+
+        for (int i = 1; i < cmdName.size(); ++i) {
+            if (cmd == nullptr) break;
+            cmd = findCommand(cmdName[i], cmd->getSubcommands());
         }
 
         string subcommands;
@@ -93,6 +98,8 @@ void helpCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues) {
         term << "Name: " << cmd->getName() << newLine;
         if (!cmd->getDescription().empty())
             term << "Description: " << cmd->getDescription() << newLine;
+        if (!cmd->getUsage().empty())
+            term << "Usage: " << cmd->getUsage() << newLine;
         if (!subcommands.empty())
             term << "Subcommands: " << subcommands.substr(0, subcommands.size() - 2) << newLine;
         term << "Examples: " << examples << newLine;

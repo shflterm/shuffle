@@ -38,8 +38,8 @@ public:
 class Command {
 protected:
     string name;
-    string usage;
     string description;
+    string usage;
     vector<shared_ptr<Command>> subcommands;
     vector<CommandOption> options;
     vector<string> aliases;
@@ -52,6 +52,8 @@ public:
 
     [[nodiscard]] const string &getDescription() const;
 
+    [[nodiscard]] const string &getUsage() const;
+
     [[nodiscard]] const vector<shared_ptr<Command>> &getSubcommands() const;
 
     [[nodiscard]] const vector<CommandOption> &getOptions() const;
@@ -61,6 +63,8 @@ public:
     [[nodiscard]] const vector<string> &getExamples() const;
 
     virtual void run(Workspace *ws, map<string, string> &optionValues) const;
+
+    [[nodiscard]] string createHint() const;
 
     Command(string name, string description, const vector<Command> &subcommands, const vector<CommandOption> &options,
             cmd_t cmd);

@@ -163,28 +163,26 @@ string getSuggestion(const Workspace&ws, const string&input) {
     return suggestion;
 }
 
-string getHint([[maybe_unused]] const Workspace&ws, [[maybe_unused]] const string&input) {
-    //    vector<string> args = split(input, regex(R"(\s+)"));
-    //
-    //    if (args.size() == 1) {
-    //        shared_ptr<Command> command = findCommand(args[0]);
-    //        if (command == nullptr) return "";
-    //        else return command->getDescription();
-    //    } else {
-    //        shared_ptr<Command> final = findCommand(args[0]);
-    //        if (final == nullptr) return "";
-    //
-    //        for (int i = 1; i < args.size(); i++) {
-    //            shared_ptr<Command> sub = findCommand(args[i], final->getChildren());
-    //            if (sub == nullptr) {
-    //                return final->getDescription();
-    //            }
-    //            final = sub;
-    //        }
-    //
-    //        return final->getDescription();
-    //    }
-    return "";
+string getHint([[maybe_unused]] const Workspace&ws, const string&input) {
+    vector<string> args = split(input, regex(R"(\s+)"));
+
+    if (args.size() == 1) {
+        if (shared_ptr<Command> command = findCommand(args[0]); command == nullptr) return "";
+        else return command->createHint();
+    }
+
+    shared_ptr<Command> final = findCommand(args[0]);
+    if (final == nullptr) return "";
+
+    for (int i = 1; i < args.size(); i++) {
+        shared_ptr<Command> sub = findCommand(args[i], final->getSubcommands());
+        if (sub == nullptr) {
+            return final->createHint();
+        }
+        final = sub;
+    }
+
+    return final->createHint();
 }
 
 string Workspace::prompt() const {
@@ -341,9 +339,10 @@ void Workspace::inputPrompt() {
         term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
         term << teleport(wherex() - static_cast<int>(suggestion.size()), wherey());
 
-        string hint = getHint(*this, input);
+        string hint = getHint(*this, input + suggestion);
+        const int xPos = wherex() - static_cast<int>(hint.size()) / 2;
         term << saveCursorPosition
-                << teleport(wherex() - static_cast<int>(hint.size()) / 2, wherey() + 1)
+                << teleport(xPos < 0 ? 0 : xPos, wherey() + 1)
                 << eraseLine
                 << color(FOREGROUND_BRIGHT, Black) << hint
                 << loadCursorPosition;
