@@ -15,7 +15,7 @@ public:
     Command *app;
     map<string, string> options;
 
-    void executeApp(Workspace *ws);
+    string executeApp(Workspace *ws);
 
     explicit ParsedCommand(Command *app);
 };

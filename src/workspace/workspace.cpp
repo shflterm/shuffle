@@ -54,10 +54,27 @@ string Workspace::historyDown() {
     return history[++historyIndex];
 }
 
-void Workspace::execute(const string&input, const bool isSnippet) {
+string Workspace::execute(const string&input, const bool isSnippet) {
     // NOLINT(*-no-recursion)
+    if (std::smatch matches; regex_match(input, matches, regex("(\\w*)\\s*=\\s*(\"([^\"]*)\"|(\\S+)*)"))) {
+        string name = matches[1].str();
+        string value;
+        if (matches[2].matched) {
+            value = matches[2].str();
+        }
+        else {
+            value = matches[3].str();
+        }
+        if (const string res = execute(value); !res.empty()) {
+            variables[name] = res;
+        }
+        else variables[name] = value;
+
+        return name;
+    }
+
     vector<string> inSpl = splitBySpace(input);
-    if (inSpl.empty()) return;
+    if (inSpl.empty()) return "empty";
 
     if (!isSnippet) {
         bool isSnippetFound = false;
@@ -69,33 +86,20 @@ void Workspace::execute(const string&input, const bool isSnippet) {
             execute(item->getTarget(), true);
         }
 
-        if (isSnippetFound) return;
+        if (isSnippetFound) return "true";
     }
 
     Command* app = findCommand(inSpl[0]).get();
 
     if (app == nullptr) {
-        error("Sorry. Command '$0' not found.", {inSpl[0]});
-        pair similarWord = {1000000000, Command("")};
-        for (const auto&cmd: commands) {
-            if (int dist = levenshteinDist(inSpl[0], cmd->getName());
-                dist < similarWord.first)
-                similarWord = {dist, *cmd};
-        }
-
-        if (similarWord.first > 1) warning("Please make sure you entered the correct command.");
-        else warning("Did you mean '$0'?", {similarWord.second.getName()});
-
-        return;
+        return "";
     }
 
     vector<string> args;
     for (int i = 1; i < inSpl.size(); ++i) args.push_back(inSpl[i]);
 
     ParsedCommand parsed = parseCommand(app, args);
-
-    if (parsed.app == nullptr) return;
-    parsed.executeApp(this);
+    return parsed.executeApp(this);
 }
 
 vector<string> makeDictionary(const vector<shared_ptr<Command>>&cmds) {
@@ -226,13 +230,25 @@ void Workspace::inputPrompt() {
                 break;
             }
             case '\n':
-                case '\r': {
+            case '\r': {
                 term << newLine;
 
                 if (!input.empty()) {
                     term << eraseLine;
                     addHistory(input);
-                    execute(input);
+                    if (execute(input).empty()) {
+                        vector<string> inSpl = splitBySpace(input);
+                        error("Sorry. Command '$0' not found.", {inSpl[0]});
+                        pair similarWord = {1000000000, Command("")};
+                        for (const auto&cmd: commands) {
+                            if (int dist = levenshteinDist(inSpl[0], cmd->getName());
+                                dist < similarWord.first)
+                                similarWord = {dist, *cmd};
+                        }
+
+                        if (similarWord.first > 1) warning("Please make sure you entered the correct command.");
+                        else warning("Did you mean '$0'?", {similarWord.second.getName()});
+                    }
                 }
                 return;
             }

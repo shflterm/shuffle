@@ -13,14 +13,11 @@
 using std::string, std::vector, std::map, std::filesystem::path, std::filesystem::current_path;
 
 class Workspace {
-#ifdef _WIN32
-    path dir = current_path();
-#elif defined(__linux__) || defined(__APPLE__)
-    path dir = current_path();
-#endif
-    vector <string> history;
-    int historyIndex = 0;
     string name;
+    path dir = current_path();
+    vector<string> history;
+    int historyIndex = 0;
+    map<string, string> variables;
 
     [[nodiscard]] string prompt() const;
 
@@ -29,21 +26,21 @@ public:
 
     void moveDirectory(path newDir);
 
-    vector <string> getHistory();
+    vector<string> getHistory();
 
-    void addHistory(const string &s);
+    void addHistory(const string&s);
 
     string historyUp();
 
     string historyDown();
 
-    void execute(const string &input, bool isSnippet = false);
+    string execute(const string&input, bool isSnippet = false);
 
     void inputPrompt();
 
     string getName();
 
-    explicit Workspace(const string &name);
+    explicit Workspace(const string&name);
 
     Workspace();
 };

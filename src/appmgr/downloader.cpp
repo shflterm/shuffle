@@ -27,7 +27,7 @@ vector<string> getRepos() {
     return result;
 }
 
-void installApp(string&name) {
+bool installApp(string&name) {
     bool installed = false;
 
     const path localApp = currentWorkspace->currentDirectory() / name;
@@ -78,7 +78,7 @@ void installApp(string&name) {
     if (!installed) {
         term << teleport(0, wherey() - 1) << eraseLine;
         error("The app could not be found in the repository.");
-        return;
+        return false;
     }
 
     term << teleport(0, wherey() - 1) << eraseLine;
@@ -87,14 +87,16 @@ void installApp(string&name) {
     if (!addApp(name)) {
         term << teleport(0, wherey() - 1) << eraseLine;
         error("Failed to add app. (The app has already been added.)");
+        return false;
     }
     else {
         term << teleport(0, wherey() - 1) << eraseLine;
         success("Done!");
+        return true;
     }
 }
 
-void removeApp(const string&name) {
+bool removeApp(const string&name) {
     info("Deleting '" + name + "'...");
 
     if (const path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp"); exists(appPath)) {
@@ -109,24 +111,26 @@ void removeApp(const string&name) {
         setShflJson("apps", json);
 
         success("Done!");
+        return true;
     }
-    else {
-        error("App not found!");
-    }
+    error("App not found!");
+    return false;
 }
 
 
-void addRepo(const string&url) {
+bool addRepo(const string&url) {
     Json::Value repos = getShflJson("repos");
     repos.append(url);
     setShflJson("repos", repos);
     info("Repository " + url + " added!");
+    return true;
 }
 
 
-void removeRepo(const string&url) {
+bool removeRepo(const string&url) {
     Json::Value repos = getShflJson("repos");
     repos.removeMember(url);
     setShflJson("repos", repos);
     info("Repository " + url + " removed!");
+    return true;
 }

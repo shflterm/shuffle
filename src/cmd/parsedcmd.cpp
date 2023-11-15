@@ -4,6 +4,6 @@
 
 ParsedCommand::ParsedCommand(Command *app) : app(app) {}
 
-void ParsedCommand::executeApp(Workspace *ws) {
-    app->run(ws, options);
+string ParsedCommand::executeApp(Workspace *ws) {
+    return app->run(ws, options);
 }

@@ -13,7 +13,8 @@ using std::make_shared;
 
 vector<shared_ptr<Command>> commands;
 
-void do_nothing([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
+string do_nothing([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
+    return "do_nothing";
 }
 
 shared_ptr<Command> findCommand(const string&name, const vector<shared_ptr<Command>>&DICTIONARY) {
@@ -41,8 +42,8 @@ const string& Command::getUsage() const {
     return usage;
 }
 
-void Command::run(Workspace* ws, map<string, string>&optionValues) const {
-    cmd(ws, optionValues);
+string Command::run(Workspace* ws, map<string, string>&optionValues) const {
+    return cmd(ws, optionValues);
 }
 
 string Command::createHint() const {
@@ -147,7 +148,7 @@ Command::Command(Json::Value info, const string&libPath) {
     err = lua_pcall(L, 0, 0, 0);
     if (err) error("Error: " + string(lua_tostring(L, -1)));
 
-    cmd = [=](Workspace* ws, map<string, string>&optionValues) {
+    cmd = [=](Workspace* ws, map<string, string>&optionValues) -> string {
         // Create workspace table
         lua_newtable(L); {
             lua_pushstring(L, ws->currentDirectory().string().c_str());
@@ -165,7 +166,7 @@ Command::Command(Json::Value info, const string&libPath) {
         lua_getglobal(L, "entrypoint");
         if (lua_type(L, -1) != LUA_TFUNCTION) {
             error("Error: 'entrypoint' is not a function!");
-            return;
+            return "false";
         }
         if (lua_pcall(L, 0, 0, 0)) error("Error: " + string(lua_tostring(L, -1)));
 
@@ -176,6 +177,8 @@ Command::Command(Json::Value info, const string&libPath) {
         path newDir = lua_tostring(L, -1);
         if (newDir.is_relative()) newDir = ws->currentDirectory() / newDir;
         ws->moveDirectory(newDir);
+
+        return "TODO"; // TODO: Return value
     };
 }
 
