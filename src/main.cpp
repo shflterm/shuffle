@@ -9,6 +9,8 @@
 #include "snippetmgr.h"
 #include "builtincmd.h"
 
+using std::filesystem::create_directories, std::filesystem::exists;
+
 #ifdef _WIN32
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
@@ -92,7 +94,7 @@ extern "C" void handleQuit(const int sig) {
         return 0;
     }
 
-    if (!exists(path(DOT_SHUFFLE))) create_directories(path(DOT_SHUFFLE));
+    if (!exists(DOT_SHUFFLE)) create_directories(DOT_SHUFFLE);
     initShflJson();
 
     term << "Welcome to" << color(FOREGROUND, Blue) << " Shuffle " << SHUFFLE_VERSION.str() << resetColor << "!"

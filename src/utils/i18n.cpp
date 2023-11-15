@@ -31,10 +31,6 @@ map<string, string> colorMap = {
         {"BG_WHITE",   color(BACKGROUND, White)},
 };
 
-void loadLanguageFile(const string &region) {
-    langJson = readFile(DOT_SHUFFLE + "/lang/" + region + ".json");
-}
-
 string translate(const string &translate_code, const initializer_list<string> &args) {
     Json::Value root;
     Json::Reader reader;

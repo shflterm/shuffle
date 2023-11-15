@@ -43,7 +43,7 @@ void initLua(lua_State *L) {
         string name = item.asString();
 
 #ifdef _WIN32
-        HINSTANCE lib = LoadLibrary((DOT_SHUFFLE + "/libs/" + name + ".dll").c_str());
+        HINSTANCE lib = LoadLibrary((DOT_SHUFFLE / "libs" / (name + ".dll")).string().c_str());
         if (!lib) continue;
         auto initialize = reinterpret_cast<initialize_t>(GetProcAddress(lib, "initialize"));
 
@@ -51,7 +51,7 @@ void initLua(lua_State *L) {
 
         initialize(L);
 #elif __linux__
-        void *lib = dlopen((DOT_SHUFFLE + "/libs/" + name + ".so").c_str(), RTLD_LAZY);
+        void *lib = dlopen((DOT_SHUFFLE / "libs" / (name + ".so")).c_str(), RTLD_LAZY);
         auto initialize = (initialize_t) dlsym(lib, "initialize");
 
         initialize(L);

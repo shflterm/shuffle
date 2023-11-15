@@ -9,7 +9,8 @@
 #include "appmgr.h"
 #include "term.h"
 
-using std::to_string, std::filesystem::temp_directory_path, std::filesystem::exists, std::filesystem::remove_all, std::filesystem::copy_options;
+using std::to_string, std::filesystem::path, std::filesystem::temp_directory_path, std::filesystem::exists,
+        std::filesystem::remove_all, std::filesystem::copy_options;
 
 Json::Value getRepo(const string&repo) {
     Json::Value root;
@@ -32,10 +33,10 @@ void installApp(string&name) {
     const path localApp = currentWorkspace->currentDirectory() / name;
     if (const path appShfl = localApp / "app.shfl";
         exists(localApp) && exists(appShfl)) {
-         name = path(name).filename().string();
+        name = path(name).filename().string();
         info("Start downloading '" + name + "' from '" + absolute(localApp).parent_path().string() +
              "'...");
-        const path targetPath = path(DOT_SHUFFLE) / "apps" / (name + ".shflapp");
+        const path targetPath = DOT_SHUFFLE / "apps" / (name + ".shflapp");
         copy(absolute(localApp), absolute(targetPath), copy_options::overwrite_existing | copy_options::recursive);
         success("Load Completed!");
         installed = true;
@@ -60,7 +61,7 @@ void installApp(string&name) {
                     success("Download Completed!");
 
                     term << teleport(0, wherey() - 1) << eraseLine;
-                    extractZip(downloadTo, DOT_SHUFFLE + "/apps/" + name + ".shflapp");
+                    extractZip(downloadTo, DOT_SHUFFLE / "apps" / (name + ".shflapp"));
                     term << teleport(0, wherey()) << eraseLine;
                     success("Extracted!");
                     installed = true;
@@ -96,8 +97,8 @@ void installApp(string&name) {
 void removeApp(const string&name) {
     info("Deleting '" + name + "'...");
 
-    if (const string path = DOT_SHUFFLE + "/apps/" + name + ".shflapp"; exists(path)) {
-        remove_all(path);
+    if (const path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp"); exists(appPath)) {
+        remove_all(appPath);
 
         Json::Value json = getShflJson("apps");
         for (int i = 0; i < json.size(); ++i) {

@@ -81,8 +81,8 @@ void App::loadVersion1(const string&appPath, Json::Value appRoot) {
 }
 
 App::App(const string&name) {
-    string appPath = DOT_SHUFFLE + "/apps/" + name + ".shflapp";
-    string appShfl = appPath + "/app.shfl";
+    path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp");
+    path appShfl = appPath / "app.shfl";
 
     Json::Value appRoot;
     Json::Reader appReader;
@@ -91,7 +91,7 @@ App::App(const string&name) {
     apiVersion = appRoot["api-version"].asInt();
 
     if (apiVersion == 1)
-        loadVersion1(appPath, appRoot);
+        loadVersion1(absolute(appPath).string(), appRoot);
     else
         error("App '" + name + "' has an invalid API version!");
 }

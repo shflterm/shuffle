@@ -34,7 +34,7 @@ bool installNativeApps() {
         system(("chmod +x " + DOT_SHUFFLE + "/bin/shuffle").c_str());
         system((DOT_SHUFFLE + "/bin/shuffle appmgr add " + item.asString()).c_str());
 #endif
-        if (const int status = system((DOT_SHUFFLE + "/bin/shuffle appmgr add " + item.asString()).c_str());
+        if (const int status = system((DOT_SHUFFLE / "bin/shuffle appmgr add " + item.asString()).c_str());
             status != 0)
             appInstalled = false;
     }

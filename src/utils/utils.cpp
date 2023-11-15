@@ -95,7 +95,7 @@ string replace(string str, const string&from, const string&to) {
     return str;
 }
 
-string readFile(const string&path) {
+string readFile(const path&path) {
     ifstream file(path);
     ostringstream content_stream;
     content_stream << file.rdbuf();
@@ -103,7 +103,7 @@ string readFile(const string&path) {
     return content_stream.str();
 }
 
-void writeFile(const string&path, const string&value) {
+void writeFile(const path&path, const string&value) {
     ofstream file(path);
     file << value;
     file.close();

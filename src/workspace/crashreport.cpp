@@ -157,10 +157,10 @@ string CrashReport::make() const {
 }
 
 void CrashReport::save() const {
-    const string filePath = DOT_SHUFFLE + "/crash-report-" + to_string(time(nullptr)) + ".txt";
+    const path filePath = DOT_SHUFFLE / ("crash-report-" + to_string(time(nullptr)) + ".txt");
     ofstream file(filePath);
     file << make();
     file.close();
 
-    term << "Stack trace saved to \"" << filePath << "\"." << newLine;
+    term << "Stack trace saved to \"" << absolute(filePath).string() << "\"." << newLine;
 }
