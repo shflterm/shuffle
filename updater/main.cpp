@@ -34,7 +34,7 @@ bool installNativeApps() {
         system(("chmod +x " + DOT_SHUFFLE + "/bin/shuffle").c_str());
         system((DOT_SHUFFLE + "/bin/shuffle appmgr add " + item.asString()).c_str());
 #endif
-        if (const int status = system((DOT_SHUFFLE / "bin/shuffle appmgr add " + item.asString()).c_str());
+        if (const int status = system(((DOT_SHUFFLE / "bin/shuffle").string() + " appmgr add " + item.asString()).c_str());
             status != 0)
             appInstalled = false;
     }
@@ -53,7 +53,7 @@ int main() {
     string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-macos.zip";
 #endif
 
-    const path updatePath(DOT_SHUFFLE + "/bin");
+    const path updatePath(DOT_SHUFFLE / "bin");
     deleteShuffleExecutable(updatePath);
 
     create_directories(updatePath);
