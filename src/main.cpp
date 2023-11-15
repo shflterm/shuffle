@@ -51,7 +51,7 @@ extern "C" void handleQuit(const int sig) {
     exit(sig);
 }
 
-[[noreturn]] int main(const int argc, char* argv[]) {
+int main(const int argc, char* argv[]) {
 #ifdef _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 
@@ -109,6 +109,7 @@ extern "C" void handleQuit(const int sig) {
     term << "Type 'help' to get help!" << newLine;
 
     currentWorkspace = new Workspace("main");
+    // ReSharper disable once CppDFAEndlessLoop
     while (true) {
         currentWorkspace->inputPrompt();
     }
