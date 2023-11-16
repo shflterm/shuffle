@@ -56,7 +56,7 @@ string Workspace::historyDown() {
 
 string Workspace::execute(const string&input, const bool isSnippet) {
     // NOLINT(*-no-recursion)
-    if (std::smatch matches; regex_match(input, matches, regex("(\\w*)\\s*=\\s*(\"([^\"]*)\"|(\\S+)*)"))) {
+    if (std::smatch matches; regex_match(input, matches, regex("(\\w*)\\s*=\\s*(\"([^\"]*)\"|([\\s\\S]+)*)"))) {
         string name = matches[1].str();
         string value;
         if (matches[2].matched) {
@@ -65,8 +65,8 @@ string Workspace::execute(const string&input, const bool isSnippet) {
         else {
             value = matches[3].str();
         }
-        if (const string res = execute(value); !res.empty()) {
-            variables[name] = res;
+        if (value[0] == '$') {
+            variables[name] = execute(value.substr(1));
         }
         else variables[name] = value;
 
@@ -96,7 +96,12 @@ string Workspace::execute(const string&input, const bool isSnippet) {
     }
 
     vector<string> args;
-    for (int i = 1; i < inSpl.size(); ++i) args.push_back(inSpl[i]);
+    for (int i = 1; i < inSpl.size(); ++i) {
+        for (const auto& [name, value]: variables) {
+            inSpl[i] = replace(inSpl[i], "{" + name + "}", value);
+        }
+        args.push_back(inSpl[i]);
+    }
 
     ParsedCommand parsed = parseCommand(app, args);
     return parsed.executeApp(this);
