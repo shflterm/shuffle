@@ -31,8 +31,8 @@ bool installNativeApps() {
     bool appInstalled = true;
     for (const auto&item: root) {
 #if defined(__linux__) || defined(__APPLE__)
-        system(("chmod +x " + DOT_SHUFFLE + "/bin/shuffle").c_str());
-        system((DOT_SHUFFLE + "/bin/shuffle appmgr add " + item.asString()).c_str());
+        system(("chmod +x " + DOT_SHUFFLE.string() + "/bin/shuffle").c_str());
+        system((DOT_SHUFFLE.string() + "/bin/shuffle appmgr add " + item.asString()).c_str());
 #endif
         if (const int status = system(((DOT_SHUFFLE / "bin/shuffle").string() + " appmgr add " + item.asString()).c_str());
             status != 0)
