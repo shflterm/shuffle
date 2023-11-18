@@ -13,7 +13,8 @@ using std::make_shared;
 
 vector<shared_ptr<Command>> commands;
 
-void do_nothing([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
+string do_nothing([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
+    return "do_nothing";
 }
 
 shared_ptr<Command> findCommand(const string&name, const vector<shared_ptr<Command>>&DICTIONARY) {
@@ -37,8 +38,20 @@ const string& Command::getDescription() const {
     return description;
 }
 
-void Command::run(Workspace* ws, map<string, string>&optionValues) const {
-    cmd(ws, optionValues);
+const string& Command::getUsage() const {
+    return usage;
+}
+
+string Command::run(Workspace* ws, map<string, string>&optionValues) const {
+    return cmd(ws, optionValues);
+}
+
+string Command::createHint() const {
+    string hint;
+    hint += description;
+    if (!usage.empty())
+        hint += " / " + usage;
+    return hint;
 }
 
 const vector<shared_ptr<Command>>& Command::getSubcommands() const {
@@ -57,33 +70,39 @@ const vector<string>& Command::getExamples() const {
     return examples;
 }
 
-Command::Command(string name, string description, const vector<shared_ptr<Command>>&subcommands,
-                 const vector<CommandOption>&options, cmd_t cmd) : name(std::move(name)),
-                                                                   description(std::move(
-                                                                       description)),
-                                                                   subcommands(subcommands),
-                                                                   options(options), cmd(std::move(cmd)) {
+Command::Command(string name, string description, const vector<Command>&subcommands,
+                 const vector<CommandOption>&options, cmd_t cmd)
+    : name(std::move(name)),
+      description(std::move(description)),
+      options(options), cmd(std::move(cmd)) {
+    for (const auto&subcommand: subcommands) {
+        this->subcommands.push_back(make_shared<Command>(subcommand));
+    }
 }
 
-Command::Command(string name, string description,
-                 const vector<shared_ptr<Command>>&subcommands, cmd_t cmd) : name(std::move(name)),
-                                                                             description(std::move(description)),
-                                                                             subcommands(subcommands),
-                                                                             cmd(std::move(cmd)) {
+Command::Command(string name, string description, const vector<Command>&subcommands, cmd_t cmd)
+    : name(std::move(name)),
+      description(std::move(description)),
+      cmd(std::move(cmd)) {
+    for (const auto&subcommand: subcommands) {
+        this->subcommands.push_back(make_shared<Command>(subcommand));
+    }
 }
 
-Command::Command(string name, string description,
-                 const vector<CommandOption>&options, cmd_t cmd) : name(std::move(name)),
-                                                                   description(std::move(description)),
-                                                                   options(options), cmd(std::move(cmd)) {
+Command::Command(string name, string description, const vector<CommandOption>&options, cmd_t cmd)
+    : name(std::move(name)),
+      description(std::move(description)),
+      options(options), cmd(std::move(cmd)) {
 }
 
-Command::Command(string name, string description, cmd_t cmd) : name(std::move(name)),
-                                                               description(std::move(description)),
-                                                               cmd(std::move(cmd)) {
+Command::Command(string name, string description, cmd_t cmd)
+    : name(std::move(name)),
+      description(std::move(description)),
+      cmd(std::move(cmd)) {
 }
 
-Command::Command(string name) : name(std::move(name)), cmd(do_nothing) {
+Command::Command(string name)
+    : name(std::move(name)), cmd(do_nothing) {
 }
 
 Command::Command(Json::Value info, const string&libPath) {
@@ -129,7 +148,7 @@ Command::Command(Json::Value info, const string&libPath) {
     err = lua_pcall(L, 0, 0, 0);
     if (err) error("Error: " + string(lua_tostring(L, -1)));
 
-    cmd = [=](Workspace* ws, map<string, string>&optionValues) {
+    cmd = [=](Workspace* ws, map<string, string>&optionValues) -> string {
         // Create workspace table
         lua_newtable(L); {
             lua_pushstring(L, ws->currentDirectory().string().c_str());
@@ -147,7 +166,7 @@ Command::Command(Json::Value info, const string&libPath) {
         lua_getglobal(L, "entrypoint");
         if (lua_type(L, -1) != LUA_TFUNCTION) {
             error("Error: 'entrypoint' is not a function!");
-            return;
+            return "false";
         }
         if (lua_pcall(L, 0, 0, 0)) error("Error: " + string(lua_tostring(L, -1)));
 
@@ -158,6 +177,8 @@ Command::Command(Json::Value info, const string&libPath) {
         path newDir = lua_tostring(L, -1);
         if (newDir.is_relative()) newDir = ws->currentDirectory() / newDir;
         ws->moveDirectory(newDir);
+
+        return "TODO"; // TODO: Return value
     };
 }
 

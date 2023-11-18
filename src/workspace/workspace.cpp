@@ -54,47 +54,50 @@ string Workspace::historyDown() {
     return history[++historyIndex];
 }
 
-void Workspace::execute(const string&input, const bool isSnippet) { // NOLINT(*-no-recursion)
+ParsedCommand Workspace::parse(const string&input) {
+    if (std::smatch matches; regex_match(input, matches, regex("(\\w*)\\s*=\\s*(\"([^\"]*)\"|([\\s\\S]+)*)"))) {
+        string name = matches[1].str();
+        string value;
+        if (matches[2].matched) {
+            value = matches[2].str();
+        }
+        else {
+            value = matches[3].str();
+        }
+        if (value[0] == '$') {
+            variables[name] = parse(value.substr(1)).executeApp(this);
+        }
+        else variables[name] = value;
+
+        return ParsedCommand(VARIABLE);
+    }
+
     vector<string> inSpl = splitBySpace(input);
-    if (inSpl.empty()) return;
+    if (inSpl.empty()) return {};
 
-    if (!isSnippet) {
-        bool isSnippetFound = false;
-        for (const auto&item: snippets) {
-            if (item->getName() != inSpl[0]) continue;
-            isSnippetFound = true;
+    bool isSnippetFound = false;
+    for (const auto&item: snippets) {
+        if (item->getName() != inSpl[0]) continue;
+        isSnippetFound = true;
 
-            term << "[*] " << item->getTarget() << newLine << newLine;
-            execute(item->getTarget(), true);
-        }
-
-        if (isSnippetFound) return;
+        term << "[*] " << item->getTarget() << newLine << newLine;
+        parse(item->getTarget()).executeApp(this);
     }
 
-    Command* app = findCommand(inSpl[0]).get();
+    if (isSnippetFound) return ParsedCommand(SNIPPET);
 
-    if (app == nullptr) {
-        error("Sorry. Command '$0' not found.", {inSpl[0]});
-        pair similarWord = {1000000000, Command("")};
-        for (const auto&cmd: commands) {
-            if (int dist = levenshteinDist(inSpl[0], cmd->getName());
-                dist < similarWord.first)
-                similarWord = {dist, *cmd};
-        }
-
-        if (similarWord.first > 1) warning("Please make sure you entered the correct command.");
-        else warning("Did you mean '$0'?", {similarWord.second.getName()});
-
-        return;
-    }
+    const shared_ptr<Command> app = findCommand(inSpl[0]);
 
     vector<string> args;
-    for (int i = 1; i < inSpl.size(); ++i) args.push_back(inSpl[i]);
+    for (int i = 1; i < inSpl.size(); ++i) {
+        for (const auto&[name, value]: variables) {
+            inSpl[i] = replace(inSpl[i], "{" + name + "}", value);
+        }
+        args.push_back(inSpl[i]);
+    }
 
-    ParsedCommand parsed = parseCommand(app, args);
-
-    if (parsed.app == nullptr) return;
-    parsed.executeApp(this);
+    ParsedCommand parsed = parseCommand(app.get(), args);
+    return parsed;
 }
 
 vector<string> makeDictionary(const vector<shared_ptr<Command>>&cmds) {
@@ -162,28 +165,26 @@ string getSuggestion(const Workspace&ws, const string&input) {
     return suggestion;
 }
 
-string getHint([[maybe_unused]] const Workspace&ws, [[maybe_unused]] const string&input) {
-    //    vector<string> args = split(input, regex(R"(\s+)"));
-    //
-    //    if (args.size() == 1) {
-    //        shared_ptr<Command> command = findCommand(args[0]);
-    //        if (command == nullptr) return "";
-    //        else return command->getDescription();
-    //    } else {
-    //        shared_ptr<Command> final = findCommand(args[0]);
-    //        if (final == nullptr) return "";
-    //
-    //        for (int i = 1; i < args.size(); i++) {
-    //            shared_ptr<Command> sub = findCommand(args[i], final->getChildren());
-    //            if (sub == nullptr) {
-    //                return final->getDescription();
-    //            }
-    //            final = sub;
-    //        }
-    //
-    //        return final->getDescription();
-    //    }
-    return "";
+string getHint([[maybe_unused]] const Workspace&ws, const string&input) {
+    const vector<string> args = split(input, regex(R"(\s+)"));
+
+    if (args.size() == 1) {
+        if (const shared_ptr<Command> command = findCommand(args[0]); command == nullptr) return "";
+        else return command->createHint();
+    }
+
+    shared_ptr<Command> final = findCommand(args[0]);
+    if (final == nullptr) return "";
+
+    for (int i = 1; i < args.size(); i++) {
+        shared_ptr<Command> sub = findCommand(args[i], final->getSubcommands());
+        if (sub == nullptr) {
+            return final->createHint();
+        }
+        final = sub;
+    }
+
+    return final->createHint();
 }
 
 string Workspace::prompt() const {
@@ -204,35 +205,63 @@ string Workspace::prompt() const {
     return ss.str();
 }
 
-void Workspace::inputPrompt(const bool enableSuggestion) {
+void Workspace::inputPrompt() {
     term << prompt();
 
     string input;
-    if (enableSuggestion) {
-        const int x = wherex();
-        term << newLine;
-        term << teleport(x, wherey() - 1);
+    const int x = wherex();
+    term << newLine;
+    term << teleport(x, wherey() - 1);
 
-        while (true) {
-            const int c = readChar();
-            term << eraseFromCursorToLineEnd;
+    while (true) {
+        int c = readChar();
+        term << eraseFromCursorToLineEnd;
 
-            if (c == '\b' || c == 127) {
+        switch (c) {
+            case '\b':
+            case 127: {
                 if (!input.empty()) {
                     term << teleport(wherex() - 1, wherey());
                     term << eraseFromCursorToLineEnd;
                     input = input.substr(0, input.length() - 1);
                 }
-            }
-            else if (c == '\n' || c == '\r') {
                 break;
             }
-            else if (c == '\t') {
+            case '\n':
+            case '\r': {
+                term << newLine;
+
+                if (!input.empty()) {
+                    term << eraseLine;
+                    addHistory(input);
+                    ParsedCommand parsed = parse(input);
+                    if (!parsed.isCommand()) {
+                        vector<string> inSpl = splitBySpace(input);
+                        error("Sorry. Command '$0' not found.", {inSpl[0]});
+                        pair similarWord = {1000000000, Command("")};
+                        for (const auto&cmd: commands) {
+                            if (int dist = levenshteinDist(inSpl[0], cmd->getName());
+                                dist < similarWord.first)
+                                similarWord = {dist, *cmd};
+                        }
+
+                        if (similarWord.first > 1) warning("Please make sure you entered the correct command.");
+                        else warning("Did you mean '$0'?", {similarWord.second.getName()});
+                        return;
+                    }
+
+                    string res = parsed.executeApp(this);
+                }
+                return;
+            }
+            case '\t': {
                 string suggestion = getSuggestion(*this, input);
                 input += suggestion;
                 term << "\033[0m" << suggestion;
+                break;
             }
-            else if (c == 224) {
+#ifdef _WIN32
+            case 224: {
                 const int i = readChar();
                 const int mv = static_cast<int>(input.size());
                 switch (i) {
@@ -253,8 +282,44 @@ void Workspace::inputPrompt(const bool enableSuggestion) {
                     default:
                         break;
                 }
+                break;
             }
-            else if (c == '@') {
+#elif defined(__linux__) || defined(__APPLE__)
+                case 27: {
+                    const int mv = static_cast<int>(input.size());
+                    switch (readChar()) {
+                        case 91: {
+                            switch (readChar()) {
+                                case 65: {
+                                    term << teleport(wherex() - mv, wherey());
+                                    term << eraseFromCursorToLineEnd;
+                                    input = historyUp();
+                                    term << input;
+                                    break;
+                                }
+                                case 66: {
+                                    term << teleport(wherex() - mv, wherey());
+                                    term << eraseFromCursorToLineEnd;
+                                    input = historyDown();
+                                    term << input;
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                    break;
+                }
+                case 94: {
+                    term << "C";
+                    break;
+                }
+#endif
+            case '@': {
                 term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
                 term << eraseFromCursorToLineEnd;
                 term << color(FOREGROUND, Yellow) << "@ " << resetColor;
@@ -271,7 +336,7 @@ void Workspace::inputPrompt(const bool enableSuggestion) {
                 }
                 return;
             }
-            else if (c == '&') {
+            case '&': {
                 term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
                 term << eraseFromCursorToLineEnd;
                 term << color(FOREGROUND, Yellow) << "& " << resetColor;
@@ -281,33 +346,24 @@ void Workspace::inputPrompt(const bool enableSuggestion) {
                 system(command.c_str());
                 return;
             }
-            else {
+            default: {
                 string character(1, static_cast<char>(c));
                 term << resetColor << character;
                 input += character;
             }
-
-            string suggestion = getSuggestion(*this, input);
-            term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
-            term << teleport(wherex() - static_cast<int>(suggestion.size()), wherey());
-
-            string hint = getHint(*this, input);
-            term << saveCursorPosition
-                    << teleport(wherex() - static_cast<int>(hint.size()) / 2, wherey() + 1)
-                    << eraseLine
-                    << color(FOREGROUND_BRIGHT, Black) << hint
-                    << loadCursorPosition;
         }
-        term << newLine;
-    }
-    else {
-        getline(cin, input);
-    }
 
-    if (!input.empty()) {
-        term << eraseLine;
-        addHistory(input);
-        execute(input);
+        string suggestion = getSuggestion(*this, input);
+        term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
+        term << teleport(wherex() - static_cast<int>(suggestion.size()), wherey());
+
+        string hint = getHint(*this, input + suggestion);
+        const int xPos = wherex() - static_cast<int>(hint.size()) / 2;
+        term << saveCursorPosition
+                << teleport(xPos < 0 ? 0 : xPos, wherey() + 1)
+                << eraseLine
+                << color(FOREGROUND_BRIGHT, Black) << hint
+                << loadCursorPosition;
     }
 }
 

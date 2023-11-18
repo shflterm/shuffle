@@ -5,50 +5,49 @@
 
 #include "i18n.h"
 
-
 bool debugMode = false;
 
-Workspace *currentWorkspace;
+Workspace* currentWorkspace;
 
-void debug(const string &text, const initializer_list<string> &args) {
+void debug(const string&text, const initializer_list<string>&args) {
     if (debugMode) {
         term << "[90m" << translate(text, args) << resetColor << "\n";
     }
 }
 
-void info(const string &text, const initializer_list<string> &args) {
+void info(const string&text, const initializer_list<string>&args) {
     term << resetColor << translate(text, args) << resetColor << "\n";
 }
 
-void success(const string &text, const initializer_list<string> &args) {
+void success(const string&text, const initializer_list<string>&args) {
     term << color(FOREGROUND, Green) << translate(text, args) << resetColor << "\n";
 }
 
-void warning(const string &text, const initializer_list<string> &args) {
+void warning(const string&text, const initializer_list<string>&args) {
     term << color(FOREGROUND, Yellow) << translate(text, args) << resetColor << "\n";
 }
 
-void error(const string &text, const initializer_list<string> &args) {
+void error(const string&text, const initializer_list<string>&args) {
     term << color(FOREGROUND, Red) << translate(text, args) << resetColor << "\n";
 }
 
-void debug(const string &text) {
+void debug(const string&text) {
     debug(text, {});
 }
 
-void info(const string &text) {
+void info(const string&text) {
     info(text, {});
 }
 
-void success(const string &text) {
+void success(const string&text) {
     success(text, {});
 }
 
-void warning(const string &text) {
+void warning(const string&text) {
     warning(text, {});
 }
 
-void error(const string &text) {
+void error(const string&text) {
     error(text, {});
 }
 
@@ -61,10 +60,7 @@ void error(const string &text) {
 #include <conio.h>
 
 #elif defined(__linux__) || defined(__APPLE__)
-
 #include <unistd.h>
-#include <termios.h>
-
 #endif
 
 int readChar() {
@@ -72,16 +68,7 @@ int readChar() {
     while (!_kbhit()) {}
     return _getch();
 #elif defined(__linux__) || defined(__APPLE__)
-    struct termios oldt, newt;
-    int ch;
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    ch = getchar();
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-
-    return ch;
+    return getwchar();
 #endif
 }
 

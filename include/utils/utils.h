@@ -6,12 +6,12 @@
 #define SHUFFLE_INCLUDE_UTILS_H_
 
 #ifdef _WIN32
-#define HOME string(getenv("APPDATA"))
+#define HOME path(getenv("APPDATA"))
 #elif defined(__linux__) || defined(__APPLE__)
-#define HOME string(getenv("HOME"))
+#define HOME std::filesystem::path(getenv("HOME"))
 #endif
-#define DOT_SHUFFLE (HOME + "/.shuffle")
-#define SHFL_JSON (DOT_SHUFFLE + "/shfl.json")
+#define DOT_SHUFFLE (HOME / ".shuffle")
+#define SHFL_JSON (DOT_SHUFFLE / "shfl.json")
 
 #include <string>
 #include <vector>
@@ -21,33 +21,33 @@
 
 using std::regex, std::vector, std::string, std::filesystem::path;
 
-std::vector<std::string> splitBySpace(const std::string &input);
+std::vector<std::string> splitBySpace(const std::string&input);
 
-vector<string> split(const string &s, const regex &regex);
+vector<string> split(const string&s, const regex&regex);
 
-string trim(const string &s);
+string trim(const string&s);
 
-int levenshteinDist(const string &str1, const string &str2);
+int levenshteinDist(const string&str1, const string&str2);
 
-string replace(string str, const string &from, const string &to);
+string replace(string str, const string&from, const string&to);
 
-string readFile(const string &path);
+string readFile(const path&path);
 
-void writeFile(const string &path, const string &value);
+void writeFile(const path&path, const string&value);
 
-string readTextFromWeb(const string &url);
+string readTextFromWeb(const string&url);
 
-bool downloadFile(const string &url, const string &file);
+bool downloadFile(const string&url, const string&file);
 
-path extractZip(const path& zipFile, path extractPath);
+path extractZip(const path&zipFile, path extractPath);
 
 void updateShuffle();
 
 void initShflJson();
 
-Json::Value getShflJson(const string &part);
+Json::Value getShflJson(const string&part);
 
-void setShflJson(const string &part, Json::Value value);
+void setShflJson(const string&part, Json::Value value);
 
 bool checkUpdate(bool checkBackground = true);
 

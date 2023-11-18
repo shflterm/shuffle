@@ -9,6 +9,8 @@
 #include "snippetmgr.h"
 #include "builtincmd.h"
 
+using std::filesystem::create_directories, std::filesystem::exists;
+
 #ifdef _WIN32
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
@@ -25,6 +27,9 @@ LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS* exceptionPointers) {
 }
 
 #elif defined(__linux__) || defined(__APPLE__)
+
+#include <unistd.h>
+#include <termios.h>
 
 extern "C" void handleCrash(int sig) {
     term << newLine;
@@ -46,7 +51,7 @@ extern "C" void handleQuit(const int sig) {
     exit(sig);
 }
 
-[[noreturn]] int main(const int argc, char* argv[]) {
+int main(const int argc, char* argv[]) {
 #ifdef _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 
@@ -54,8 +59,21 @@ extern "C" void handleQuit(const int sig) {
 #elif defined(__linux__) || defined(__APPLE__)
     signal(SIGSEGV, &handleCrash);
     signal(SIGABRT, &handleCrash);
+
+    setlocale(LC_ALL, "");
+
+    termios raw{};
+    tcgetattr(STDIN_FILENO, &raw);
+    raw.c_lflag &= ~(ECHO | ICANON);
+    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 #endif
     signal(SIGINT, &handleQuit);
+
+    if (getShflJson("repos").empty()) {
+        Json::Value repos;
+        repos.append("https://raw.githubusercontent.com/shflterm/apps/main/repo.json");
+        setShflJson("repos", repos);
+    }
 
     if (argc > 1) {
         if (const string arg = argv[1];
@@ -72,11 +90,11 @@ extern "C" void handleQuit(const int sig) {
             cmd += argv[i];
             cmd += " ";
         }
-        workspace.execute(cmd);
+        workspace.parse(cmd).executeApp(&workspace);
         return 0;
     }
 
-    if (!exists(path(DOT_SHUFFLE))) create_directories(path(DOT_SHUFFLE));
+    if (!exists(DOT_SHUFFLE)) create_directories(DOT_SHUFFLE);
     initShflJson();
 
     term << "Welcome to" << color(FOREGROUND, Blue) << " Shuffle " << SHUFFLE_VERSION.str() << resetColor << "!"
@@ -91,7 +109,8 @@ extern "C" void handleQuit(const int sig) {
     term << "Type 'help' to get help!" << newLine;
 
     currentWorkspace = new Workspace("main");
+    // ReSharper disable once CppDFAEndlessLoop
     while (true) {
-        currentWorkspace->inputPrompt(true);
+        currentWorkspace->inputPrompt();
     }
 }

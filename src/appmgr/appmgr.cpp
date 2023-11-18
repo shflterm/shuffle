@@ -1,5 +1,6 @@
 #include "appmgr.h"
 
+#include <console.h>
 #include <vector>
 #include <string>
 #include <json/json.h>
@@ -66,19 +67,11 @@ vector<shared_ptr<App>> loadedApps;
 //     return {};
 // }
 
-void App::loadVersion1(const string&name) {
-    string appPath = DOT_SHUFFLE + "/apps/" + name + ".shflapp";
-    string appShfl = appPath + "/app.shfl";
-
-    Json::Value appRoot;
-    Json::Reader appReader;
-    appReader.parse(readFile(appShfl), appRoot, false);
-
+void App::loadVersion1(const string&appPath, Json::Value appRoot) {
     this->name = appRoot["name"].asString();
     description = appRoot["description"].asString();
     author = appRoot["author"].asString();
     version = appRoot["version"].asString();
-    apiVersion = appRoot["api-version"].asInt();
 
     Json::Value commandsJson = appRoot["commands"];
     for (const auto&commandInfo: commandsJson) {
@@ -88,7 +81,19 @@ void App::loadVersion1(const string&name) {
 }
 
 App::App(const string&name) {
-    loadVersion1(name);
+    path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp");
+    path appShfl = appPath / "app.shfl";
+
+    Json::Value appRoot;
+    Json::Reader appReader;
+    appReader.parse(readFile(appShfl), appRoot, false);
+
+    apiVersion = appRoot["api-version"].asInt();
+
+    if (apiVersion == 1)
+        loadVersion1(absolute(appPath).string(), appRoot);
+    else
+        error("App '" + name + "' has an invalid API version!");
 }
 
 void loadApp(const string&name) {
@@ -113,6 +118,10 @@ bool addApp(const string&name) {
 
     setShflJson("apps", commandList);
     return true;
+}
+
+void unloadAllApps() {
+    loadedApps.clear();
 }
 
 vector<string> getApps() {

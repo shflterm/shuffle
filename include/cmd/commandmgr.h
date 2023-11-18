@@ -10,14 +10,18 @@
 #include <memory>
 #include <functional>
 #include <json/value.h>
+#include <string>
+#include <map>
+
+class Command;
 
 #include "workspace.h"
 
-using std::pair, std::shared_ptr;
+using std::pair, std::shared_ptr, std::string, std::vector, std::map;
 
-typedef std::function<void(Workspace *, std::map<std::string, std::string> &)> cmd_t;
+typedef std::function<string(Workspace*, map<string, string>&)> cmd_t;
 
-void do_nothing(Workspace *ws, map<string, string> &optionValues);
+string do_nothing(Workspace* ws, map<string, string>&optionValues);
 
 enum OptionType {
     TEXT_T,
@@ -32,14 +36,15 @@ public:
     vector<string> aliases;
 
     CommandOption(string name, string description, OptionType type);
-    CommandOption(string name, string description, OptionType type, const vector<string> &aliases);
+
+    CommandOption(string name, string description, OptionType type, const vector<string>&aliases);
 };
 
 class Command {
 protected:
     string name;
-    string usage;
     string description;
+    string usage;
     vector<shared_ptr<Command>> subcommands;
     vector<CommandOption> options;
     vector<string> aliases;
@@ -48,26 +53,30 @@ protected:
     cmd_t cmd;
 
 public:
-    [[nodiscard]] const string &getName() const;
+    [[nodiscard]] const string& getName() const;
 
-    [[nodiscard]] const string &getDescription() const;
+    [[nodiscard]] const string& getDescription() const;
 
-    [[nodiscard]] const vector<shared_ptr<Command>> &getSubcommands() const;
+    [[nodiscard]] const string& getUsage() const;
 
-    [[nodiscard]] const vector<CommandOption> &getOptions() const;
+    [[nodiscard]] const vector<shared_ptr<Command>>& getSubcommands() const;
 
-    [[nodiscard]] const vector<string> &getAliases() const;
+    [[nodiscard]] const vector<CommandOption>& getOptions() const;
 
-    [[nodiscard]] const vector<string> &getExamples() const;
+    [[nodiscard]] const vector<string>& getAliases() const;
 
-    virtual void run(Workspace *ws, map<string, string> &optionValues) const;
+    [[nodiscard]] const vector<string>& getExamples() const;
 
-    Command(string name, string description, const vector<shared_ptr<Command>> &subcommands, const vector<CommandOption> &options,
+    string run(Workspace* ws, map<string, string>&optionValues) const;
+
+    [[nodiscard]] string createHint() const;
+
+    Command(string name, string description, const vector<Command>&subcommands, const vector<CommandOption>&options,
             cmd_t cmd);
 
-    Command(string name, string description, const vector<shared_ptr<Command>> &subcommands, cmd_t cmd);
+    Command(string name, string description, const vector<Command>&subcommands, cmd_t cmd);
 
-    Command(string name, string description, const vector<CommandOption> &options, cmd_t cmd);
+    Command(string name, string description, const vector<CommandOption>&options, cmd_t cmd);
 
     Command(string name, string description, cmd_t cmd);
 
@@ -80,8 +89,8 @@ public:
 
 extern vector<shared_ptr<Command>> commands;
 
-shared_ptr<Command> findCommand(const string &name, const vector<shared_ptr<Command>> &DICTIONARY);
+shared_ptr<Command> findCommand(const string&name, const vector<shared_ptr<Command>>&DICTIONARY);
 
-shared_ptr<Command> findCommand(const string &name);
+shared_ptr<Command> findCommand(const string&name);
 
 #endif //SHUFFLE_INCLUDE_COMMANDMGR_H_
