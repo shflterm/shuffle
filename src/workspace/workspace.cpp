@@ -372,8 +372,9 @@ string Workspace::getName() {
 }
 
 Workspace::Workspace(
-    const string&name) : name(name) {
+    const string&name) : name(name), dir(current_path()) {
     wsMap[name] = this;
 }
 
-Workspace::Workspace() = default;
+Workspace::Workspace() : dir(current_path()) {
+}

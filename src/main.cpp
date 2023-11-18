@@ -69,11 +69,14 @@ int main(const int argc, char* argv[]) {
 #endif
     signal(SIGINT, &handleQuit);
 
+    initShflJson();
     if (getShflJson("repos").empty()) {
         Json::Value repos;
         repos.append("https://raw.githubusercontent.com/shflterm/apps/main/repo.json");
         setShflJson("repos", repos);
     }
+
+    if (!exists(DOT_SHUFFLE)) create_directories(DOT_SHUFFLE);
 
     if (argc > 1) {
         if (const string arg = argv[1];
@@ -84,18 +87,15 @@ int main(const int argc, char* argv[]) {
 
         loadCommands();
         loadSnippets();
-        Workspace workspace;
+        currentWorkspace = new Workspace();
         string cmd;
         for (int i = 1; i < argc; ++i) {
             cmd += argv[i];
             cmd += " ";
         }
-        workspace.parse(cmd).executeApp(&workspace);
+        currentWorkspace->parse(cmd).executeApp(currentWorkspace);
         return 0;
     }
-
-    if (!exists(DOT_SHUFFLE)) create_directories(DOT_SHUFFLE);
-    initShflJson();
 
     term << "Welcome to" << color(FOREGROUND, Blue) << " Shuffle " << SHUFFLE_VERSION.str() << resetColor << "!"
             << newLine
