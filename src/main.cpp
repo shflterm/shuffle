@@ -90,7 +90,7 @@ int main(const int argc, char* argv[]) {
             cmd += argv[i];
             cmd += " ";
         }
-        workspace.execute(cmd);
+        workspace.parse(cmd).executeApp(&workspace);
         return 0;
     }
 

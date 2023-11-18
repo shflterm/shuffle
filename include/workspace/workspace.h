@@ -10,6 +10,10 @@
 #include <vector>
 #include <map>
 
+class Workspace;
+
+#include "parsedcmd.h"
+
 using std::string, std::vector, std::map, std::filesystem::path, std::filesystem::current_path;
 
 class Workspace {
@@ -34,7 +38,7 @@ public:
 
     string historyDown();
 
-    string execute(const string&input, bool isSnippet = false);
+    ParsedCommand parse(const string&input);
 
     void inputPrompt();
 

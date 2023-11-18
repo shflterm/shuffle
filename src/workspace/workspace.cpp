@@ -54,9 +54,8 @@ string Workspace::historyDown() {
     return history[++historyIndex];
 }
 
-string Workspace::execute(const string&input, const bool isSnippet) {
-    // NOLINT(*-no-recursion)
-    if (std::smatch matches; regex_match(input, matches, regex("(\\w*)\\s*=\\s*(\"([^\"]*)\"|(\\S+)*)"))) {
+ParsedCommand Workspace::parse(const string&input) {
+    if (std::smatch matches; regex_match(input, matches, regex("(\\w*)\\s*=\\s*(\"([^\"]*)\"|([\\s\\S]+)*)"))) {
         string name = matches[1].str();
         string value;
         if (matches[2].matched) {
@@ -65,41 +64,40 @@ string Workspace::execute(const string&input, const bool isSnippet) {
         else {
             value = matches[3].str();
         }
-        if (const string res = execute(value); !res.empty()) {
-            variables[name] = res;
+        if (value[0] == '$') {
+            variables[name] = parse(value.substr(1)).executeApp(this);
         }
         else variables[name] = value;
 
-        return name;
+        return ParsedCommand(VARIABLE);
     }
 
     vector<string> inSpl = splitBySpace(input);
-    if (inSpl.empty()) return "empty";
+    if (inSpl.empty()) return {};
 
-    if (!isSnippet) {
-        bool isSnippetFound = false;
-        for (const auto&item: snippets) {
-            if (item->getName() != inSpl[0]) continue;
-            isSnippetFound = true;
+    bool isSnippetFound = false;
+    for (const auto&item: snippets) {
+        if (item->getName() != inSpl[0]) continue;
+        isSnippetFound = true;
 
-            term << "[*] " << item->getTarget() << newLine << newLine;
-            execute(item->getTarget(), true);
-        }
-
-        if (isSnippetFound) return "true";
+        term << "[*] " << item->getTarget() << newLine << newLine;
+        parse(item->getTarget()).executeApp(this);
     }
 
-    Command* app = findCommand(inSpl[0]).get();
+    if (isSnippetFound) return ParsedCommand(SNIPPET);
 
-    if (app == nullptr) {
-        return "";
-    }
+    const shared_ptr<Command> app = findCommand(inSpl[0]);
 
     vector<string> args;
-    for (int i = 1; i < inSpl.size(); ++i) args.push_back(inSpl[i]);
+    for (int i = 1; i < inSpl.size(); ++i) {
+        for (const auto&[name, value]: variables) {
+            inSpl[i] = replace(inSpl[i], "{" + name + "}", value);
+        }
+        args.push_back(inSpl[i]);
+    }
 
-    ParsedCommand parsed = parseCommand(app, args);
-    return parsed.executeApp(this);
+    ParsedCommand parsed = parseCommand(app.get(), args);
+    return parsed;
 }
 
 vector<string> makeDictionary(const vector<shared_ptr<Command>>&cmds) {
@@ -168,10 +166,10 @@ string getSuggestion(const Workspace&ws, const string&input) {
 }
 
 string getHint([[maybe_unused]] const Workspace&ws, const string&input) {
-    vector<string> args = split(input, regex(R"(\s+)"));
+    const vector<string> args = split(input, regex(R"(\s+)"));
 
     if (args.size() == 1) {
-        if (shared_ptr<Command> command = findCommand(args[0]); command == nullptr) return "";
+        if (const shared_ptr<Command> command = findCommand(args[0]); command == nullptr) return "";
         else return command->createHint();
     }
 
@@ -236,7 +234,9 @@ void Workspace::inputPrompt() {
                 if (!input.empty()) {
                     term << eraseLine;
                     addHistory(input);
-                    if (execute(input).empty()) {
+                    ParsedCommand parsed = parse(input);
+                    if (!parsed.isCommand()) return;
+                    if (string res = parsed.executeApp(this); res.empty()) {
                         vector<string> inSpl = splitBySpace(input);
                         error("Sorry. Command '$0' not found.", {inSpl[0]});
                         pair similarWord = {1000000000, Command("")};
