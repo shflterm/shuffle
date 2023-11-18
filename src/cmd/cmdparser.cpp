@@ -6,6 +6,8 @@
 #include "utils.h"
 
 ParsedCommand parseCommand(Command* app, const vector<string>&args) {
+    if (app == nullptr) return ParsedCommand(EMPTY);
+
     vector<string> newArgs = args;
     for (int i = 0; i < args.size(); ++i) {
         const string&item = args[i];

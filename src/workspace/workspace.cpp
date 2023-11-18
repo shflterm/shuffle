@@ -235,8 +235,7 @@ void Workspace::inputPrompt() {
                     term << eraseLine;
                     addHistory(input);
                     ParsedCommand parsed = parse(input);
-                    if (!parsed.isCommand()) return;
-                    if (string res = parsed.executeApp(this); res.empty()) {
+                    if (!parsed.isCommand()) {
                         vector<string> inSpl = splitBySpace(input);
                         error("Sorry. Command '$0' not found.", {inSpl[0]});
                         pair similarWord = {1000000000, Command("")};
@@ -248,7 +247,10 @@ void Workspace::inputPrompt() {
 
                         if (similarWord.first > 1) warning("Please make sure you entered the correct command.");
                         else warning("Did you mean '$0'?", {similarWord.second.getName()});
+                        return;
                     }
+
+                    string res = parsed.executeApp(this);
                 }
                 return;
             }
