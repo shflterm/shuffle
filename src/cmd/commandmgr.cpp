@@ -44,6 +44,10 @@ const string& Command::getUsage() const {
 }
 
 string Command::run(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) const {
+    if (!cmd) {
+        error("Invalid");
+        return "ERROR,....";
+    }
     return cmd(ws, optionValues, backgroundMode);
 }
 
@@ -176,6 +180,7 @@ Command::Command(Json::Value appInfo, const string&libPath) {
 
             lua_pushcfunction(L, [](lua_State* LL) {
                               cout << lua_tostring(LL, -1);
+                              cout.flush();
                               return 0;
                               });
             lua_setglobal(L, "print");

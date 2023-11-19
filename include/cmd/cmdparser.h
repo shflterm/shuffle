@@ -14,8 +14,8 @@
 
 using std::shared_ptr;
 
-ParsedCommand parseCommand(Command* app, const vector<string> &args);
+ParsedCommand parseCommand(shared_ptr<Command> app, const vector<string> &args);
 
-map<string, string> *parseOptions(Command* app, const vector<string> &args);
+map<string, string> *parseOptions(const shared_ptr<Command>& app, const vector<string> &args);
 
 #endif //SHFL_CMDPARSER_H

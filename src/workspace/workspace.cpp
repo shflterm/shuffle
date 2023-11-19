@@ -11,7 +11,7 @@
 #include "parsedcmd.h"
 #include "cmdparser.h"
 
-using std::cout, std::endl, std::cin, std::stringstream;
+using std::cout, std::endl, std::cin, std::stringstream, std::make_shared;
 
 map<string, Workspace *> wsMap;
 
@@ -61,13 +61,15 @@ string Workspace::processArgument(string argument) {
     if (argument[0] == '"' && argument.back() == '"') argument = argument.substr(1, argument.size() - 2);
 
     if (argument[0] == '$') argument = variables[argument.substr(1)];
-    else if (argument[argument.size() - 1] == '!')
-        argument = parse(argument.substr(0, argument.size() - 1)).executeApp(this, true);
+    else if (argument[argument.size() - 1] == '!') {
+        if (const shared_ptr<ParsedCommand> parsed = parse(argument.substr(0, argument.size() - 1));
+            parsed != nullptr && parsed->isSuccessed()) argument = parsed->executeApp(this, true);
+    }
 
     return argument;
 }
 
-ParsedCommand Workspace::parse(string input) {
+shared_ptr<ParsedCommand> Workspace::parse(string input) {
     if (input[0] == '(' && input[input.size() - 1] == ')')
         input = input.substr(1, input.size() - 2);
 
@@ -82,7 +84,7 @@ ParsedCommand Workspace::parse(string input) {
         }
         variables[name] = processArgument(value);
 
-        return ParsedCommand(VARIABLE);
+        return make_shared<ParsedCommand>(ParsedCommand(VARIABLE));
     }
 
     vector<string> inSpl = splitBySpace(input);
@@ -94,19 +96,40 @@ ParsedCommand Workspace::parse(string input) {
         isSnippetFound = true;
 
         cout << "[*] " << item->getTarget() << endl << endl;
-        parse(item->getTarget()).executeApp(this);
+        parse(item->getTarget())->executeApp(this);
     }
 
-    if (isSnippetFound) return ParsedCommand(SNIPPET);
+    if (isSnippetFound) return make_shared<ParsedCommand>(ParsedCommand(SNIPPET));
 
-    const shared_ptr<Command> app = findCommand(inSpl[0]);
+    shared_ptr<Command> app = findCommand(inSpl[0]);
 
     vector<string> args;
     for (int i = 1; i < inSpl.size(); ++i) {
         args.push_back(processArgument(inSpl[i]));
     }
 
-    ParsedCommand parsed = parseCommand(app.get(), args);
+    if (app == nullptr) {
+        if (const path script = currentDirectory() / inSpl[0]; exists(script)) {
+            args.push_back("script=" + absolute(script).string());
+            app = make_shared<Command>(Command(
+                "SCRIPT", "A SCRIPT COMMAND",
+                {CommandOption("script", "scriptPath", TEXT_T)},
+                [=](Workspace* workspace, map<string, string>&optionValues, bool backgroundMode) {
+                    vector<string> scriptCommands;
+                    for (const auto&line: split(readFile(path(optionValues["script"])), regex("\n"))) {
+                        scriptCommands.push_back(trim(line));
+                    }
+
+                    for (const auto&cmd: scriptCommands) {
+                        shared_ptr<ParsedCommand> parsed = parse(cmd);
+                        parsed->executeApp(this);
+                    }
+                    return "true";
+                }));
+        }
+    }
+
+    shared_ptr<ParsedCommand> parsed = make_shared<ParsedCommand>(parseCommand(app, args));
     return parsed;
 }
 
@@ -160,8 +183,8 @@ void Workspace::inputPrompt() {
                 if (!input.empty()) {
                     cout << erase_line;
                     addHistory(input);
-                    ParsedCommand parsed = parse(input);
-                    if (!parsed.isSuccessed()) {
+                    shared_ptr<ParsedCommand> parsed = parse(input);
+                    if (!parsed->isSuccessed()) {
                         vector<string> inSpl = splitBySpace(input);
                         error("Sorry. Command '$0' not found.", {inSpl[0]});
                         pair similarWord = {1000000000, Command("")};
@@ -176,7 +199,7 @@ void Workspace::inputPrompt() {
                         return;
                     }
 
-                    parsed.executeApp(this);
+                    parsed->executeApp(this);
                 }
                 return;
             }
@@ -211,39 +234,39 @@ void Workspace::inputPrompt() {
                 break;
             }
 #elif defined(__linux__) || defined(__APPLE__)
-                case 27: {
-                    const int mv = static_cast<int>(input.size());
-                    switch (readChar()) {
-                        case 91: {
-                            switch (readChar()) {
-                                case 65: {
-                                    cout << teleport(wherex() - mv, wherey());
-                                    cout << erase_cursor_to_end;
-                                    input = historyUp();
-                                    cout << input;
-                                    break;
-                                }
-                                case 66: {
-                                    cout << teleport(wherex() - mv, wherey());
-                                    cout << erase_cursor_to_end;
-                                    input = historyDown();
-                                    cout << input;
-                                    break;
-                                }
-                                default:
-                                    break;
+            case 27: {
+                const int mv = static_cast<int>(input.size());
+                switch (readChar()) {
+                    case 91: {
+                        switch (readChar()) {
+                            case 65: {
+                                cout << teleport(wherex() - mv, wherey());
+                                cout << erase_cursor_to_end;
+                                input = historyUp();
+                                cout << input;
+                                break;
                             }
-                            break;
+                            case 66: {
+                                cout << teleport(wherex() - mv, wherey());
+                                cout << erase_cursor_to_end;
+                                input = historyDown();
+                                cout << input;
+                                break;
+                            }
+                            default:
+                                break;
                         }
-                        default:
-                            break;
+                        break;
                     }
-                    break;
+                    default:
+                        break;
                 }
-                case 94: {
-                    cout << "C";
-                    break;
-                }
+                break;
+            }
+            case 94: {
+                cout << "C";
+                break;
+            }
 #endif
             case '@': {
                 cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());

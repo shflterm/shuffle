@@ -9,12 +9,13 @@
 #include <filesystem>
 #include <vector>
 #include <map>
+#include <memory>
 
 class Workspace;
 
 #include "parsedcmd.h"
 
-using std::string, std::vector, std::map, std::filesystem::path, std::filesystem::current_path;
+using std::string, std::vector, std::map, std::filesystem::path, std::filesystem::current_path, std::shared_ptr;
 
 class Workspace {
     string name;
@@ -42,7 +43,7 @@ public:
 
     string processArgument(string argument);
 
-    ParsedCommand parse(string input);
+    shared_ptr<ParsedCommand> parse(string input);
 
     void inputPrompt();
 
