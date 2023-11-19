@@ -1,5 +1,6 @@
 #include "commandmgr.h"
 
+#include <iostream>
 #include <appmgr.h>
 #include <console.h>
 #include <lua/luaapi.h>
@@ -9,11 +10,11 @@
 
 #include "utils.h"
 
-using std::make_shared;
+using std::make_shared, std::cout;
 
 vector<shared_ptr<Command>> commands;
 
-string do_nothing([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
+string do_nothing(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
     return "do_nothing";
 }
 
@@ -42,8 +43,8 @@ const string& Command::getUsage() const {
     return usage;
 }
 
-string Command::run(Workspace* ws, map<string, string>&optionValues) const {
-    return cmd(ws, optionValues);
+string Command::run(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) const {
+    return cmd(ws, optionValues, backgroundMode);
 }
 
 string Command::createHint() const {
@@ -105,21 +106,21 @@ Command::Command(string name)
     : name(std::move(name)), cmd(do_nothing) {
 }
 
-Command::Command(Json::Value info, const string&libPath) {
+Command::Command(Json::Value appInfo, const string&libPath) {
     // NOLINT(*-no-recursion)
-    name = info["name"].asString();
-    usage = info["usage"].asString();
-    description = info["description"].asString();
+    name = appInfo["name"].asString();
+    usage = appInfo["usage"].asString();
+    description = appInfo["description"].asString();
 
     const string commandPath = libPath + name + "/";
 
-    for (const auto&subcommandInfo: info["subcommands"]) {
+    for (const auto&subcommandInfo: appInfo["subcommands"]) {
         subcommands.push_back(make_shared<Command>(
             Command(subcommandInfo, commandPath + "/")
         ));
     }
 
-    for (const auto&option: info["options"]) {
+    for (const auto&option: appInfo["options"]) {
         const string name = option["name"].asString();
         OptionType type;
         if (option["type"].asString() == "string") type = TEXT_T;
@@ -135,9 +136,9 @@ Command::Command(Json::Value info, const string&libPath) {
         options.emplace_back(name, description, type, aliases);
     }
 
-    for (const auto&alias: info["aliases"]) aliases.push_back(alias.asString());
+    for (const auto&alias: appInfo["aliases"]) aliases.push_back(alias.asString());
 
-    for (const auto&example: info["examples"]) examples.push_back(example.asString());
+    for (const auto&example: appInfo["examples"]) examples.push_back(example.asString());
 
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
@@ -148,7 +149,7 @@ Command::Command(Json::Value info, const string&libPath) {
     err = lua_pcall(L, 0, 0, 0);
     if (err) error("Error: " + string(lua_tostring(L, -1)));
 
-    cmd = [=](Workspace* ws, map<string, string>&optionValues) -> string {
+    cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) -> string {
         // Create workspace table
         lua_newtable(L); {
             lua_pushstring(L, ws->currentDirectory().string().c_str());
@@ -163,12 +164,71 @@ Command::Command(Json::Value info, const string&libPath) {
             lua_setglobal(L, key.c_str());
         }
 
+        lua_pushboolean(L, backgroundMode);
+        lua_setglobal(L, "backgroundMode");
+
+        if (!backgroundMode) {
+            lua_pushcfunction(L, [](lua_State* LL) {
+                              debug(lua_tostring(LL, -1));
+                              return 0;
+                              });
+            lua_setglobal(L, "debug");
+
+            lua_pushcfunction(L, [](lua_State* LL) {
+                              cout << lua_tostring(LL, -1);
+                              return 0;
+                              });
+            lua_setglobal(L, "print");
+
+            lua_pushcfunction(L, [](lua_State* LL) {
+                              info(lua_tostring(LL, -1));
+                              return 0;
+                              });
+            lua_setglobal(L, "info");
+
+            lua_pushcfunction(L, [](lua_State* LL) {
+                              warning(lua_tostring(LL, -1));
+                              return 0;
+                              });
+            lua_setglobal(L, "warning");
+
+            lua_pushcfunction(L, [](lua_State* LL) {
+                              error(lua_tostring(LL, -1));
+                              return 0;
+                              });
+            lua_setglobal(L, "error");
+        }
+        else {
+            lua_pushcfunction(L, [](lua_State* LL) { return 0; });
+            lua_setglobal(L, "debug");
+
+            lua_pushcfunction(L, [](lua_State* LL) { return 0; });
+            lua_setglobal(L, "print");
+
+            lua_pushcfunction(L, [](lua_State* LL) { return 0; });
+            lua_setglobal(L, "info");
+
+            lua_pushcfunction(L, [](lua_State* LL) { return 0; });
+            lua_setglobal(L, "warning");
+
+            lua_pushcfunction(L, [](lua_State* LL) { return 0; });
+            lua_setglobal(L, "error");
+        }
+
         lua_getglobal(L, "entrypoint");
         if (lua_type(L, -1) != LUA_TFUNCTION) {
             error("Error: 'entrypoint' is not a function!");
             return "false";
         }
-        if (lua_pcall(L, 0, 0, 0)) error("Error: " + string(lua_tostring(L, -1)));
+        if (lua_pcall(L, 0, 1, 0)) error("Error: " + string(lua_tostring(L, -1)));
+
+        string res = "null";
+        if (lua_isnumber(L, -1)) {
+            res = std::to_string(lua_tonumber(L, -1));
+        }
+        else if (lua_isstring(L, -1)) {
+            res = lua_tostring(L, -1);
+        }
 
         // Update workspace
         lua_getglobal(L, "workspace");
@@ -178,7 +238,7 @@ Command::Command(Json::Value info, const string&libPath) {
         if (newDir.is_relative()) newDir = ws->currentDirectory() / newDir;
         ws->moveDirectory(newDir);
 
-        return "TODO"; // TODO: Return value
+        return res;
     };
 }
 

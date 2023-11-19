@@ -34,11 +34,15 @@ public:
 
     void addHistory(const string&s);
 
+    map<string, string> getVariables();
+
     string historyUp();
 
     string historyDown();
 
-    ParsedCommand parse(const string&input);
+    string processArgument(string argument);
+
+    ParsedCommand parse(string input);
 
     void inputPrompt();
 
