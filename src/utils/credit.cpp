@@ -40,32 +40,32 @@ map<string, vector<string>> getCredits() {
 
 string createCreditText() {
     stringstream ss;
-    ss << FG_YELLOW << "Shuffle " << SHUFFLE_VERSION.str() << endl;
+    ss << fg_yellow << "Shuffle " << SHUFFLE_VERSION.str() << endl;
     ss << "Github Repository: https://github.com/shflterm/shuffle" << endl;
     ss << endl;
 
     auto credits = getCredits();
 
-    ss << FG_YELLOW << "Created by: " << endl;
+    ss << fg_yellow << "Created by: " << endl;
     for (const auto &item: credits["created_by"])
-        ss << RESET << "  - " << replace(item, "@", "https://github.com/") << endl;
+        ss << reset << "  - " << replace(item, "@", "https://github.com/") << endl;
 
-    ss << FG_GREEN << "Contributors: " << endl;
+    ss << fg_green << "Contributors: " << endl;
     for (const auto &item: credits["contributors"])
-        ss << RESET << "  - " << replace(item, "@", "https://github.com/") << endl;
+        ss << reset << "  - " << replace(item, "@", "https://github.com/") << endl;
 
-    ss << FG_BLUE << "Special Thanks: " << endl;
+    ss << fg_blue << "Special Thanks: " << endl;
     for (const auto &item: credits["special_thanks"])
-        ss << RESET << "  - " << item << endl;
+        ss << reset << "  - " << item << endl;
 
-    ss << FG_CYAN << "Open Source Libraries: " << endl;
+    ss << fg_cyan << "Open Source Libraries: " << endl;
     for (const auto &item: credits["libraries"])
-        ss << RESET << "  - " << item << endl;
+        ss << reset << "  - " << item << endl;
 
     ss << endl;
 
-    ss << FGB_YELLOW << "Thank you for using Shuffle!" << endl;
-    ss << FGB_BLACK
+    ss << fgb_yellow << "Thank you for using Shuffle!" << endl;
+    ss << fgb_black
        << "If you have any issues, please let us know here: https://github.com/shflterm/shuffle/issues/new" << endl;
 
     return ss.str();

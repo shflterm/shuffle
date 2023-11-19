@@ -9,7 +9,7 @@
 #include "snippetmgr.h"
 #include "builtincmd.h"
 
-using std::filesystem::create_directories, std::filesystem::exists, std::cout, std::endl;
+using std::filesystem::create_directories, std::filesystem::exists, std::cout, std::cerr, std::endl;
 
 #ifdef _WIN32
 
@@ -69,6 +69,8 @@ int main(const int argc, char* argv[]) {
 #endif
     signal(SIGINT, &handleQuit);
 
+    initAnsiCodes();
+
     if (getShflJson("repos").empty()) {
         Json::Value repos;
         repos.append("https://raw.githubusercontent.com/shflterm/apps/main/repo.json");
@@ -97,9 +99,15 @@ int main(const int argc, char* argv[]) {
     if (!exists(DOT_SHUFFLE)) create_directories(DOT_SHUFFLE);
     initShflJson();
 
-    cout << "Welcome to" << FG_BLUE << " Shuffle " << SHUFFLE_VERSION.str() << RESET << "!"
+    cout << "Welcome to" << fg_blue << " Shuffle " << SHUFFLE_VERSION.str() << reset << "!"
             << endl
             << "(C) 2023 Kim Sihu. All Rights Reserved." << endl << endl;
+
+    if (!isAnsiSupported()) {
+        error("ANSI escape codes are not supported on this terminal.");
+        error("Shuffle may not work properly.");
+        error("");
+    }
 
     if (checkUpdate()) cout << endl;
 

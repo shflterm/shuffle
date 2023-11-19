@@ -48,7 +48,7 @@ bool installApp(string&name) {
         for (const auto&repoUrl: getRepos()) {
             Json::Value repo = getRepo(repoUrl);
 
-            cout << teleport(0, wherey() - 1) << ERASE_LINE;
+            cout << teleport(0, wherey() - 1) << erase_line;
             string message = R"(Start downloading '{APP}' from '{REPO}'...)";
             message = replace(message, "{APP}", name);
             message = replace(message, "{REPO}", repo["repo"].asString());
@@ -57,40 +57,40 @@ bool installApp(string&name) {
             if (const int ver = repo["version"].asInt(); ver == 1) {
                 if (const string downloadFrom = replace(repo["download_at"].asString(), "{APP}", name); downloadFile(
                     downloadFrom, downloadTo)) {
-                    cout << teleport(0, wherey() - 1) << ERASE_LINE;
+                    cout << teleport(0, wherey() - 1) << erase_line;
                     success("Download Completed!");
 
-                    cout << teleport(0, wherey() - 1) << ERASE_LINE;
+                    cout << teleport(0, wherey() - 1) << erase_line;
                     extractZip(downloadTo, DOT_SHUFFLE / "apps" / (name + ".shflapp"));
-                    cout << teleport(0, wherey()) << ERASE_LINE;
+                    cout << teleport(0, wherey()) << erase_line;
                     success("Extracted!");
                     installed = true;
                     break;
                 }
             }
             else {
-                cout << teleport(0, wherey() - 1) << ERASE_LINE;
+                cout << teleport(0, wherey() - 1) << erase_line;
                 warning("Unknown repository version: " + to_string(ver));
             }
         }
     }
 
     if (!installed) {
-        cout << teleport(0, wherey() - 1) << ERASE_LINE;
+        cout << teleport(0, wherey() - 1) << erase_line;
         error("The app could not be found in the repository.");
         return false;
     }
 
-    cout << teleport(0, wherey() - 1) << ERASE_LINE;
+    cout << teleport(0, wherey() - 1) << erase_line;
     info("Adding to config...");
 
     if (!addApp(name)) {
-        cout << teleport(0, wherey() - 1) << ERASE_LINE;
+        cout << teleport(0, wherey() - 1) << erase_line;
         error("Failed to add app. (The app has already been added.)");
         return false;
     }
     else {
-        cout << teleport(0, wherey() - 1) << ERASE_LINE;
+        cout << teleport(0, wherey() - 1) << erase_line;
         success("Done!");
         return true;
     }

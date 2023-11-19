@@ -63,17 +63,17 @@ int main() {
         error("Failed to download Shuffle.");
         return 1;
     }
-    cout << teleport(0, wherey() - 1) << ERASE_LINE << "Installed!" << endl;
+    cout << teleport(0, wherey() - 1) << erase_line << "Installed!" << endl;
 
     extractZip(temp, updatePath);
-    cout << teleport(0, wherey() - 1) << ERASE_LINE << "Extracted!" << endl;
+    cout << teleport(0, wherey() - 1) << erase_line << "Extracted!" << endl;
 
-    cout << teleport(0, wherey() - 1) << ERASE_LINE << "Install native apps.." << endl;
+    cout << teleport(0, wherey() - 1) << erase_line << "Install native apps.." << endl;
     if (installNativeApps()) {
-        cout << teleport(0, wherey() - 1) << ERASE_LINE << "Shuffle has been successfully installed!";
+        cout << teleport(0, wherey() - 1) << erase_line << "Shuffle has been successfully installed!";
     }
     else {
-        cout << teleport(0, wherey() - 1) << ERASE_LINE
+        cout << teleport(0, wherey() - 1) << erase_line
                 << "Shuffle is installed, but the some default app is not installed"
                 << endl
                 << "After running Shuffle, you may need to manually install the default apps.";

@@ -76,7 +76,7 @@ string helpCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues)
                 << "  Visit the online documentation for Shuffle at "
                 "https://github.com/shflterm/shuffle/wiki." << endl << endl;
 
-        cout << "Thanks to: " << BG_GREEN << "shfl credits" << RESET << endl;
+        cout << "Thanks to: " << bg_green << "shfl credits" << reset << endl;
 
         return "true";
     }
@@ -127,7 +127,15 @@ string snippetCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValu
 }
 
 string clearCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
-    cout << ERASE_ALL;
+    if (!isAnsiSupported()) {
+        error("'clear' cannot be used on terminals that do not support ANSI escape codes.");
+        return "false";
+    }
+#ifdef _WIN32
+    system("cls");
+#elif defined(__linux__) || defined(__APPLE__)
+    system("clear");
+#endif
     return "true";
 }
 

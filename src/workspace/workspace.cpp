@@ -189,9 +189,9 @@ string getHint([[maybe_unused]] const Workspace&ws, const string&input) {
 string Workspace::prompt() const {
     stringstream ss;
     if (!name.empty())
-        ss << FG_YELLOW << "[" << name << "] ";
+        ss << fg_yellow << "[" << name << "] ";
 
-    ss << FG_CYAN << "(";
+    ss << fg_cyan << "(";
     if (dir == dir.root_path())
         ss << dir.root_name().string();
     else if (dir.parent_path() == dir.root_path())
@@ -200,7 +200,7 @@ string Workspace::prompt() const {
         ss << dir.root_name().string() << "/.../" << dir.filename().string();
     ss << ")";
 
-    ss << FG_YELLOW << " \u2192 " << RESET;
+    ss << fg_yellow << " \u2192 " << reset;
     return ss.str();
 }
 
@@ -208,22 +208,25 @@ void Workspace::inputPrompt() {
     cout << prompt();
 
     string input;
-    const int x = wherex();
-    cout << endl;
-    cout << teleport(x, wherey() - 1);
+    if (isAnsiSupported()) {
+        const int x = wherex();
+        cout << endl;
+        cout << teleport(x, wherey() - 1);
+    }
 
     while (true) {
         int c = readChar();
-        cout << ERASE_CURSOR_TO_END;
+        cout << erase_cursor_to_end;
 
         switch (c) {
             case '\b':
             case 127: {
-                if (!input.empty()) {
-                    cout << teleport(wherex() - 1, wherey());
-                    cout << ERASE_CURSOR_TO_END;
-                    input = input.substr(0, input.length() - 1);
-                }
+                if (input.empty()) break;
+
+                if (isAnsiSupported()) cout << teleport(wherex() - 1, wherey()) << erase_cursor_to_end;
+                else cout << "\b";
+
+                input = input.substr(0, input.length() - 1);
                 break;
             }
             case '\n':
@@ -231,7 +234,7 @@ void Workspace::inputPrompt() {
                 cout << endl;
 
                 if (!input.empty()) {
-                    cout << ERASE_LINE;
+                    cout << erase_line;
                     addHistory(input);
                     ParsedCommand parsed = parse(input);
                     if (!parsed.isSuccessed()) {
@@ -266,14 +269,14 @@ void Workspace::inputPrompt() {
                 switch (i) {
                     case 72: {
                         cout << teleport(wherex() - mv, wherey());
-                        cout << ERASE_CURSOR_TO_END;
+                        cout << erase_cursor_to_end;
                         input = historyUp();
                         cout << input;
                         break;
                     }
                     case 80: {
                         cout << teleport(wherex() - mv, wherey());
-                        cout << ERASE_CURSOR_TO_END;
+                        cout << erase_cursor_to_end;
                         input = historyDown();
                         cout << input;
                         break;
@@ -291,14 +294,14 @@ void Workspace::inputPrompt() {
                             switch (readChar()) {
                                 case 65: {
                                     cout << teleport(wherex() - mv, wherey());
-                                    cout << ERASE_CURSOR_TO_END;
+                                    cout << erase_cursor_to_end;
                                     input = historyUp();
                                     cout << input;
                                     break;
                                 }
                                 case 66: {
                                     cout << teleport(wherex() - mv, wherey());
-                                    cout << ERASE_CURSOR_TO_END;
+                                    cout << erase_cursor_to_end;
                                     input = historyDown();
                                     cout << input;
                                     break;
@@ -320,8 +323,8 @@ void Workspace::inputPrompt() {
 #endif
             case '@': {
                 cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
-                cout << ERASE_CURSOR_TO_END;
-                cout << FG_YELLOW << "@ " << RESET;
+                cout << erase_cursor_to_end;
+                cout << fg_yellow << "@ " << reset;
                 string wsName;
                 getline(cin, wsName);
 
@@ -337,8 +340,8 @@ void Workspace::inputPrompt() {
             }
             case '&': {
                 cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
-                cout << ERASE_CURSOR_TO_END;
-                cout << FG_YELLOW << "& " << RESET;
+                cout << erase_cursor_to_end;
+                cout << fg_yellow << "& " << reset;
                 string command;
                 getline(cin, command);
 
@@ -347,22 +350,25 @@ void Workspace::inputPrompt() {
             }
             default: {
                 string character(1, static_cast<char>(c));
-                cout << RESET << character;
+                cout << reset << character;
                 input += character;
             }
         }
 
-        string suggestion = getSuggestion(*this, input);
-        cout << FGB_BLACK << suggestion << RESET;
-        cout << teleport(wherex() - static_cast<int>(suggestion.size()), wherey());
+        if (isAnsiSupported()) {
+            cout << "asdfsadfsadf";
+            string suggestion = getSuggestion(*this, input);
+            cout << fgb_black << suggestion << reset;
+            cout << teleport(wherex() - static_cast<int>(suggestion.size()), wherey());
 
-        string hint = getHint(*this, input + suggestion);
-        const int xPos = wherex() - static_cast<int>(hint.size()) / 2;
-        cout << SAVE_CURSOR_POS
-                << teleport(xPos < 0 ? 0 : xPos, wherey() + 1)
-                << ERASE_LINE
-                << FGB_BLACK << hint
-                << RESTORE_CURSOR_POS;
+            string hint = getHint(*this, input + suggestion);
+            const int xPos = wherex() - static_cast<int>(hint.size()) / 2;
+            cout << save_cursor_pos
+                    << teleport(xPos < 0 ? 0 : xPos, wherey() + 1)
+                    << erase_line
+                    << fgb_black << hint
+                    << restore_cursor_pos;
+        }
     }
 }
 

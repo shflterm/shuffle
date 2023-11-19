@@ -152,7 +152,7 @@ int progress_callback([[maybe_unused]] void* clientp, const curl_off_t dltotal,
     if (lastPercent == percent) return 0;
 
     lastPercent = percent;
-    cout << ERASE_LINE;
+    cout << erase_line;
     info("Downloading... (" + to_string(percent) + "%)");
     cout << teleport(wherex(), wherey() - 1);
 
@@ -185,7 +185,7 @@ bool downloadFile(const string&url, const string&file) {
 
 int onExtractEntry(const char* filename, [[maybe_unused]] void* arg) {
     if (const string name = path(filename).filename().string(); !name.empty()) {
-        cout << teleport(0, wherey()) << ERASE_LINE << "Extracting... (" << name << ")" << endl;
+        cout << teleport(0, wherey()) << erase_line << "Extracting... (" << name << ")" << endl;
     }
     return 0;
 }
