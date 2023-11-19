@@ -1,4 +1,4 @@
-#include <term.h>
+#include <iostream>
 #include <filesystem>
 #include <csignal>
 
@@ -9,16 +9,16 @@
 #include "snippetmgr.h"
 #include "builtincmd.h"
 
-using std::filesystem::create_directories, std::filesystem::exists;
+using std::filesystem::create_directories, std::filesystem::exists, std::cout, std::endl;
 
 #ifdef _WIN32
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS* exceptionPointers) {
-    term << newLine;
+    cout << endl;
     error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
     error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
-    term << newLine;
+    cout << endl;
     const CrashReport report = CrashReport()
             .setStackTrace(genStackTrace(exceptionPointers->ContextRecord));
     error(report.make());
@@ -32,10 +32,10 @@ LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS* exceptionPointers) {
 #include <termios.h>
 
 extern "C" void handleCrash(int sig) {
-    term << newLine;
+    cout << endl;
     error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
     error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
-    term << newLine;
+    cout << endl;
     CrashReport report = CrashReport()
             .setStackTrace(genStackTrace())
             .setSignalNumber(sig);
@@ -47,7 +47,7 @@ extern "C" void handleCrash(int sig) {
 #endif
 
 extern "C" void handleQuit(const int sig) {
-    term << newLine << "Bye." << newLine;
+    cout << endl << "Bye." << endl;
     exit(sig);
 }
 
@@ -78,7 +78,7 @@ int main(const int argc, char* argv[]) {
     if (argc > 1) {
         if (const string arg = argv[1];
             arg == "--version" || arg == "-v") {
-            term << "Shuffle " << SHUFFLE_VERSION.str() << newLine;
+            cout << "Shuffle " << SHUFFLE_VERSION.str() << endl;
             return 0;
         }
 
@@ -97,16 +97,16 @@ int main(const int argc, char* argv[]) {
     if (!exists(DOT_SHUFFLE)) create_directories(DOT_SHUFFLE);
     initShflJson();
 
-    term << "Welcome to" << color(FOREGROUND, Blue) << " Shuffle " << SHUFFLE_VERSION.str() << resetColor << "!"
-            << newLine
-            << "(C) 2023 Kim Sihu. All Rights Reserved." << newLine << newLine;
+    cout << "Welcome to" << FG_BLUE << " Shuffle " << SHUFFLE_VERSION.str() << RESET << "!"
+            << endl
+            << "(C) 2023 Kim Sihu. All Rights Reserved." << endl << endl;
 
-    if (checkUpdate()) term << newLine;
+    if (checkUpdate()) cout << endl;
 
     loadCommands();
     loadSnippets();
 
-    term << "Type 'help' to get help!" << newLine;
+    cout << "Type 'help' to get help!" << endl;
 
     currentWorkspace = new Workspace("main");
     // ReSharper disable once CppDFAEndlessLoop

@@ -42,8 +42,8 @@ bool installNativeApps() {
 }
 
 int main() {
-    term << SHUFFLE << newLine
-            << "Installing Shuffle..." << newLine;
+    cout << SHUFFLE << endl
+            << "Installing Shuffle..." << endl;
     string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
 #ifdef _WIN32
     string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-windows.zip";
@@ -63,19 +63,19 @@ int main() {
         error("Failed to download Shuffle.");
         return 1;
     }
-    term << teleport(0, wherey() - 1) << eraseLine << "Installed!" << newLine;
+    cout << teleport(0, wherey() - 1) << ERASE_LINE << "Installed!" << endl;
 
     extractZip(temp, updatePath);
-    term << teleport(0, wherey() - 1) << eraseLine << "Extracted!" << newLine;
+    cout << teleport(0, wherey() - 1) << ERASE_LINE << "Extracted!" << endl;
 
-    term << teleport(0, wherey() - 1) << eraseLine << "Install native apps.." << newLine;
+    cout << teleport(0, wherey() - 1) << ERASE_LINE << "Install native apps.." << endl;
     if (installNativeApps()) {
-        term << teleport(0, wherey() - 1) << eraseLine << "Shuffle has been successfully installed!";
+        cout << teleport(0, wherey() - 1) << ERASE_LINE << "Shuffle has been successfully installed!";
     }
     else {
-        term << teleport(0, wherey() - 1) << eraseLine
+        cout << teleport(0, wherey() - 1) << ERASE_LINE
                 << "Shuffle is installed, but the some default app is not installed"
-                << newLine
+                << endl
                 << "After running Shuffle, you may need to manually install the default apps.";
     }
 }

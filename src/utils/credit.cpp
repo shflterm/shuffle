@@ -2,10 +2,11 @@
 
 #include <string>
 #include <sstream>
+
 #include "version.h"
 #include "utils.h"
-#include "term.h"
 #include "json/json.h"
+#include "console.h"
 
 using std::endl;
 
@@ -39,32 +40,32 @@ map<string, vector<string>> getCredits() {
 
 string createCreditText() {
     stringstream ss;
-    ss << color(FOREGROUND, Yellow) << "Shuffle " << SHUFFLE_VERSION.str() << endl;
+    ss << FG_YELLOW << "Shuffle " << SHUFFLE_VERSION.str() << endl;
     ss << "Github Repository: https://github.com/shflterm/shuffle" << endl;
     ss << endl;
 
     auto credits = getCredits();
 
-    ss << color(FOREGROUND, Yellow) << "Created by: " << endl;
+    ss << FG_YELLOW << "Created by: " << endl;
     for (const auto &item: credits["created_by"])
-        ss << resetColor << "  - " << replace(item, "@", "https://github.com/") << endl;
+        ss << RESET << "  - " << replace(item, "@", "https://github.com/") << endl;
 
-    ss << color(FOREGROUND, Green) << "Contributors: " << endl;
+    ss << FG_GREEN << "Contributors: " << endl;
     for (const auto &item: credits["contributors"])
-        ss << resetColor << "  - " << replace(item, "@", "https://github.com/") << endl;
+        ss << RESET << "  - " << replace(item, "@", "https://github.com/") << endl;
 
-    ss << color(FOREGROUND, Blue) << "Special Thanks: " << endl;
+    ss << FG_BLUE << "Special Thanks: " << endl;
     for (const auto &item: credits["special_thanks"])
-        ss << resetColor << "  - " << item << endl;
+        ss << RESET << "  - " << item << endl;
 
-    ss << color(FOREGROUND, Cyan) << "Open Source Libraries: " << endl;
+    ss << FG_CYAN << "Open Source Libraries: " << endl;
     for (const auto &item: credits["libraries"])
-        ss << resetColor << "  - " << item << endl;
+        ss << RESET << "  - " << item << endl;
 
     ss << endl;
 
-    ss << color(FOREGROUND_BRIGHT, Yellow) << "Thank you for using Shuffle!" << endl;
-    ss << color(FOREGROUND_BRIGHT, Black)
+    ss << FGB_YELLOW << "Thank you for using Shuffle!" << endl;
+    ss << FGB_BLACK
        << "If you have any issues, please let us know here: https://github.com/shflterm/shuffle/issues/new" << endl;
 
     return ss.str();

@@ -1,17 +1,17 @@
 #include "workspace/crashreport.h"
 
+#include <iostream>
 #include <string>
 #include <ctime>
 #include <fstream>
 
 #include "utils.h"
-#include "term.h"
 
 #include "version.h"
 #include "console.h"
 #include "commandmgr.h"
 
-using std::endl, std::to_string, std::ofstream;
+using std::cout, std::endl, std::to_string, std::ofstream;
 
 #ifdef _WIN32
 
@@ -92,8 +92,7 @@ string genStackTrace() {
     stringstream ss;
 
     void *array[10];
-    size_t size;
-    size = backtrace(array, 10);
+    const size_t size = backtrace(array, 10);
     for (int i = 0; i < size; ++i) {
         ss << "  " << backtrace_symbols(array, size)[i] << endl;
     }
@@ -162,5 +161,5 @@ void CrashReport::save() const {
     file << make();
     file.close();
 
-    term << "Stack trace saved to \"" << absolute(filePath).string() << "\"." << newLine;
+    cout << "Stack trace saved to \"" << absolute(filePath).string() << "\"." << endl;
 }

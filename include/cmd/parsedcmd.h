@@ -31,7 +31,9 @@ public:
 
     string executeApp(Workspace* ws);
 
-    bool isCommand();
+    bool isCommand() const;
+
+    bool isSuccessed() const;
 
     explicit ParsedCommand(Command* app);
 

@@ -2,6 +2,7 @@
 
 #include "utils.h"
 
+#include <iostream>
 #include <vector>
 #include <string>
 #include <regex>
@@ -9,11 +10,12 @@
 #include <fstream>
 #include <cstdlib>
 #include <curl/curl.h>
-#include "term.h"
 
 #include "console.h"
 #include "version.h"
 #include "zip/zip.h"
+
+using std::cout, std::endl;
 
 using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, std::smatch, std::to_string,
         std::filesystem::temp_directory_path;
@@ -150,9 +152,9 @@ int progress_callback([[maybe_unused]] void* clientp, const curl_off_t dltotal,
     if (lastPercent == percent) return 0;
 
     lastPercent = percent;
-    term << eraseLine;
+    cout << ERASE_LINE;
     info("Downloading... (" + to_string(percent) + "%)");
-    term << teleport(wherex(), wherey() - 1);
+    cout << teleport(wherex(), wherey() - 1);
 
     return 0;
 }
@@ -183,7 +185,7 @@ bool downloadFile(const string&url, const string&file) {
 
 int onExtractEntry(const char* filename, [[maybe_unused]] void* arg) {
     if (const string name = path(filename).filename().string(); !name.empty()) {
-        term << teleport(0, wherey()) << eraseLine << "Extracting... (" << name << ")" << newLine;
+        cout << teleport(0, wherey()) << ERASE_LINE << "Extracting... (" << name << ")" << endl;
     }
     return 0;
 }
@@ -226,7 +228,10 @@ void updateShuffle() {
                   nullptr,
                   &si,
                   &pi);
-#else
+#elif defined(__linux__) || defined(__APPLE__)
+    const string command = extractPath.append("updater").string();
+    system(("chmod +x " + command).c_str());
+    system(command.c_str());
 #endif
     exit(0);
 }
@@ -257,11 +262,11 @@ void setShflJson(const string&part, Json::Value value) {
 bool checkUpdate(const bool checkBackground) {
     if (const string latest = trim(readTextFromWeb(
         "https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST")); latest != SHUFFLE_VERSION.str()) {
-        term << "New version available: " << SHUFFLE_VERSION.str() << " -> "
-                << latest << newLine;
-        if (checkBackground) term << "Type 'shfl update' to get new version!" << newLine;
+        cout << "New version available: " << SHUFFLE_VERSION.str() << " -> "
+                << latest << endl;
+        if (checkBackground) cout << "Type 'shfl upgrade' to get new version!" << endl;
         return true;
     }
-    if (!checkBackground) term << "You are using the latest version of Shuffle." << newLine;
+    if (!checkBackground) cout << "You are using the latest version of Shuffle." << endl;
     return false;
 }

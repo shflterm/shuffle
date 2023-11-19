@@ -7,12 +7,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_library(${PROJECT_NAME} ${SUGGESTION_SRC})
 
-add_dependencies(${PROJECT_NAME} term_cpp)
-
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
-
-target_link_libraries(${PROJECT_NAME} term_cpp)
-target_include_directories(${PROJECT_NAME} PRIVATE ../termcpp/include)
 
 find_package(jsoncpp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} JsonCpp::JsonCpp)

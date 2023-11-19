@@ -1,9 +1,11 @@
 #include "console.h"
 
 #include <string>
-#include "term.h"
+#include <iostream>
 
 #include "i18n.h"
+
+using std::cout, std::to_string;
 
 bool debugMode = false;
 
@@ -11,24 +13,24 @@ Workspace* currentWorkspace;
 
 void debug(const string&text, const initializer_list<string>&args) {
     if (debugMode) {
-        term << "[90m" << translate(text, args) << resetColor << "\n";
+        cout << "[90m" << translate(text, args) << RESET << "\n";
     }
 }
 
 void info(const string&text, const initializer_list<string>&args) {
-    term << resetColor << translate(text, args) << resetColor << "\n";
+    cout << RESET << translate(text, args) << RESET << "\n";
 }
 
 void success(const string&text, const initializer_list<string>&args) {
-    term << color(FOREGROUND, Green) << translate(text, args) << resetColor << "\n";
+    cout << FG_GREEN << translate(text, args) << RESET << "\n";
 }
 
 void warning(const string&text, const initializer_list<string>&args) {
-    term << color(FOREGROUND, Yellow) << translate(text, args) << resetColor << "\n";
+    cout << FG_YELLOW << translate(text, args) << RESET << "\n";
 }
 
 void error(const string&text, const initializer_list<string>&args) {
-    term << color(FOREGROUND, Red) << translate(text, args) << resetColor << "\n";
+    cout << FG_RED << translate(text, args) << RESET << "\n";
 }
 
 void debug(const string&text) {
@@ -76,7 +78,7 @@ int wherex() {
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO buf;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &buf);
-    return buf.dwCursorPosition.X;
+    return buf.dwCursorPosition.X + 1;
 #elif defined(__linux__) || defined(__APPLE__)
     printf("\033[6n");
     if (readChar() != '\x1B') return 0;
@@ -96,7 +98,7 @@ int wherey() {
 #ifdef _WIN32
     CONSOLE_SCREEN_BUFFER_INFO buf;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &buf);
-    return buf.dwCursorPosition.Y;
+    return buf.dwCursorPosition.Y + 1;
 #elif defined(__linux__) || defined(__APPLE__)
     printf("\033[6n");
     if (readChar() != '\x1B') return 0;
@@ -110,4 +112,8 @@ int wherey() {
         lx = lx * 10 + in - '0';
     return ly;
 #endif
+}
+
+string teleport(const int x, const int y) {
+    return "\033[" + to_string(y) + ";" + to_string(x) + "H";
 }

@@ -1,5 +1,6 @@
 #include "downloader.h"
 
+#include <iostream>
 #include <string>
 #include <json/json.h>
 #include <filesystem>
@@ -7,9 +8,8 @@
 #include "console.h"
 #include "utils.h"
 #include "appmgr.h"
-#include "term.h"
 
-using std::to_string, std::filesystem::path, std::filesystem::temp_directory_path, std::filesystem::exists,
+using std::cout, std::to_string, std::filesystem::path, std::filesystem::temp_directory_path, std::filesystem::exists,
         std::filesystem::remove_all, std::filesystem::copy_options;
 
 Json::Value getRepo(const string&repo) {
@@ -48,7 +48,7 @@ bool installApp(string&name) {
         for (const auto&repoUrl: getRepos()) {
             Json::Value repo = getRepo(repoUrl);
 
-            term << teleport(0, wherey() - 1) << eraseLine;
+            cout << teleport(0, wherey() - 1) << ERASE_LINE;
             string message = R"(Start downloading '{APP}' from '{REPO}'...)";
             message = replace(message, "{APP}", name);
             message = replace(message, "{REPO}", repo["repo"].asString());
@@ -57,40 +57,40 @@ bool installApp(string&name) {
             if (const int ver = repo["version"].asInt(); ver == 1) {
                 if (const string downloadFrom = replace(repo["download_at"].asString(), "{APP}", name); downloadFile(
                     downloadFrom, downloadTo)) {
-                    term << teleport(0, wherey() - 1) << eraseLine;
+                    cout << teleport(0, wherey() - 1) << ERASE_LINE;
                     success("Download Completed!");
 
-                    term << teleport(0, wherey() - 1) << eraseLine;
+                    cout << teleport(0, wherey() - 1) << ERASE_LINE;
                     extractZip(downloadTo, DOT_SHUFFLE / "apps" / (name + ".shflapp"));
-                    term << teleport(0, wherey()) << eraseLine;
+                    cout << teleport(0, wherey()) << ERASE_LINE;
                     success("Extracted!");
                     installed = true;
                     break;
                 }
             }
             else {
-                term << teleport(0, wherey() - 1) << eraseLine;
+                cout << teleport(0, wherey() - 1) << ERASE_LINE;
                 warning("Unknown repository version: " + to_string(ver));
             }
         }
     }
 
     if (!installed) {
-        term << teleport(0, wherey() - 1) << eraseLine;
+        cout << teleport(0, wherey() - 1) << ERASE_LINE;
         error("The app could not be found in the repository.");
         return false;
     }
 
-    term << teleport(0, wherey() - 1) << eraseLine;
+    cout << teleport(0, wherey() - 1) << ERASE_LINE;
     info("Adding to config...");
 
     if (!addApp(name)) {
-        term << teleport(0, wherey() - 1) << eraseLine;
+        cout << teleport(0, wherey() - 1) << ERASE_LINE;
         error("Failed to add app. (The app has already been added.)");
         return false;
     }
     else {
-        term << teleport(0, wherey() - 1) << eraseLine;
+        cout << teleport(0, wherey() - 1) << ERASE_LINE;
         success("Done!");
         return true;
     }

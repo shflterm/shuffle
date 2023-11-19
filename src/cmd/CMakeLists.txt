@@ -12,9 +12,6 @@ target_link_libraries(${PROJECT_NAME} PUBLIC utils)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE term_cpp)
-target_include_directories(${PROJECT_NAME} PRIVATE ../termcpp/include)
-
 find_package(jsoncpp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE JsonCpp::JsonCpp)
 

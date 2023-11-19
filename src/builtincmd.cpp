@@ -1,8 +1,8 @@
 #include "builtincmd.h"
 
+#include <iostream>
 #include <memory>
 
-#include "term.h"
 #include "console.h"
 #include "downloader.h"
 #include "credit.h"
@@ -11,7 +11,7 @@
 #include "snippetmgr.h"
 #include "appmgr.h"
 
-using std::make_shared;
+using std::cout, std::endl, std::make_shared;
 
 string shflReloadCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
     info("Reloading command...");
@@ -30,7 +30,7 @@ string shflUpgradeCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<strin
 }
 
 string shflCreditsCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
-    term << createCreditText();
+    cout << createCreditText();
     return "thanks";
 }
 
@@ -62,29 +62,28 @@ string appMgrCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, st
 
 string helpCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues) {
     if (optionValues.count("command") == 0) {
-        term << "== Shuffle Help ==" << newLine
-                << "Version: " << SHUFFLE_VERSION.str() << newLine << newLine
-                << "Commands: " << newLine;
+        cout << "== Shuffle Help ==" << endl
+                << "Version: " << SHUFFLE_VERSION.str() << endl << endl
+                << "Commands: " << endl;
         for (const auto&item: commands) {
             if (auto command = *item; command.getDescription() != "-") {
-                term << "  " << command.getName() << " : " << command.getDescription()
-                        << newLine;
+                cout << "  " << command.getName() << " : " << command.getDescription()
+                        << endl;
             }
         }
-        term
-                << newLine << "Additional Help: " << newLine
-                << "  For more information on a specific command, type 'help <command>'" << newLine
+        cout << endl << "Additional Help: " << endl
+                << "  For more information on a specific command, type 'help <command>'" << endl
                 << "  Visit the online documentation for Shuffle at "
-                "https://github.com/shflterm/shuffle/wiki." << newLine << newLine;
+                "https://github.com/shflterm/shuffle/wiki." << endl << endl;
 
-        term << "Thanks to: " << color(BACKGROUND, Green) << "shfl credits" << resetColor << newLine;
+        cout << "Thanks to: " << BG_GREEN << "shfl credits" << RESET << endl;
 
         return "true";
     }
     vector<string> cmdName = splitBySpace(optionValues["command"]);
     shared_ptr<Command> cmd = findCommand(cmdName.front());
     if (cmd == nullptr) {
-        term << "Command '" << cmdName.front() << "' not found." << newLine;
+        cout << "Command '" << cmdName.front() << "' not found." << endl;
         return "false";
     }
 
@@ -103,15 +102,15 @@ string helpCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues)
         examples += "\n  - " + item;
     }
 
-    term << "== About '" << cmd->getName() << "' ==" << newLine;
-    term << "Name: " << cmd->getName() << newLine;
+    cout << "== About '" << cmd->getName() << "' ==" << endl;
+    cout << "Name: " << cmd->getName() << endl;
     if (!cmd->getDescription().empty())
-        term << "Description: " << cmd->getDescription() << newLine;
+        cout << "Description: " << cmd->getDescription() << endl;
     if (!cmd->getUsage().empty())
-        term << "Usage: " << cmd->getUsage() << newLine;
+        cout << "Usage: " << cmd->getUsage() << endl;
     if (!subcommands.empty())
-        term << "Subcommands: " << subcommands.substr(0, subcommands.size() - 2) << newLine;
-    term << "Examples: " << examples << newLine;
+        cout << "Subcommands: " << subcommands.substr(0, subcommands.size() - 2) << endl;
+    cout << "Examples: " << examples << endl;
 
     return cmd->getName();
 }
@@ -122,13 +121,13 @@ string snippetCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValu
     const string cmd = optionValues["value"];
 
     addSnippet(snippetName, cmd);
-    term << "Snippet Created: " << snippetName << " => " << cmd << newLine;
+    cout << "Snippet Created: " << snippetName << " => " << cmd << endl;
 
     return snippetName;
 }
 
 string clearCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
-    term << eraseAll;
+    cout << ERASE_ALL;
     return "true";
 }
 

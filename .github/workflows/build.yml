@@ -36,9 +36,6 @@ jobs:
             ${{github.workspace}}/build-${{ matrix.config.os }}
           key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json', '**/CMakeLists.txt') }}
 
-      - name: Update Submodule
-        run: git submodule update --init --recursive
-
       - name: Download vcpkg
         run: git clone https://github.com/Microsoft/vcpkg.git
 

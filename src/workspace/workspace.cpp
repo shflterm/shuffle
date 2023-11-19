@@ -3,7 +3,6 @@
 #include <iostream>
 #include <utility>
 #include <map>
-#include "term.h"
 
 #include "console.h"
 #include "utils.h"
@@ -12,7 +11,7 @@
 #include "parsedcmd.h"
 #include "cmdparser.h"
 
-using std::stringstream, std::cin;
+using std::cout, std::endl, std::cin, std::stringstream;
 
 map<string, Workspace *> wsMap;
 
@@ -56,7 +55,7 @@ string Workspace::historyDown() {
 
 ParsedCommand Workspace::parse(const string&input) {
     if (std::smatch matches; regex_match(input, matches, regex("(\\w*)\\s*=\\s*(\"([^\"]*)\"|([\\s\\S]+)*)"))) {
-        string name = matches[1].str();
+        const string name = matches[1].str();
         string value;
         if (matches[2].matched) {
             value = matches[2].str();
@@ -80,7 +79,7 @@ ParsedCommand Workspace::parse(const string&input) {
         if (item->getName() != inSpl[0]) continue;
         isSnippetFound = true;
 
-        term << "[*] " << item->getTarget() << newLine << newLine;
+        cout << "[*] " << item->getTarget() << endl << endl;
         parse(item->getTarget()).executeApp(this);
     }
 
@@ -190,9 +189,9 @@ string getHint([[maybe_unused]] const Workspace&ws, const string&input) {
 string Workspace::prompt() const {
     stringstream ss;
     if (!name.empty())
-        ss << color(FOREGROUND, Yellow) << "[" << name << "] ";
+        ss << FG_YELLOW << "[" << name << "] ";
 
-    ss << color(FOREGROUND, Cyan) << "(";
+    ss << FG_CYAN << "(";
     if (dir == dir.root_path())
         ss << dir.root_name().string();
     else if (dir.parent_path() == dir.root_path())
@@ -201,41 +200,41 @@ string Workspace::prompt() const {
         ss << dir.root_name().string() << "/.../" << dir.filename().string();
     ss << ")";
 
-    ss << color(FOREGROUND, Yellow) << " \u2192 " << resetColor;
+    ss << FG_YELLOW << " \u2192 " << RESET;
     return ss.str();
 }
 
 void Workspace::inputPrompt() {
-    term << prompt();
+    cout << prompt();
 
     string input;
     const int x = wherex();
-    term << newLine;
-    term << teleport(x, wherey() - 1);
+    cout << endl;
+    cout << teleport(x, wherey() - 1);
 
     while (true) {
         int c = readChar();
-        term << eraseFromCursorToLineEnd;
+        cout << ERASE_CURSOR_TO_END;
 
         switch (c) {
             case '\b':
             case 127: {
                 if (!input.empty()) {
-                    term << teleport(wherex() - 1, wherey());
-                    term << eraseFromCursorToLineEnd;
+                    cout << teleport(wherex() - 1, wherey());
+                    cout << ERASE_CURSOR_TO_END;
                     input = input.substr(0, input.length() - 1);
                 }
                 break;
             }
             case '\n':
             case '\r': {
-                term << newLine;
+                cout << endl;
 
                 if (!input.empty()) {
-                    term << eraseLine;
+                    cout << ERASE_LINE;
                     addHistory(input);
                     ParsedCommand parsed = parse(input);
-                    if (!parsed.isCommand()) {
+                    if (!parsed.isSuccessed()) {
                         vector<string> inSpl = splitBySpace(input);
                         error("Sorry. Command '$0' not found.", {inSpl[0]});
                         pair similarWord = {1000000000, Command("")};
@@ -250,14 +249,14 @@ void Workspace::inputPrompt() {
                         return;
                     }
 
-                    string res = parsed.executeApp(this);
+                    parsed.executeApp(this);
                 }
                 return;
             }
             case '\t': {
                 string suggestion = getSuggestion(*this, input);
                 input += suggestion;
-                term << "\033[0m" << suggestion;
+                cout << "\033[0m" << suggestion;
                 break;
             }
 #ifdef _WIN32
@@ -266,17 +265,17 @@ void Workspace::inputPrompt() {
                 const int mv = static_cast<int>(input.size());
                 switch (i) {
                     case 72: {
-                        term << teleport(wherex() - mv, wherey());
-                        term << eraseFromCursorToLineEnd;
+                        cout << teleport(wherex() - mv, wherey());
+                        cout << ERASE_CURSOR_TO_END;
                         input = historyUp();
-                        term << input;
+                        cout << input;
                         break;
                     }
                     case 80: {
-                        term << teleport(wherex() - mv, wherey());
-                        term << eraseFromCursorToLineEnd;
+                        cout << teleport(wherex() - mv, wherey());
+                        cout << ERASE_CURSOR_TO_END;
                         input = historyDown();
-                        term << input;
+                        cout << input;
                         break;
                     }
                     default:
@@ -291,17 +290,17 @@ void Workspace::inputPrompt() {
                         case 91: {
                             switch (readChar()) {
                                 case 65: {
-                                    term << teleport(wherex() - mv, wherey());
-                                    term << eraseFromCursorToLineEnd;
+                                    cout << teleport(wherex() - mv, wherey());
+                                    cout << ERASE_CURSOR_TO_END;
                                     input = historyUp();
-                                    term << input;
+                                    cout << input;
                                     break;
                                 }
                                 case 66: {
-                                    term << teleport(wherex() - mv, wherey());
-                                    term << eraseFromCursorToLineEnd;
+                                    cout << teleport(wherex() - mv, wherey());
+                                    cout << ERASE_CURSOR_TO_END;
                                     input = historyDown();
-                                    term << input;
+                                    cout << input;
                                     break;
                                 }
                                 default:
@@ -315,18 +314,18 @@ void Workspace::inputPrompt() {
                     break;
                 }
                 case 94: {
-                    term << "C";
+                    cout << "C";
                     break;
                 }
 #endif
             case '@': {
-                term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
-                term << eraseFromCursorToLineEnd;
-                term << color(FOREGROUND, Yellow) << "@ " << resetColor;
+                cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
+                cout << ERASE_CURSOR_TO_END;
+                cout << FG_YELLOW << "@ " << RESET;
                 string wsName;
                 getline(cin, wsName);
 
-                term << newLine;
+                cout << endl;
                 if (wsMap.find(wsName) != wsMap.end()) {
                     currentWorkspace = wsMap[wsName];
                 }
@@ -337,9 +336,9 @@ void Workspace::inputPrompt() {
                 return;
             }
             case '&': {
-                term << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
-                term << eraseFromCursorToLineEnd;
-                term << color(FOREGROUND, Yellow) << "& " << resetColor;
+                cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
+                cout << ERASE_CURSOR_TO_END;
+                cout << FG_YELLOW << "& " << RESET;
                 string command;
                 getline(cin, command);
 
@@ -348,22 +347,22 @@ void Workspace::inputPrompt() {
             }
             default: {
                 string character(1, static_cast<char>(c));
-                term << resetColor << character;
+                cout << RESET << character;
                 input += character;
             }
         }
 
         string suggestion = getSuggestion(*this, input);
-        term << color(FOREGROUND_BRIGHT, Black) << suggestion << resetColor;
-        term << teleport(wherex() - static_cast<int>(suggestion.size()), wherey());
+        cout << FGB_BLACK << suggestion << RESET;
+        cout << teleport(wherex() - static_cast<int>(suggestion.size()), wherey());
 
         string hint = getHint(*this, input + suggestion);
         const int xPos = wherex() - static_cast<int>(hint.size()) / 2;
-        term << saveCursorPosition
+        cout << SAVE_CURSOR_POS
                 << teleport(xPos < 0 ? 0 : xPos, wherey() + 1)
-                << eraseLine
-                << color(FOREGROUND_BRIGHT, Black) << hint
-                << loadCursorPosition;
+                << ERASE_LINE
+                << FGB_BLACK << hint
+                << RESTORE_CURSOR_POS;
     }
 }
 

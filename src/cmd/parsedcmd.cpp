@@ -22,6 +22,10 @@ string ParsedCommand::executeApp(Workspace* ws) {
     return app->run(ws, options);
 }
 
-bool ParsedCommand::isCommand() {
+bool ParsedCommand::isCommand() const {
     return commandType == COMMAND;
+}
+
+bool ParsedCommand::isSuccessed() const {
+    return commandType != EMPTY;
 }
