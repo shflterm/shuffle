@@ -1,11 +1,11 @@
+#include <iostream>
 #include <kubazip/zip/zip.h>
 #include <filesystem>
 
 #include "utils.h"
 #include "console.h"
-#include "term.h"
 
-using std::vector, std::string, std::filesystem::exists, std::filesystem::create_directories, std::filesystem::remove,
+using std::cout, std::endl, std::vector, std::string, std::filesystem::exists, std::filesystem::create_directories, std::filesystem::remove,
         std::filesystem::path, std::filesystem::temp_directory_path;
 
 string SHUFFLE = "   _____ _    _ _    _ ______ ______ _      ______           __        ___  \n"
