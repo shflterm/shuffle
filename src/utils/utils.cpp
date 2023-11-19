@@ -22,7 +22,7 @@ using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, st
 
 vector<string> splitBySpace(const string&input) {
     vector<std::string> result;
-    regex regex(R"(\"([^\"]*)\"|\(([^\"]*)\)\S+|(\S+))");
+    regex regex(R"(\"([^\"]*)\"|\(([^\"]*)(\)|)\S+|(\S+))");
     sregex_iterator iterator(input.begin(), input.end(), regex);
     sregex_iterator end;
 

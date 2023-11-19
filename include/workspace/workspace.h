@@ -34,6 +34,8 @@ public:
 
     void addHistory(const string&s);
 
+    map<string, string> getVariables();
+
     string historyUp();
 
     string historyDown();
