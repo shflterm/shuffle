@@ -356,7 +356,6 @@ void Workspace::inputPrompt() {
         }
 
         if (isAnsiSupported()) {
-            cout << "asdfsadfsadf";
             string suggestion = getSuggestion(*this, input);
             cout << fgb_black << suggestion << reset;
             cout << teleport(wherex() - static_cast<int>(suggestion.size()), wherey());
