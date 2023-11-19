@@ -53,20 +53,29 @@ string Workspace::historyDown() {
     return history[++historyIndex];
 }
 
-ParsedCommand Workspace::parse(const string&input) {
+string Workspace::processArgument(string argument) {
+    if (argument[0] == '$') argument = variables[argument.substr(1)];
+    else if (argument[argument.size() - 1] == '!')
+        argument = parse(argument.substr(0, argument.size() - 1)).executeApp(this, true);
+
+    return argument;
+}
+
+ParsedCommand Workspace::parse(string input) {
+
+    if (input[0] == '(' && input[input.size() - 1] == ')')
+        input = input.substr(1, input.size() - 2);
+
     if (std::smatch matches; regex_match(input, matches, regex("(\\w*)\\s*=\\s*(\"([^\"]*)\"|([\\s\\S]+)*)"))) {
         const string name = matches[1].str();
         string value;
-        if (matches[2].matched) {
-            value = matches[2].str();
-        }
-        else {
+        if (matches[3].matched) {
             value = matches[3].str();
         }
-        if (value[0] == '$') {
-            variables[name] = parse(value.substr(1)).executeApp(this);
+        else {
+            value = matches[2].str();
         }
-        else variables[name] = value;
+        variables[name] = processArgument(value);
 
         return ParsedCommand(VARIABLE);
     }
@@ -89,10 +98,7 @@ ParsedCommand Workspace::parse(const string&input) {
 
     vector<string> args;
     for (int i = 1; i < inSpl.size(); ++i) {
-        for (const auto&[name, value]: variables) {
-            inSpl[i] = replace(inSpl[i], "{" + name + "}", value);
-        }
-        args.push_back(inSpl[i]);
+        args.push_back(processArgument(inSpl[i]));
     }
 
     ParsedCommand parsed = parseCommand(app.get(), args);
@@ -164,7 +170,7 @@ string getSuggestion(const Workspace&ws, const string&input) {
     return suggestion;
 }
 
-string getHint([[maybe_unused]] const Workspace&ws, const string&input) {
+string getHint(const Workspace&ws, const string&input) {
     const vector<string> args = split(input, regex(R"(\s+)"));
 
     if (args.size() == 1) {

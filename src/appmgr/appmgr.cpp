@@ -93,7 +93,7 @@ App::App(const string&name) {
     if (apiVersion == 1)
         loadVersion1(absolute(appPath).string(), appRoot);
     else
-        error("App '" + name + "' has an invalid API version!");
+        error("App '" + name + "' has an invalid API version! (" + std::to_string(apiVersion) + ")");
 }
 
 void loadApp(const string&name) {

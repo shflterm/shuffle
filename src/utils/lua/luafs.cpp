@@ -102,6 +102,12 @@ int lua_copyFile(lua_State *L) {
     return 0;
 }
 
+int lua_absolute(lua_State *L) {
+    path p = lua_getPath(L, luaL_checkstring(L, 1));
+    lua_pushstring(L, absolute(p).string().c_str());
+    return 1;
+}
+
 void initFileSystem(lua_State *L) {
     lua_newtable(L);
 
@@ -134,6 +140,9 @@ void initFileSystem(lua_State *L) {
 
     lua_pushcfunction(L, lua_copyFile);
     lua_setfield(L, -2, "copy");
+
+    lua_pushcfunction(L, lua_absolute);
+    lua_setfield(L, -2, "absolute");
 
     lua_setglobal(L, "fs");
 }

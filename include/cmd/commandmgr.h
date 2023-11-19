@@ -19,9 +19,9 @@ class Command;
 
 using std::pair, std::shared_ptr, std::string, std::vector, std::map;
 
-typedef std::function<string(Workspace*, map<string, string>&)> cmd_t;
+typedef std::function<string(Workspace*, map<string, string>&, bool)> cmd_t;
 
-string do_nothing(Workspace* ws, map<string, string>&optionValues);
+string do_nothing(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode);
 
 enum OptionType {
     TEXT_T,
@@ -67,7 +67,7 @@ public:
 
     [[nodiscard]] const vector<string>& getExamples() const;
 
-    string run(Workspace* ws, map<string, string>&optionValues) const;
+    string run(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) const;
 
     [[nodiscard]] string createHint() const;
 
@@ -82,7 +82,7 @@ public:
 
     explicit Command(string name);
 
-    Command(Json::Value info, const string&libPath);
+    Command(Json::Value appInfo, const string&libPath);
 
     shared_ptr<Command> parent;
 };

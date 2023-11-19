@@ -13,13 +13,13 @@ ParsedCommand::ParsedCommand(const CommandType commandType) : commandType(comman
 ParsedCommand::ParsedCommand() : commandType(EMPTY) {
 }
 
-string ParsedCommand::executeApp(Workspace* ws) {
-    if (commandType == SNIPPET) return "SNIPPET";
-    if (commandType == VARIABLE) return "VARIABLE";
-    if (commandType == EMPTY) return "EMPTY";
+string ParsedCommand::executeApp(Workspace* ws, const bool backgroundMode) {
+    if (commandType == SNIPPET) return "IT_IS_SNIPPET";
+    if (commandType == VARIABLE) return "IT_IS_VARIABLE";
+    if (commandType == EMPTY) return "CMDTYPE_EMPTY";
     if (app == nullptr) return "APP_IS_NULL";
 
-    return app->run(ws, options);
+    return app->run(ws, options, backgroundMode);
 }
 
 bool ParsedCommand::isCommand() const {

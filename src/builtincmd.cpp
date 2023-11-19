@@ -13,15 +13,15 @@
 
 using std::cout, std::endl, std::make_shared;
 
-string shflReloadCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
-    info("Reloading command...");
+string shflReloadCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
+    if (!backgroundMode) info("Reloading command...");
     loadCommands();
     loadSnippets();
-    success("Reloaded all commands!");
+    if (!backgroundMode) success("Reloaded all commands!");
     return "true";
 }
 
-string shflUpgradeCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
+string shflUpgradeCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
     if (checkUpdate(false)) {
         updateShuffle();
         return "true";
@@ -29,38 +29,38 @@ string shflUpgradeCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<strin
     return "false";
 }
 
-string shflCreditsCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
-    cout << createCreditText();
+string shflCreditsCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
+    if (!backgroundMode) cout << createCreditText();
     return "thanks";
 }
 
-string shflCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
+string shflCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
     // TODO: Print How to use
     return "true";
 }
 
-string appMgrAddCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
+string appMgrAddCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
     return installApp(optionValues["app"]) ? "true" : "false";
 }
 
-string appMgrRemoveCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues) {
+string appMgrRemoveCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
     return removeApp(optionValues["app"]) ? "true" : "false";
 }
 
-string appMgrRepoAddCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
+string appMgrRepoAddCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
     return addRepo(optionValues["repo"]) ? "true" : "false";
 }
 
-string appMgrRepoRemoveCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues) {
+string appMgrRepoRemoveCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
     return removeRepo(optionValues["repo"]) ? "true" : "false";
 }
 
-string appMgrCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
+string appMgrCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
     // TODO: Print How to use
     return "true";
 }
 
-string helpCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues) {
+string helpCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
     if (optionValues.count("command") == 0) {
         cout << "== Shuffle Help ==" << endl
                 << "Version: " << SHUFFLE_VERSION.str() << endl << endl
@@ -115,18 +115,18 @@ string helpCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues)
     return cmd->getName();
 }
 
-string snippetCmd([[maybe_unused]] Workspace* ws, map<string, string>&optionValues) {
+string snippetCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
     //snf create aa help cd
     const string snippetName = optionValues["create"];
     const string cmd = optionValues["value"];
 
     addSnippet(snippetName, cmd);
-    cout << "Snippet Created: " << snippetName << " => " << cmd << endl;
+    if (!backgroundMode) cout << "Snippet Created: " << snippetName << " => " << cmd << endl;
 
     return snippetName;
 }
 
-string clearCmd([[maybe_unused]] Workspace* ws, [[maybe_unused]] map<string, string>&optionValues) {
+string clearCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
     if (!isAnsiSupported()) {
         error("'clear' cannot be used on terminals that do not support ANSI escape codes.");
         return "false";

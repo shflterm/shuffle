@@ -20,7 +20,7 @@ vector<string> findSuggestion(const Workspace& ws,
     return res;
 }
 
-vector<string> createSuggestions([[maybe_unused]] const Workspace& ws,
+vector<string> createSuggestions(const Workspace& ws,
                                  const string &str,
                                  const vector<string> &DICTIONARY) {
     vector<string> res;

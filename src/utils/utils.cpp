@@ -22,7 +22,7 @@ using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, st
 
 vector<string> splitBySpace(const string&input) {
     vector<std::string> result;
-    regex regex("\"([^\"]*)\"|(\\S+)");
+    regex regex(R"(\"([^\"]*)\"|\(([^\"]*)\)\S+|(\S+))");
     sregex_iterator iterator(input.begin(), input.end(), regex);
     sregex_iterator end;
 
@@ -143,9 +143,9 @@ string readTextFromWeb(const string&url) {
 int lastPercent = -1;
 
 // ReSharper disable once CppDFAConstantFunctionResult
-int progress_callback([[maybe_unused]] void* clientp, const curl_off_t dltotal,
-                      const curl_off_t dlnow, [[maybe_unused]] curl_off_t ultotal,
-                      [[maybe_unused]] curl_off_t ulnow) {
+int progress_callback(void* clientp, const curl_off_t dltotal,
+                      const curl_off_t dlnow, curl_off_t ultotal,
+                      curl_off_t ulnow) {
     if (dltotal == 0) return 0;
 
     const int percent = static_cast<int>(static_cast<float>(dlnow) / static_cast<float>(dltotal) * 100);
@@ -183,7 +183,7 @@ bool downloadFile(const string&url, const string&file) {
     return false;
 }
 
-int onExtractEntry(const char* filename, [[maybe_unused]] void* arg) {
+int onExtractEntry(const char* filename, void* arg) {
     if (const string name = path(filename).filename().string(); !name.empty()) {
         cout << teleport(0, wherey()) << erase_line << "Extracting... (" << name << ")" << endl;
     }

@@ -29,7 +29,7 @@ public:
     Command* app;
     map<string, string> options;
 
-    string executeApp(Workspace* ws);
+    string executeApp(Workspace* ws, bool backgroundMode = false);
 
     bool isCommand() const;
 
