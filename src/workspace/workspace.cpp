@@ -58,6 +58,8 @@ string Workspace::historyDown() {
 }
 
 string Workspace::processArgument(string argument) {
+    if (argument[0] == '"' && argument.back() == '"') argument = argument.substr(1, argument.size() - 2);
+
     if (argument[0] == '$') argument = variables[argument.substr(1)];
     else if (argument[argument.size() - 1] == '!')
         argument = parse(argument.substr(0, argument.size() - 1)).executeApp(this, true);

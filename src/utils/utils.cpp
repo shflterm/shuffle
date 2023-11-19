@@ -21,25 +21,21 @@ using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, st
         std::filesystem::temp_directory_path;
 
 vector<string> splitBySpace(const string&input) {
-    vector<std::string> result;
-    regex regex(R"(\"([^\"]*)\"|\(([^\"]*)(\)|)\S+|(\S+))");
-    sregex_iterator iterator(input.begin(), input.end(), regex);
-    sregex_iterator end;
+    std::regex regex_pattern(R"((\S|^)\"[^"]*"|\([^)]*\)|"[^"]*"|\S+)");
+    std::vector<std::string> tokens;
 
-    while (iterator != end) {
-        smatch match = *iterator;
-        string token = match.str();
+    auto words_begin = std::sregex_iterator(input.begin(), input.end(), regex_pattern);
+    auto words_end = std::sregex_iterator();
 
-        // Remove leading and trailing quotes if present
-        if (!token.empty() && token.front() == '"' && token.back() == '"') {
-            token = token.substr(1, token.size() - 2);
-        }
-
-        result.push_back(token);
-        ++iterator;
+    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+        if (const std::smatch&match = *i;
+            !tokens.empty() &&
+            tokens.back()[tokens.back().size() - 1] == ')' && match.str()[0] == '!')
+            tokens.back() += match.str();
+        else tokens.push_back(match.str());
     }
 
-    return result;
+    return tokens;
 }
 
 vector<string> split(const string&s, const regex&regex) {
