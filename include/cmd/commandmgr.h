@@ -71,6 +71,10 @@ public:
 
     [[nodiscard]] string createHint() const;
 
+    Command(string  name, string  description, string  usage,
+        const vector<shared_ptr<Command>>& subcommands, const vector<CommandOption>& options,
+        const vector<string>& aliases, const vector<string>& examples, cmd_t  cmd);
+
     Command(string name, string description, const vector<Command>&subcommands, const vector<CommandOption>&options,
             cmd_t cmd);
 
@@ -81,8 +85,6 @@ public:
     Command(string name, string description, cmd_t cmd);
 
     explicit Command(string name);
-
-    Command(Json::Value appInfo, const string&libPath);
 
     shared_ptr<Command> parent;
 };
