@@ -1,10 +1,8 @@
 #include "parsedcmd.h"
 
-#include <utility>
-
 #include "appmgr.h"
 
-ParsedCommand::ParsedCommand(Command* app) : app(app), commandType(COMMAND) {
+ParsedCommand::ParsedCommand(const shared_ptr<Command>&app) : app(app), commandType(COMMAND) {
 }
 
 ParsedCommand::ParsedCommand(const CommandType commandType) : commandType(commandType) {

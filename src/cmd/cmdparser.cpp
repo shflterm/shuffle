@@ -5,7 +5,7 @@
 #include "console.h"
 #include "utils.h"
 
-ParsedCommand parseCommand(Command* app, const vector<string>&args) {
+ParsedCommand parseCommand(shared_ptr<Command> app, const vector<string>&args) {
     if (app == nullptr) return ParsedCommand(EMPTY);
 
     vector<string> newArgs = args;
@@ -13,7 +13,7 @@ ParsedCommand parseCommand(Command* app, const vector<string>&args) {
         const string&item = args[i];
         for (const auto&subcommand: app->getSubcommands()) {
             if (subcommand->getName() == trim(item)) {
-                app = subcommand.get();
+                app = subcommand;
                 newArgs.clear();
                 newArgs.insert(newArgs.begin(), args.begin() + i + 1, args.end());
                 break;
@@ -29,7 +29,7 @@ ParsedCommand parseCommand(Command* app, const vector<string>&args) {
     return parsed;
 }
 
-map<string, string>* parseOptions(Command* app, const vector<string>&args) {
+map<string, string>* parseOptions(const shared_ptr<Command>& app, const vector<string>&args) {
     auto* parsedOptions = new map<string, string>();
 
     vector<CommandOption> options = app->getOptions();

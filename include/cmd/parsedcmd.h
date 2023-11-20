@@ -23,10 +23,10 @@ enum CommandType {
 };
 
 class ParsedCommand {
-    CommandType commandType;
+    CommandType commandType = EMPTY;
 
 public:
-    Command* app;
+    shared_ptr<Command> app;
     map<string, string> options;
 
     string executeApp(Workspace* ws, bool backgroundMode = false);
@@ -35,7 +35,7 @@ public:
 
     bool isSuccessed() const;
 
-    explicit ParsedCommand(Command* app);
+    explicit ParsedCommand(const shared_ptr<Command>&app);
 
     explicit ParsedCommand(CommandType commandType);
 
