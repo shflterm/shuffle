@@ -6,10 +6,11 @@
 #include <string>
 #include <json/json.h>
 #include <memory>
+#include <python3.10/Python.h>
 
 #include "lua/luaapi.h"
 
-using std::make_shared, std::cout;
+using std::make_shared, std::cout, std::to_string;
 
 #ifdef _WIN32
 #define NOMINMAX 1
@@ -209,6 +210,111 @@ Command loadCommandVersion1(Json::Value appInfo, const string&libPath) {
     return Command(name, description, usage, subcommands, options, aliases, examples, cmd);
 }
 
+Command loadCommandVersion2(Json::Value appInfo, const string&libPath) {
+    // NOLINT(*-no-recursion)
+    string name = appInfo["name"].asString();
+    string usage = appInfo["usage"].asString();
+    string description = appInfo["description"].asString();
+
+    const string commandPath = libPath + name + "/";
+
+    vector<shared_ptr<Command>> subcommands;
+    for (const auto&subcommandInfo: appInfo["subcommands"]) {
+        subcommands.push_back(make_shared<Command>(loadCommandVersion1(subcommandInfo, commandPath + "/")));
+    }
+
+    vector<CommandOption> options;
+    for (const auto&option: appInfo["options"]) {
+        const string optionName = option["name"].asString();
+        OptionType type;
+        if (option["type"].asString() == "string") type = TEXT_T;
+        else if (option["type"].asString() == "boolean") type = BOOL_T;
+        else if (option["type"].asString() == "integer") type = INT_T;
+        else {
+            error("Error: Invalid option type in " + optionName + ".");
+            type = TEXT_T;
+        }
+        const string optionDescription = option["description"].asString();
+        vector<string> aliases;
+        for (const auto&alias: option["aliases"]) aliases.push_back(alias.asString());
+        options.emplace_back(optionName, optionDescription, type, aliases);
+    }
+
+    vector<string> aliases;
+    for (const auto&alias: appInfo["aliases"]) aliases.push_back(alias.asString());
+
+    vector<string> examples;
+    for (const auto&example: appInfo["examples"]) examples.push_back(example.asString());
+
+    cmd_t cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) -> string {
+        Py_Initialize();
+
+        if (FILE* file = fopen((commandPath + "command.py").c_str(), "r"); file != nullptr) {
+            PyRun_SimpleString(("import sys\n"
+                                "sys.path.append(\"" + replace(commandPath, "\\", "\\\\") + "\")\n").c_str());
+            PyRun_SimpleFile(file, "command.py");
+            fclose(file);
+        }
+        else {
+            PyErr_Print();
+        }
+
+        string result;
+        PyObject* pName = PyUnicode_DecodeFSDefault("command");
+        PyObject* pModule = PyImport_Import(pName);
+        Py_XDECREF(pName);
+
+        if (pModule != nullptr) {
+            if (PyObject* pFunc = PyObject_GetAttrString(pModule, "entrypoint"); pFunc && PyCallable_Check(pFunc)) {
+                PyObject* pWorkspace = PyCapsule_New(ws, nullptr, nullptr);
+
+                PyObject* pOptionValues = PyDict_New();
+                for (const auto&[key, value]: optionValues)
+                    PyDict_SetItemString(pOptionValues, key.c_str(), PyUnicode_FromString(value.c_str()));
+
+                PyObject* pArgs = PyTuple_Pack(3, pWorkspace, pOptionValues, PyBool_FromLong(backgroundMode));
+                PyObject* pValue = PyObject_CallObject(pFunc, pArgs);
+                Py_XDECREF(pArgs);
+
+                if (pValue != nullptr) {
+                    // Process the result
+                    if (PyNumber_Check(pValue)) {
+                        result = to_string(PyLong_AsLong(pValue));
+                    }
+                    else if (PyUnicode_Check(pValue)) {
+                        result = PyUnicode_AsUTF8(pValue);
+                    }
+                    else {
+                        PyErr_Print();
+                    }
+
+                    Py_XDECREF(pValue);
+                }
+                else {
+                    PyErr_Print();
+                }
+
+                Py_XDECREF(pWorkspace);
+                Py_XDECREF(pFunc);
+            }
+            else {
+                PyErr_Print();
+            }
+
+            Py_XDECREF(pModule);
+        }
+        else {
+            PyErr_Print();
+        }
+
+        Py_Finalize();
+        return result;
+    };
+
+    Command command = Command(name, description, usage, subcommands, options, aliases, examples, cmd);
+    return command;
+}
+
 void App::loadVersion1(const string&appPath, Json::Value appRoot) {
     this->name = appRoot["name"].asString();
     description = appRoot["description"].asString();
@@ -219,6 +325,19 @@ void App::loadVersion1(const string&appPath, Json::Value appRoot) {
     for (const auto&commandInfo: commandsJson) {
         commands.push_back(
             make_shared<Command>(loadCommandVersion1(commandInfo, appPath + "/lib/")));
+    }
+}
+
+void App::loadVersion2(const string&appPath, Json::Value appRoot) {
+    this->name = appRoot["name"].asString();
+    description = appRoot["description"].asString();
+    author = appRoot["author"].asString();
+    version = appRoot["version"].asString();
+
+    Json::Value commandsJson = appRoot["commands"];
+    for (const auto&commandInfo: commandsJson) {
+        commands.push_back(
+            make_shared<Command>(loadCommandVersion2(commandInfo, appPath + "/lib/")));
     }
 }
 
@@ -234,6 +353,8 @@ App::App(const string&name) {
 
     if (apiVersion == 1)
         loadVersion1(absolute(appPath).string(), appRoot);
+    else if (apiVersion == 2)
+        loadVersion2(absolute(appPath).string(), appRoot);
     else
         error("App '" + name + "' has an invalid API version! (" + std::to_string(apiVersion) + ")");
 }

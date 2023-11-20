@@ -24,6 +24,8 @@ public:
 
     void loadVersion1(const string&appPath, Json::Value appRoot);
 
+    void loadVersion2(const string&appPath, Json::Value appRoot);
+
     [[nodiscard]] string getName() const {
         return name;
     }
