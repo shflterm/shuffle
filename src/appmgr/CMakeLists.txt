@@ -25,6 +25,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE CURL::libcurl)
 find_package(kubazip CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE kubazip::kubazip)
 
+find_package(Python3 COMPONENTS Development REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE Python3::Python)
+
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ../../include ../../include/cmd ../../include/app ../../include/suggestion ../../include/workspace ../../include/utils)

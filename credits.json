@@ -6,6 +6,7 @@
     {"name": "JsonCPP", "by": "@open-source-parsers"},
     {"name": "curl", "by": "https://curl.se"},
     {"name": "zip", "by": "@kuba--"},
-    {"name": "lua", "by": "https://lua.org/"}
+    {"name": "lua", "by": "https://lua.org/"},
+    {"name": "python3", "by": "https://python.org/"}
   ]
 }

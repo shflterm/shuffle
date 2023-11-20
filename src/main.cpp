@@ -1,6 +1,7 @@
 #include <iostream>
 #include <filesystem>
 #include <csignal>
+#include <python3.10/Python.h>
 
 #include "console.h"
 #include "utils.h"
