@@ -41,8 +41,7 @@ const string& Command::getUsage() const {
 
 string Command::run(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) const {
     if (!cmd) {
-        error("Invalid");
-        return "ERROR,....";
+        return "Invalid command";
     }
     return cmd(ws, optionValues, backgroundMode);
 }

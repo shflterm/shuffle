@@ -8,8 +8,7 @@ ParsedCommand::ParsedCommand(const shared_ptr<Command>&app) : app(app), commandT
 ParsedCommand::ParsedCommand(const CommandType commandType) : commandType(commandType) {
 }
 
-ParsedCommand::ParsedCommand() : commandType(EMPTY) {
-}
+ParsedCommand::ParsedCommand() = default;
 
 string ParsedCommand::executeApp(Workspace* ws, const bool backgroundMode) {
     if (commandType == SNIPPET) return "IT_IS_SNIPPET";

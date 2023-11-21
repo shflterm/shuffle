@@ -53,4 +53,6 @@ void setShflJson(const string&part, Json::Value value);
 
 bool checkUpdate(bool checkBackground = true);
 
+std::string generateRandomString(int length);
+
 #endif //SHUFFLE_INCLUDE_UTILS_H_

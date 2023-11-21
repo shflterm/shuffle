@@ -1,7 +1,9 @@
 #include "builtincmd.h"
 
 #include <iostream>
+#include <job.h>
 #include <memory>
+#include <thread>
 
 #include "console.h"
 #include "downloader.h"
@@ -139,6 +141,25 @@ string clearCmd(Workspace* ws, map<string, string>&optionValues, const bool back
     return "true";
 }
 
+string jobStartCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
+    jobs.emplace_back(optionValues["command"]);
+    jobs.back().start(ws);
+    const string id = jobs.back().getId();
+    if (!backgroundMode) info("New Job started: " + id);
+    return id;
+}
+
+string jobListCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
+    if (backgroundMode) return std::to_string(jobs.size());
+    for (auto&job: jobs)
+        cout << job.getId() << " (" << job.getStatus() << ") : " << job.command << endl;
+    return std::to_string(jobs.size());
+}
+
+string waitCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
+    std::this_thread::sleep_for(std::chrono::seconds(20));
+    return "wip";
+}
 
 void loadCommands() {
     commands.clear();
@@ -181,6 +202,17 @@ void loadCommands() {
     )));
     commands.push_back(make_shared<Command>(Command(
         "clear", "Manage Snippets", clearCmd
+    )));
+    commands.push_back(make_shared<Command>(Command(
+        "job", "Manage background tasks", {
+            Command("start", "Start a new background job.", {
+                        CommandOption("command", "", TEXT_T)
+                    }, jobStartCmd),
+            Command("list", "List jobs", jobListCmd),
+        }, do_nothing
+    )));
+    commands.push_back(make_shared<Command>(Command(
+        "wait", "Wait 5 second", waitCmd
     )));
 
     unloadAllApps();
