@@ -251,7 +251,7 @@ Command loadCommandVersion2(Json::Value appInfo, const string&libPath) {
 
         if (FILE* file = fopen((commandPath + "command.py").c_str(), "r"); file != nullptr) {
             PyRun_SimpleString(("import sys\n"
-                                "sys.path.append(\"" + replace(commandPath, "\\", "\\\\") + "\")\n").c_str());
+                "sys.path.append(\"" + replace(commandPath, "\\", "\\\\") + "\")\n").c_str());
             PyRun_SimpleFile(file, "command.py");
             fclose(file);
         }
@@ -373,8 +373,8 @@ bool addApp(const string&name) {
 
     Json::Value value(Json::objectValue);
     value["name"] = name;
-    for (const auto&item: commands) {
-        if (item->getName() == name) return false;
+    for (const auto&item: commandList) {
+        if (item["name"] == name) return false;
     }
 
     commandList.append(value);

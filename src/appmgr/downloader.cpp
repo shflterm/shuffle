@@ -4,6 +4,7 @@
 #include <string>
 #include <json/json.h>
 #include <filesystem>
+#include <Python.h>
 
 #include "console.h"
 #include "utils.h"
@@ -20,6 +21,11 @@ Json::Value getRepo(const string&repo) {
     return root;
 }
 
+void downloadPythonPkg(const string&pkg) {
+    //install package
+    system(("python -m pip install " + pkg + " --user").c_str());
+}
+
 vector<string> getRepos() {
     vector<string> result;
     Json::Value repos = getShflJson("repos");
@@ -30,14 +36,15 @@ vector<string> getRepos() {
 bool installApp(string&name) {
     bool installed = false;
 
+    const path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp");
+
     const path localApp = currentWorkspace->currentDirectory() / name;
     if (const path appShfl = localApp / "app.shfl";
         exists(localApp) && exists(appShfl)) {
         name = path(name).filename().string();
         info("Start downloading '" + name + "' from '" + absolute(localApp).parent_path().string() +
              "'...");
-        const path targetPath = DOT_SHUFFLE / "apps" / (name + ".shflapp");
-        copy(absolute(localApp), absolute(targetPath), copy_options::overwrite_existing | copy_options::recursive);
+        copy(absolute(localApp), absolute(appPath), copy_options::overwrite_existing | copy_options::recursive);
         success("Load Completed!");
         installed = true;
     }
@@ -57,13 +64,10 @@ bool installApp(string&name) {
             if (const int ver = repo["version"].asInt(); ver == 1) {
                 if (const string downloadFrom = replace(repo["download_at"].asString(), "{APP}", name); downloadFile(
                     downloadFrom, downloadTo)) {
-                    cout << teleport(0, wherey() - 1) << erase_line;
-                    success("Download Completed!");
+                    info("Downloading... (Done!)");
+                    cout << "\n";
 
-                    cout << teleport(0, wherey() - 1) << erase_line;
-                    extractZip(downloadTo, DOT_SHUFFLE / "apps" / (name + ".shflapp"));
-                    cout << teleport(0, wherey()) << erase_line;
-                    success("Extracted!");
+                    extractZip(downloadTo, appPath);
                     installed = true;
                     break;
                 }
@@ -89,11 +93,21 @@ bool installApp(string&name) {
         error("Failed to add app. (The app has already been added.)");
         return false;
     }
-    else {
-        cout << teleport(0, wherey() - 1) << erase_line;
-        success("Done!");
-        return true;
+
+    path appInfo = appPath / "app.shfl";
+
+    Json::Value appInfoRoot;
+    Json::Reader appInfoReader;
+    appInfoReader.parse(readFile(appInfo), appInfoRoot, false);
+
+    for (const auto&pkg: appInfoRoot["python-pkgs"]) {
+        downloadPythonPkg(pkg.asString());
     }
+
+
+    cout << teleport(0, wherey() - 1) << erase_line;
+    success("Done!");
+    return true;
 }
 
 bool removeApp(const string&name) {

@@ -20,6 +20,8 @@ using std::cout, std::endl;
 using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, std::smatch, std::to_string,
         std::filesystem::temp_directory_path;
 
+string pythonPlatform;
+
 vector<string> splitBySpace(const string&input) {
     std::regex regex_pattern(R"((\S|^)\"[^"]*"|\([^)]*\)|"[^"]*"|\S+)");
     std::vector<std::string> tokens;
@@ -181,7 +183,7 @@ bool downloadFile(const string&url, const string&file) {
 
 int onExtractEntry(const char* filename, void* arg) {
     if (const string name = path(filename).filename().string(); !name.empty()) {
-        cout << teleport(0, wherey()) << erase_line << "Extracting... (" << name << ")" << endl;
+        cout << erase_line << "Extracting... (" << name << ")" << teleport(0, wherey() - 1) << endl;
     }
     return 0;
 }
@@ -189,6 +191,7 @@ int onExtractEntry(const char* filename, void* arg) {
 path extractZip(const path&zipFile, path extractPath) {
     int arg = 0;
     zip_extract(zipFile.string().c_str(), extractPath.string().c_str(), onExtractEntry, &arg);
+    cout << erase_line << "Extracting... (Done!)" << endl;
     return extractPath;
 }
 
