@@ -1,5 +1,6 @@
 #include "job.h"
 
+#include "console.h"
 #include "appmgr.h"
 
 Job::Job(const shared_ptr<Command>&app) : command(app), jobType(COMMAND) {
@@ -11,10 +12,22 @@ Job::Job(const JobType commandType) : jobType(commandType) {
 Job::Job() = default;
 
 string Job::start(Workspace* ws, const bool backgroundMode) {
-    if (jobType == SNIPPET) return "IT_IS_SNIPPET";
-    if (jobType == VARIABLE) return "IT_IS_VARIABLE";
-    if (jobType == EMPTY) return "CMD_NOT_FOUND";
-    if (command == nullptr) return "APP_IS_NULL";
+    if (jobType == SNIPPET) {
+        error("Cannot run snippet directly!");
+        return "IT_IS_SNIPPET";
+    }
+    if (jobType == VARIABLE) {
+        error("Cannot run variable directly!");
+        return "IT_IS_VARIABLE";
+    }
+    if (jobType == EMPTY) {
+        error("Cannot run empty job!");
+        return "IT_IS_EMPTY";
+    }
+    if (command == nullptr) {
+        error("Invalid command!");
+        return "INVALID_COMMAND";
+    }
 
     return command->run(ws, options, backgroundMode, id);
 }
