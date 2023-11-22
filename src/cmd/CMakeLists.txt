@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(commandmgr)
 
-set(COMMAND_SRC commandmgr.cpp parsedcmd.cpp cmdparser.cpp)
+set(COMMAND_SRC commandmgr.cpp job.cpp cmdparser.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 

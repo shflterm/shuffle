@@ -13,7 +13,7 @@
 
 class Workspace;
 
-#include "parsedcmd.h"
+#include "job.h"
 
 using std::string, std::vector, std::map, std::filesystem::path, std::filesystem::current_path, std::shared_ptr;
 
@@ -43,7 +43,7 @@ public:
 
     string processArgument(string argument);
 
-    shared_ptr<ParsedCommand> parse(string input);
+    shared_ptr<Job> createJob(string &input);
 
     void inputPrompt();
 

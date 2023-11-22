@@ -271,7 +271,7 @@ bool checkUpdate(const bool checkBackground) {
     return false;
 }
 
-std::string generateRandomString(int length) {
+std::string generateRandomString(const int length) {
     std::string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
     std::random_device rd;

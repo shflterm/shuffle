@@ -5,44 +5,47 @@
 #ifndef JOB_H
 #define JOB_H
 
-#include <ostream>
 #include <string>
 #include <utility>
 #include <thread>
+
 #include "workspace.h"
+#include "job.h"
 
 using std::string, std::thread;
 
-enum job_status {
+enum TaskStatus {
     WAITING,
     RUNNING,
     STOPPED,
     FINISHED
 };
 
-class Job {
-    string jobId;
-    job_status status = WAITING;
-    thread jobThread;
+class Task {
+    string taskId;
+    TaskStatus status = WAITING;
+    thread taskThread;
 
 public:
     string command;
+    shared_ptr<Job> job;
 
-    explicit Job(string command);
+    explicit Task(string command);
 
-    Job(Job&&other) noexcept : jobThread(std::move(other.jobThread)) {
-        jobId = other.jobId;
+    Task(Task&&other) noexcept : taskThread(std::move(other.taskThread)) {
+        taskId = other.taskId;
         status = other.status;
         command = other.command;
+        job = other.job;
     }
 
-    Job& operator=(Job&&other) noexcept {
+    Task& operator=(Task&&other) noexcept {
         if (this != &other) {
-            jobId = other.jobId;
+            taskId = other.taskId;
             status = other.status;
             command = other.command;
 
-            jobThread = std::move(other.jobThread);
+            taskThread = std::move(other.taskThread);
         }
         return *this;
     }
@@ -51,11 +54,11 @@ public:
 
     void stop();
 
-    [[nodiscard]] job_status getStatus() const;
+    [[nodiscard]] TaskStatus getStatus() const;
 
     string getId();
 };
 
-extern vector<Job> jobs;
+extern vector<Task> tasks;
 
 #endif //JOB_H

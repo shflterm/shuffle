@@ -8,7 +8,7 @@
 #include "utils.h"
 #include "suggestion.h"
 #include "workspace/snippetmgr.h"
-#include "parsedcmd.h"
+#include "..\..\include\cmd\job.h"
 #include "cmdparser.h"
 
 using std::cout, std::endl, std::cin, std::stringstream, std::make_shared;
@@ -62,14 +62,15 @@ string Workspace::processArgument(string argument) {
 
     if (argument[0] == '$') argument = variables[argument.substr(1)];
     else if (argument[argument.size() - 1] == '!') {
-        if (const shared_ptr<ParsedCommand> parsed = parse(argument.substr(0, argument.size() - 1));
-            parsed != nullptr && parsed->isSuccessed()) argument = parsed->executeApp(this, true);
+        string cmd = argument.substr(0, argument.size() - 1);
+        if (const shared_ptr<Job> job = createJob(cmd);
+            job != nullptr && job->isSuccessed()) argument = job->start(this, true);
     }
 
     return argument;
 }
 
-shared_ptr<ParsedCommand> Workspace::parse(string input) {
+shared_ptr<Job> Workspace::createJob(string &input) {
     if (input[0] == '(' && input[input.size() - 1] == ')')
         input = input.substr(1, input.size() - 2);
 
@@ -84,7 +85,7 @@ shared_ptr<ParsedCommand> Workspace::parse(string input) {
         }
         variables[name] = processArgument(value);
 
-        return make_shared<ParsedCommand>(ParsedCommand(VARIABLE));
+        return make_shared<Job>(Job(VARIABLE));
     }
 
     vector<string> inSpl = splitBySpace(input);
@@ -94,12 +95,13 @@ shared_ptr<ParsedCommand> Workspace::parse(string input) {
     for (const auto&item: snippets) {
         if (item->getName() != inSpl[0]) continue;
         isSnippetFound = true;
+        string target = item->getTarget();
 
-        cout << "[*] " << item->getTarget() << endl << endl;
-        parse(item->getTarget())->executeApp(this);
+        cout << "[*] " << target << endl << endl;
+        createJob(target)->start(this);
     }
 
-    if (isSnippetFound) return make_shared<ParsedCommand>(ParsedCommand(SNIPPET));
+    if (isSnippetFound) return make_shared<Job>(Job(SNIPPET));
 
     shared_ptr<Command> app = findCommand(inSpl[0]);
 
@@ -114,22 +116,22 @@ shared_ptr<ParsedCommand> Workspace::parse(string input) {
             app = make_shared<Command>(Command(
                 "SCRIPT", "A SCRIPT COMMAND",
                 {CommandOption("script", "scriptPath", TEXT_T)},
-                [=](Workspace* workspace, map<string, string>&optionValues, bool backgroundMode) {
+                [=](Workspace* ws, map<string, string>&options, bool bgMode, string id) {
                     vector<string> scriptCommands;
-                    for (const auto&line: split(readFile(path(optionValues["script"])), regex("\n"))) {
+                    for (const auto&line: split(readFile(path(options["script"])), regex("\n"))) {
                         scriptCommands.push_back(trim(line));
                     }
 
-                    for (const auto&cmd: scriptCommands) {
-                        shared_ptr<ParsedCommand> parsed = parse(cmd);
-                        parsed->executeApp(this);
+                    for (auto cmd : scriptCommands) {
+                        const shared_ptr<Job> job = createJob(cmd);
+                        job->start(this);
                     }
                     return "true";
                 }));
         }
     }
 
-    shared_ptr<ParsedCommand> parsed = make_shared<ParsedCommand>(parseCommand(app, args));
+    shared_ptr<Job> parsed = make_shared<Job>(parseCommand(app, args));
     return parsed;
 }
 
@@ -183,8 +185,8 @@ void Workspace::inputPrompt() {
                 if (!input.empty()) {
                     cout << erase_line;
                     addHistory(input);
-                    shared_ptr<ParsedCommand> parsed = parse(input);
-                    if (!parsed->isSuccessed()) {
+                    shared_ptr<Job> job = createJob(input);
+                    if (!job->isSuccessed()) {
                         vector<string> inSpl = splitBySpace(input);
                         error("Sorry. Command '$0' not found.", {inSpl[0]});
                         pair similarWord = {1000000000, Command("")};
@@ -199,7 +201,7 @@ void Workspace::inputPrompt() {
                         return;
                     }
 
-                    parsed->executeApp(this);
+                    job->start(this);
                 }
                 return;
             }
