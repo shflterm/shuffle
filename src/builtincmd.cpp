@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <memory>
+#include <python3.10/Python.h>
 
 #include "console.h"
 #include "downloader.h"
@@ -10,18 +11,20 @@
 #include "version.h"
 #include "snippetmgr.h"
 #include "appmgr.h"
+#include "job.h"
+#include "task.h"
 
 using std::cout, std::endl, std::make_shared;
 
-string shflReloadCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
-    if (!backgroundMode) info("Reloading command...");
+string shflReloadCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    if (!bgMode) info("Reloading command...");
     loadCommands();
     loadSnippets();
-    if (!backgroundMode) success("Reloaded all commands!");
+    if (!bgMode) success("Reloaded all commands!");
     return "true";
 }
 
-string shflUpgradeCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
+string shflUpgradeCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     if (checkUpdate(false)) {
         updateShuffle();
         return "true";
@@ -29,39 +32,39 @@ string shflUpgradeCmd(Workspace* ws, map<string, string>&optionValues, const boo
     return "false";
 }
 
-string shflCreditsCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
-    if (!backgroundMode) cout << createCreditText();
+string shflCreditsCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    if (!bgMode) cout << createCreditText();
     return "thanks";
 }
 
-string shflCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
+string shflCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     // TODO: Print How to use
     return "true";
 }
 
-string appMgrAddCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
-    return installApp(optionValues["app"]) ? "true" : "false";
+string appMgrAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+    return installApp(options["app"]) ? "true" : "false";
 }
 
-string appMgrRemoveCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
-    return removeApp(optionValues["app"]) ? "true" : "false";
+string appMgrRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+    return removeApp(options["app"]) ? "true" : "false";
 }
 
-string appMgrRepoAddCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
-    return addRepo(optionValues["repo"]) ? "true" : "false";
+string appMgrRepoAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+    return addRepo(options["repo"]) ? "true" : "false";
 }
 
-string appMgrRepoRemoveCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
-    return removeRepo(optionValues["repo"]) ? "true" : "false";
+string appMgrRepoRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+    return removeRepo(options["repo"]) ? "true" : "false";
 }
 
-string appMgrCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
+string appMgrCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     // TODO: Print How to use
     return "true";
 }
 
-string helpCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
-    if (optionValues.count("command") == 0) {
+string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+    if (options.count("command") == 0) {
         cout << "== Shuffle Help ==" << endl
                 << "Version: " << SHUFFLE_VERSION.str() << endl << endl
                 << "Commands: " << endl;
@@ -80,7 +83,7 @@ string helpCmd(Workspace* ws, map<string, string>&optionValues, const bool backg
 
         return "true";
     }
-    vector<string> cmdName = splitBySpace(optionValues["command"]);
+    vector<string> cmdName = splitBySpace(options["command"]);
     shared_ptr<Command> cmd = findCommand(cmdName.front());
     if (cmd == nullptr) {
         cout << "Command '" << cmdName.front() << "' not found." << endl;
@@ -115,18 +118,18 @@ string helpCmd(Workspace* ws, map<string, string>&optionValues, const bool backg
     return cmd->getName();
 }
 
-string snippetCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
+string snippetCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
     //snf create aa help cd
-    const string snippetName = optionValues["create"];
-    const string cmd = optionValues["value"];
+    const string snippetName = options["create"];
+    const string cmd = options["value"];
 
     addSnippet(snippetName, cmd);
-    if (!backgroundMode) cout << "Snippet Created: " << snippetName << " => " << cmd << endl;
+    if (!bgMode) cout << "Snippet Created: " << snippetName << " => " << cmd << endl;
 
     return snippetName;
 }
 
-string clearCmd(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
+string clearCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     if (!isAnsiSupported()) {
         error("'clear' cannot be used on terminals that do not support ANSI escape codes.");
         return "false";
@@ -139,6 +142,67 @@ string clearCmd(Workspace* ws, map<string, string>&optionValues, const bool back
     return "true";
 }
 
+string taskStartCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    tasks.emplace_back(options["job"]);
+    tasks.back().start(ws);
+    const string taskId = tasks.back().getId();
+    if (!bgMode) info("New Job started: " + taskId);
+    return taskId;
+}
+
+string taskLogCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    const string taskId = options["taskId"];
+    for (auto&task: tasks) {
+        if (task.getId() == taskId) {
+            if (task.job == nullptr) {
+                error("Job is null.");
+                return "job is null";
+            }
+            string jobId = task.job->id;
+            if (stdoutMap.find(jobId) != stdoutMap.end()) {
+                PyObject* capturedOutput = stdoutMap[jobId];
+
+                if (!Py_IsInitialized()) error("asdf");
+
+                PyImport_ImportModule("io");
+                if (PyObject_HasAttrString(capturedOutput, "getvalue")) {
+                    PyObject* capturedOutputStr = PyObject_CallMethod(capturedOutput, "getvalue", nullptr);
+                    if (capturedOutputStr != nullptr) {
+                        string outputStr = PyUnicode_AsUTF8(capturedOutputStr);
+                        Py_XDECREF(capturedOutputStr);
+
+                        if (task.getStatus() == FINISHED) outputStr += "\n[FINISHED]";
+                        if (task.getStatus() == STOPPED) outputStr += "\n[STOPPED]";
+
+                        if (!bgMode) info(outputStr);
+                        return outputStr;
+                    }
+
+                    PyErr_Print();
+                    std::cerr << "Error calling getvalue method on capturedOutput." << std::endl;
+                    return "error";
+                }
+
+                std::cerr << "Error: 'getvalue' method does not exist on capturedOutput." << std::endl;
+                return "error";
+            }
+        }
+    }
+
+    return "task not found";
+}
+
+string taskListCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    if (bgMode) return std::to_string(tasks.size());
+
+    if (tasks.empty()) {
+        info("No tasks running.");
+        return "0";
+    }
+    for (auto&task: tasks)
+        info("$0 ($1) : $2", {task.getId(), std::to_string(task.getStatus()), task.command});
+    return std::to_string(tasks.size());
+}
 
 void loadCommands() {
     commands.clear();
@@ -184,6 +248,17 @@ void loadCommands() {
     // )));
     commands.push_back(make_shared<Command>(Command(
         "clear", "Clear everything", {"clear"}, clearCmd
+    )));
+    commands.push_back(make_shared<Command>(Command(
+        "task", "Manage background tasks", {
+            Command("start", "Start a new background task.", {
+                        CommandOption("job", "", TEXT_T)
+                    }, taskStartCmd),
+            Command("log", "Print logs", {
+                        CommandOption("taskId", "", TEXT_T)
+                    }, taskLogCmd),
+            Command("list", "List tasks", taskListCmd),
+        }, do_nothing
     )));
 
     unloadAllApps();

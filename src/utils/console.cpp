@@ -137,8 +137,6 @@ void error(const string&text) {
 
 int readChar() {
 #ifdef _WIN32
-    while (!_kbhit()) {
-    }
     return _getch();
 #elif defined(__linux__) || defined(__APPLE__)
     return getwchar();

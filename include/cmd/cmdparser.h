@@ -10,11 +10,11 @@
 #include <memory>
 
 #include "commandmgr.h"
-#include "parsedcmd.h"
+#include "job.h"
 
 using std::shared_ptr;
 
-ParsedCommand parseCommand(shared_ptr<Command> app, const vector<string> &args);
+Job parseCommand(shared_ptr<Command> app, const vector<string> &args);
 
 map<string, string> *parseOptions(const shared_ptr<Command>& app, const vector<string> &args);
 

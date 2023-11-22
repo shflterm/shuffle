@@ -5,8 +5,8 @@
 #include "console.h"
 #include "utils.h"
 
-ParsedCommand parseCommand(shared_ptr<Command> app, const vector<string>&args) {
-    if (app == nullptr) return ParsedCommand(EMPTY);
+Job parseCommand(shared_ptr<Command> app, const vector<string>&args) {
+    if (app == nullptr) return Job(EMPTY);
 
     vector<string> newArgs = args;
     for (int i = 0; i < args.size(); ++i) {
@@ -21,9 +21,9 @@ ParsedCommand parseCommand(shared_ptr<Command> app, const vector<string>&args) {
         }
     }
 
-    ParsedCommand parsed = ParsedCommand(app);
+    Job parsed = Job(app);
     const map<string, string>* parsedOptions = parseOptions(app, newArgs);
-    if (parsedOptions == nullptr) return ParsedCommand(EMPTY);
+    if (parsedOptions == nullptr) return Job(EMPTY);
 
     parsed.options = *parsedOptions;
     return parsed;

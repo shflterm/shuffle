@@ -10,7 +10,7 @@ using std::make_shared;
 
 vector<shared_ptr<Command>> commands;
 
-string do_nothing(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) {
+string do_nothing(Workspace* ws, map<string, string>& options, const bool bgMode, const string& id) {
     return "do_nothing";
 }
 
@@ -39,12 +39,11 @@ const string& Command::getUsage() const {
     return usage;
 }
 
-string Command::run(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) const {
+string Command::run(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode, const string&taskId) const {
     if (!cmd) {
-        error("Invalid");
-        return "ERROR,....";
+        return "Invalid command";
     }
-    return cmd(ws, optionValues, backgroundMode);
+    return cmd(ws, optionValues, backgroundMode, taskId);
 }
 
 string Command::createHint() const {
@@ -71,6 +70,10 @@ const vector<string>& Command::getExamples() const {
     return examples;
 }
 
+void Command::setCmd(cmd_t cmd) {
+    this->cmd = std::move(cmd);
+}
+
 Command::Command(string name, string description, string usage,
                  const vector<shared_ptr<Command>>&subcommands, const vector<CommandOption>&options,
                  const vector<string>&aliases,
@@ -82,6 +85,19 @@ Command::Command(string name, string description, string usage,
                                                             aliases(aliases),
                                                             examples(examples),
                                                             cmd(std::move(cmd)) {
+}
+
+Command::Command(string name, string description, string usage,
+                 const vector<shared_ptr<Command>>&subcommands, const vector<CommandOption>&options,
+                 const vector<string>&aliases,
+                 const vector<string>&examples): name(std::move(name)),
+                                                 description(std::move(description)),
+                                                 usage(std::move(usage)),
+                                                 subcommands(subcommands),
+                                                 options(options),
+                                                 aliases(aliases),
+                                                 examples(examples),
+                                                 cmd(do_nothing) {
 }
 
 Command::Command(string name, string description, const vector<Command>&subcommands,

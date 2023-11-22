@@ -114,7 +114,7 @@ Command loadCommandVersion1(Json::Value appInfo, const string&libPath) {
     err = lua_pcall(L, 0, 0, 0);
     if (err) error("Error: " + string(lua_tostring(L, -1)));
 
-    cmd_t cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) -> string {
+    cmd_t cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode, string id) -> string {
         // Create workspace table
         lua_newtable(L); {
             lua_pushstring(L, ws->currentDirectory().string().c_str());
@@ -210,6 +210,8 @@ Command loadCommandVersion1(Json::Value appInfo, const string&libPath) {
     return Command(name, description, usage, subcommands, options, aliases, examples, cmd);
 }
 
+map<string, PyObject *> stdoutMap;
+
 Command loadCommandVersion2(Json::Value appInfo, const string&libPath) {
     // NOLINT(*-no-recursion)
     string name = appInfo["name"].asString();
@@ -245,13 +247,28 @@ Command loadCommandVersion2(Json::Value appInfo, const string&libPath) {
 
     vector<string> examples;
     for (const auto&example: appInfo["examples"]) examples.push_back(example.asString());
+    Command command = Command(name, description, usage, subcommands, options, aliases, examples);
 
-    cmd_t cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) -> string {
+    cmd_t cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode,
+                    const string&id) -> string {
         Py_Initialize();
 
         if (FILE* file = fopen((commandPath + "command.py").c_str(), "r"); file != nullptr) {
             PyRun_SimpleString(("import sys\n"
                 "sys.path.append(\"" + replace(commandPath, "\\", "\\\\") + "\")\n").c_str());
+
+            if (backgroundMode) {
+                PyObject* sys = PyImport_ImportModule("sys");
+                PyObject* io = PyImport_ImportModule("io");;
+
+                PyObject* captureOutput = PyObject_GetAttrString(io, "StringIO");
+                PyObject* capturedOutput = PyObject_CallObject(captureOutput, nullptr);
+
+                PyObject_SetAttrString(sys, "stdout", capturedOutput);
+                PyObject_SetAttrString(sys, "stderr", capturedOutput);
+                stdoutMap[id] = capturedOutput;
+            }
+
             PyRun_SimpleFile(file, "command.py");
             fclose(file);
         }
@@ -307,11 +324,20 @@ Command loadCommandVersion2(Json::Value appInfo, const string&libPath) {
             PyErr_Print();
         }
 
+        if (stdoutMap.find(id) != stdoutMap.end()) {
+            PyObject* capturedOutput = std::any_cast<PyObject *>(stdoutMap[id]);
+
+            PyObject* capturedOutputStr = PyObject_CallMethod(capturedOutput, "getvalue", nullptr);
+            string outputStr = PyUnicode_AsUTF8(capturedOutputStr);
+
+            info(outputStr);
+            return outputStr;
+        }
         Py_Finalize();
         return result;
     };
+    command.setCmd(cmd);
 
-    Command command = Command(name, description, usage, subcommands, options, aliases, examples, cmd);
     return command;
 }
 

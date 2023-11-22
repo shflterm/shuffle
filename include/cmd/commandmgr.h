@@ -5,11 +5,11 @@
 #ifndef SHUFFLE_INCLUDE_COMMANDMGR_H_
 #define SHUFFLE_INCLUDE_COMMANDMGR_H_
 
+#include <any>
 #include <vector>
 #include <string>
 #include <memory>
 #include <functional>
-#include <json/value.h>
 #include <string>
 #include <map>
 
@@ -17,11 +17,11 @@ class Command;
 
 #include "workspace.h"
 
-using std::pair, std::shared_ptr, std::string, std::vector, std::map;
+using std::pair, std::shared_ptr, std::string, std::vector, std::map, std::any;
 
-typedef std::function<string(Workspace*, map<string, string>&, bool)> cmd_t;
+typedef std::function<string(Workspace* ws, map<string, string>&options, bool bgMode, string id)> cmd_t;
 
-string do_nothing(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode);
+string do_nothing(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id);
 
 enum OptionType {
     TEXT_T,
@@ -67,13 +67,18 @@ public:
 
     [[nodiscard]] const vector<string>& getExamples() const;
 
-    string run(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode) const;
+    void setCmd(cmd_t cmd);
+
+    string run(Workspace* ws, map<string, string>&optionValues, bool backgroundMode, const string&taskId) const;
 
     [[nodiscard]] string createHint() const;
 
-    Command(string  name, string  description, string  usage,
-        const vector<shared_ptr<Command>>& subcommands, const vector<CommandOption>& options,
-        const vector<string>& aliases, const vector<string>& examples, cmd_t  cmd);
+    Command(string name, string description, string usage,
+            const vector<shared_ptr<Command>>&subcommands, const vector<CommandOption>&options,
+            const vector<string>&aliases, const vector<string>&examples, cmd_t cmd);
+
+    Command(string name, string description, string usage, const vector<shared_ptr<Command>>&subcommands,
+            const vector<CommandOption>&options, const vector<string>&aliases, const vector<string>&examples);
 
     Command(string name, string description, const vector<Command>&subcommands, const vector<CommandOption>&options, const vector<string>&examples,
             cmd_t cmd);

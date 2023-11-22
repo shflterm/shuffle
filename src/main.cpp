@@ -112,7 +112,7 @@ int main(const int argc, char* argv[]) {
             cmd += argv[i];
             cmd += " ";
         }
-        workspace.parse(cmd)->executeApp(&workspace);
+        workspace.createJob(cmd)->start(&workspace);
         return 0;
     }
 

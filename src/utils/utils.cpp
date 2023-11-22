@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <fstream>
 #include <cstdlib>
+#include <random>
 #include <curl/curl.h>
 
 #include "console.h"
@@ -268,4 +269,19 @@ bool checkUpdate(const bool checkBackground) {
     }
     if (!checkBackground) cout << "You are using the latest version of Shuffle." << endl;
     return false;
+}
+
+std::string generateRandomString(const int length) {
+    std::string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::uniform_int_distribution<int> distribution(0, characters.length() - 1);
+
+    std::string randomString;
+    for (int i = 0; i < length; ++i) {
+        randomString += characters[distribution(generator)];
+    }
+
+    return randomString;
 }

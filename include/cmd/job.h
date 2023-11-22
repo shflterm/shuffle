@@ -8,38 +8,40 @@
 #include <map>
 #include <string>
 #include <memory>
+#include <utils.h>
 
-class ParsedCommand;
+class Job;
 
 #include "commandmgr.h"
 
 using std::shared_ptr, std::map, std::string;
 
-enum CommandType {
+enum JobType {
     COMMAND,
     SNIPPET,
     VARIABLE,
     EMPTY
 };
 
-class ParsedCommand {
-    CommandType commandType = EMPTY;
+class Job {
+    JobType jobType = EMPTY;
 
 public:
-    shared_ptr<Command> app;
+    shared_ptr<Command> command;
     map<string, string> options;
+    string id = generateRandomString(16);
 
-    string executeApp(Workspace* ws, bool backgroundMode = false);
+    string start(Workspace* ws, bool backgroundMode = false);
 
     bool isCommand() const;
 
     bool isSuccessed() const;
 
-    explicit ParsedCommand(const shared_ptr<Command>&app);
+    explicit Job(const shared_ptr<Command>&app);
 
-    explicit ParsedCommand(CommandType commandType);
+    explicit Job(JobType commandType);
 
-    ParsedCommand();
+    Job();
 };
 
 #endif //SHFL_PARSEDCMD_H
