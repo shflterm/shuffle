@@ -116,6 +116,7 @@ shared_ptr<Job> Workspace::createJob(string &input) {
             app = make_shared<Command>(Command(
                 "SCRIPT", "A SCRIPT COMMAND",
                 {CommandOption("script", "scriptPath", TEXT_T)},
+                {},
                 [=](Workspace* ws, map<string, string>&options, bool bgMode, string id) {
                     vector<string> scriptCommands;
                     for (const auto&line: split(readFile(path(options["script"])), regex("\n"))) {
