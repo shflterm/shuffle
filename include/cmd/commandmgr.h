@@ -75,14 +75,14 @@ public:
         const vector<shared_ptr<Command>>& subcommands, const vector<CommandOption>& options,
         const vector<string>& aliases, const vector<string>& examples, cmd_t  cmd);
 
-    Command(string name, string description, const vector<Command>&subcommands, const vector<CommandOption>&options,
+    Command(string name, string description, const vector<Command>&subcommands, const vector<CommandOption>&options, const vector<string>&examples,
             cmd_t cmd);
 
-    Command(string name, string description, const vector<Command>&subcommands, cmd_t cmd);
+    Command(string name, string description, const vector<Command>&subcommands, const vector<string>&examples, cmd_t cmd);
 
-    Command(string name, string description, const vector<CommandOption>&options, cmd_t cmd);
+    Command(string name, string description, const vector<CommandOption>&options, const vector<string>&examples, cmd_t cmd);
 
-    Command(string name, string description, cmd_t cmd);
+    Command(string name, string description, const vector<string>&examples, cmd_t cmd);
 
     explicit Command(string name);
 

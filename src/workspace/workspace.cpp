@@ -114,6 +114,7 @@ shared_ptr<ParsedCommand> Workspace::parse(string input) {
             app = make_shared<Command>(Command(
                 "SCRIPT", "A SCRIPT COMMAND",
                 {CommandOption("script", "scriptPath", TEXT_T)},
+                {},
                 [=](Workspace* workspace, map<string, string>&optionValues, bool backgroundMode) {
                     vector<string> scriptCommands;
                     for (const auto&line: split(readFile(path(optionValues["script"])), regex("\n"))) {

@@ -85,33 +85,39 @@ Command::Command(string name, string description, string usage,
 }
 
 Command::Command(string name, string description, const vector<Command>&subcommands,
-                 const vector<CommandOption>&options, cmd_t cmd)
+                 const vector<CommandOption>&options, const vector<string>&examples, cmd_t cmd)
     : name(std::move(name)),
       description(std::move(description)),
-      options(options), cmd(std::move(cmd)) {
+      options(options),
+      examples(examples), cmd(std::move(cmd)) {
     for (const auto&subcommand: subcommands) {
         this->subcommands.push_back(make_shared<Command>(subcommand));
     }
 }
 
-Command::Command(string name, string description, const vector<Command>&subcommands, cmd_t cmd)
+Command::Command(string name, string description, const vector<Command>&subcommands, const vector<string>&examples,
+                 cmd_t cmd)
     : name(std::move(name)),
       description(std::move(description)),
+      examples(examples),
       cmd(std::move(cmd)) {
     for (const auto&subcommand: subcommands) {
         this->subcommands.push_back(make_shared<Command>(subcommand));
     }
 }
 
-Command::Command(string name, string description, const vector<CommandOption>&options, cmd_t cmd)
+Command::Command(string name, string description, const vector<CommandOption>&options, const vector<string>&examples,
+                 cmd_t cmd)
     : name(std::move(name)),
       description(std::move(description)),
-      options(options), cmd(std::move(cmd)) {
+      options(options),
+      examples(examples), cmd(std::move(cmd)) {
 }
 
-Command::Command(string name, string description, cmd_t cmd)
+Command::Command(string name, string description, const vector<string>&examples, cmd_t cmd)
     : name(std::move(name)),
       description(std::move(description)),
+      examples(examples),
       cmd(std::move(cmd)) {
 }
 

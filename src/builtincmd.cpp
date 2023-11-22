@@ -145,42 +145,45 @@ void loadCommands() {
 
     commands.push_back(make_shared<Command>(Command(
         "shfl", "Shuffle Command", {
-            Command("reload", "Reload all commands.", shflReloadCmd),
-            Command("upgrade", "Upgrade Shuffle to a new version.", shflUpgradeCmd),
-            Command("credits", "Shuffle Credits", shflCreditsCmd),
-        }, shflCmd
+            Command("reload", "Reload all commands.",
+                {"shfl reload"}, shflReloadCmd),
+            Command("upgrade", "Upgrade Shuffle to a new version.",
+                {"shfl upgrade"}, shflUpgradeCmd),
+            Command("credits", "Shuffle Credits",
+                {"shfl credits"}, shflCreditsCmd),
+        }, {"shfl"}, shflCmd
     )));
     commands.push_back(make_shared<Command>(Command(
         "appmgr", "App Manager", {
             Command("add", "Get new apps from the repository.", {
                         CommandOption("app", "", TEXT_T)
-                    }, appMgrAddCmd),
+                    }, {"appmgr add textutilities", "appmgr add filesystem", "appmgr add /path/to/myapp"}, appMgrAddCmd),
             Command("remove", "Delete the app from your device.", {
                         CommandOption("app", "", TEXT_T)
-                    }, appMgrRemoveCmd),
+                    }, {"appmgr remove textutilities", "appmgr remove filesystem", "appmgr remove myapp"}, appMgrRemoveCmd),
             Command("repo", "Repository Management", {
                         Command("add", "Add Repository", {
                                     CommandOption("repo", "", TEXT_T)
-                                }, appMgrRepoAddCmd),
+                                }, {"appmgr repo add https://example.com/shflrepo.json"}, appMgrRepoAddCmd),
                         Command("remove", "Remove Repository", {
                                     CommandOption("repo", "", TEXT_T)
-                                }, appMgrRepoRemoveCmd)
-                    }, do_nothing),
-        }, appMgrCmd
+                                }, {"appmgr repo remove https://example.com/shflrepo.json"}, appMgrRepoRemoveCmd)
+                    }, {"appmgr repo"}, do_nothing),
+        }, {"appmgr"}, appMgrCmd
     )));
     commands.push_back(make_shared<Command>(Command(
         "help", "Show help", {
             CommandOption("command", "", TEXT_T, {"cmd", "help"})
-        }, helpCmd
+        }, {"help", "help shfl", "help appmgr"}, helpCmd
     )));
+    // commands.push_back(make_shared<Command>(Command(
+    //     "snf", "Manage Snippets", {
+    //         CommandOption("create", "", TEXT_T, {"mk", "c", "new"}),
+    //         CommandOption("value", "", TEXT_T, {"v"}),
+    //     }, {"snf create sayhello echo Hi!"}, snippetCmd
+    // )));
     commands.push_back(make_shared<Command>(Command(
-        "snf", "Manage Snippets", {
-            CommandOption("create", "", TEXT_T, {"mk", "c", "new"}),
-            CommandOption("value", "", TEXT_T, {"v"}),
-        }, snippetCmd
-    )));
-    commands.push_back(make_shared<Command>(Command(
-        "clear", "Manage Snippets", clearCmd
+        "clear", "Clear everything", {"clear"}, clearCmd
     )));
 
     unloadAllApps();
