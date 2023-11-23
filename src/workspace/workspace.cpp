@@ -8,7 +8,7 @@
 #include "utils.h"
 #include "suggestion.h"
 #include "workspace/snippetmgr.h"
-#include "..\..\include\cmd\job.h"
+#include "job.h"
 #include "cmdparser.h"
 
 using std::cout, std::endl, std::cin, std::stringstream, std::make_shared;
