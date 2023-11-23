@@ -10,9 +10,13 @@
 #include <memory>
 #include <utils.h>
 
+namespace job {
+    class Job;
+}
+
 #include "commandmgr.h"
 
-using std::shared_ptr, std::map, std::string, cmd::Command;
+using std::shared_ptr, std::map, std::string;
 
 namespace job {
     enum JobType {
@@ -26,7 +30,7 @@ namespace job {
         JobType jobType = EMPTY;
 
     public:
-        shared_ptr<Command> command;
+        shared_ptr<cmd::Command> command;
         map<string, string> options;
         string id = generateRandomString(16);
 
@@ -36,7 +40,7 @@ namespace job {
 
         bool isSuccessed() const;
 
-        explicit Job(const shared_ptr<Command>&app);
+        explicit Job(const shared_ptr<cmd::Command>&app);
 
         explicit Job(JobType commandType);
 

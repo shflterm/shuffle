@@ -4,7 +4,7 @@
 
 #include "utils.h"
 
-using std::vector, std::string;
+using std::vector, std::string, cmd::Command, cmd::commands, cmd::findCommand;
 
 namespace suggestion {
     vector<string> makeDictionary(const vector<shared_ptr<Command>>&cmds) {
@@ -75,7 +75,7 @@ namespace suggestion {
 
                 // For boolean options
                 for (const auto&item: cmd->getOptions())
-                    if (item.type == BOOL_T &&
+                    if (item.type == cmd::BOOLEAN &&
                         std::find(usedOptions.begin(), usedOptions.end(), item.name) == usedOptions.end())
                         dict.push_back(item.name);
 

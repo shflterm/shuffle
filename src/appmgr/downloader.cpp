@@ -1,5 +1,6 @@
 #include "downloader.h"
 
+#include <appmgr.h>
 #include <iostream>
 #include <string>
 #include <json/json.h>
@@ -9,7 +10,7 @@
 #include "console.h"
 #include "utils.h"
 using std::cout, std::to_string, std::filesystem::path, std::filesystem::temp_directory_path, std::filesystem::exists,
-        std::filesystem::remove_all, std::filesystem::copy_options;
+        std::filesystem::remove_all, std::filesystem::copy_options, appmgr::addApp;
 
 namespace appmgr {
     Json::Value getRepo(const string&repo) {

@@ -43,7 +43,7 @@ public:
 
     string processArgument(string argument);
 
-    shared_ptr<Job> createJob(string &input);
+    shared_ptr<job::Job> createJob(string &input);
 
     void inputPrompt();
 

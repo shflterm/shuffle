@@ -13,20 +13,25 @@
 #include <string>
 #include <map>
 
+namespace cmd {
+    class Command;
+}
+
 #include "workspace.h"
 
 using std::pair, std::shared_ptr, std::string, std::vector, std::map, std::any;
 
+typedef std::function<string(Workspace* ws, map<string, string>&options, bool bgMode, string id)> cmd_t;
+
+string do_nothing(Workspace* ws, map<string, string>&options, bool bgMode, const string&id);
+
 namespace cmd {
-    typedef std::function<string(Workspace* ws, map<string, string>&options, bool bgMode, string id)> cmd_t;
-
-    string do_nothing(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id);
-
     enum OptionType {
         TEXT,
         NUMBER,
         BOOLEAN,
         FILE,
+        DIRECTORY,
         COMMAND
     };
 

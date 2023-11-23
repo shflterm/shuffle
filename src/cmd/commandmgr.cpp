@@ -8,12 +8,12 @@
 
 using std::make_shared;
 
+string do_nothing(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    return "do_nothing";
+}
+
 namespace cmd {
     vector<shared_ptr<Command>> commands;
-
-    string do_nothing(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
-        return "do_nothing";
-    }
 
     shared_ptr<Command> findCommand(const string&name, const vector<shared_ptr<Command>>&DICTIONARY) {
         for (auto&item: DICTIONARY) {

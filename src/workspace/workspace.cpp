@@ -11,7 +11,8 @@
 #include "job.h"
 #include "cmdparser.h"
 
-using std::cout, std::endl, std::cin, std::stringstream, std::make_shared;
+using std::cout, std::endl, std::cin, std::stringstream, std::make_shared, std::map, job::Job, cmd::Command,
+        cmd::commands, suggestion::getSuggestion, suggestion::getHint;
 
 map<string, Workspace *> wsMap;
 
@@ -64,13 +65,14 @@ string Workspace::processArgument(string argument) {
     else if (argument[argument.size() - 1] == '!') {
         string cmd = argument.substr(0, argument.size() - 1);
         if (const shared_ptr<Job> job = createJob(cmd);
-            job != nullptr && job->isSuccessed()) argument = job->start(this, true);
+            job != nullptr && job->isSuccessed())
+            argument = job->start(this, true);
     }
 
     return argument;
 }
 
-shared_ptr<Job> Workspace::createJob(string &input) {
+shared_ptr<Job> Workspace::createJob(string&input) {
     if (input[0] == '(' && input[input.size() - 1] == ')')
         input = input.substr(1, input.size() - 2);
 
@@ -85,7 +87,7 @@ shared_ptr<Job> Workspace::createJob(string &input) {
         }
         variables[name] = processArgument(value);
 
-        return make_shared<Job>(Job(VARIABLE));
+        return make_shared<Job>(Job(job::VARIABLE));
     }
 
     vector<string> inSpl = splitBySpace(input);
@@ -101,9 +103,9 @@ shared_ptr<Job> Workspace::createJob(string &input) {
         createJob(target)->start(this);
     }
 
-    if (isSnippetFound) return make_shared<Job>(Job(SNIPPET));
+    if (isSnippetFound) return make_shared<Job>(Job(job::SNIPPET));
 
-    shared_ptr<Command> app = findCommand(inSpl[0]);
+    shared_ptr<Command> app = cmd::findCommand(inSpl[0]);
 
     vector<string> args;
     for (int i = 1; i < inSpl.size(); ++i) {
@@ -115,7 +117,7 @@ shared_ptr<Job> Workspace::createJob(string &input) {
             args.push_back("script=" + absolute(script).string());
             app = make_shared<Command>(Command(
                 "SCRIPT", "A SCRIPT COMMAND",
-                {CommandOption("script", "scriptPath", TEXT_T)},
+                {cmd::CommandOption("script", "scriptPath", cmd::TEXT)},
                 {},
                 [=](Workspace* ws, map<string, string>&options, bool bgMode, string id) {
                     vector<string> scriptCommands;
@@ -123,7 +125,7 @@ shared_ptr<Job> Workspace::createJob(string &input) {
                         scriptCommands.push_back(trim(line));
                     }
 
-                    for (auto cmd : scriptCommands) {
+                    for (auto cmd: scriptCommands) {
                         const shared_ptr<Job> job = createJob(cmd);
                         job->start(this);
                     }

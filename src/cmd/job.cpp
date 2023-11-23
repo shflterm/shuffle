@@ -3,7 +3,7 @@
 #include "console.h"
 
 namespace job {
-    Job::Job(const shared_ptr<Command>&app) : command(app), jobType(COMMAND) {
+    Job::Job(const shared_ptr<cmd::Command>&app) : command(app), jobType(COMMAND) {
     }
 
     Job::Job(const JobType commandType) : jobType(commandType) {

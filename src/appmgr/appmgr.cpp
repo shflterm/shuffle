@@ -11,7 +11,7 @@
 
 #include "lua/luaapi.h"
 
-using std::make_shared, std::cout, std::to_string, std::ofstream;
+using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption, cmd::OptionType, cmd::commands;
 
 #ifdef _WIN32
 #define NOMINMAX 1
@@ -88,12 +88,15 @@ namespace appmgr {
         for (const auto&option: appInfo["options"]) {
             const string optionName = option["name"].asString();
             OptionType type;
-            if (option["type"].asString() == "string") type = TEXT_T;
-            else if (option["type"].asString() == "boolean") type = BOOL_T;
-            else if (option["type"].asString() == "integer") type = INT_T;
+            if (option["type"].asString() == "string") type = cmd::TEXT;
+            else if (option["type"].asString() == "boolean") type = cmd::BOOLEAN;
+            else if (option["type"].asString() == "number") type = cmd::NUMBER;
+            else if (option["type"].asString() == "file") type = cmd::FILE;
+            else if (option["type"].asString() == "directory") type = cmd::DIRECTORY;
+            else if (option["type"].asString() == "command") type = cmd::COMMAND;
             else {
                 error("Error: Invalid option type in " + optionName + ".");
-                type = TEXT_T;
+                type = cmd::TEXT;
             }
             const string optionDescription = option["description"].asString();
             vector<string> aliases;
@@ -229,12 +232,15 @@ namespace appmgr {
         for (const auto&option: appInfo["options"]) {
             const string optionName = option["name"].asString();
             OptionType type;
-            if (option["type"].asString() == "string") type = TEXT_T;
-            else if (option["type"].asString() == "boolean") type = BOOL_T;
-            else if (option["type"].asString() == "integer") type = INT_T;
+            if (option["type"].asString() == "string") type = cmd::TEXT;
+            else if (option["type"].asString() == "boolean") type = cmd::BOOLEAN;
+            else if (option["type"].asString() == "number") type = cmd::NUMBER;
+            else if (option["type"].asString() == "file") type = cmd::FILE;
+            else if (option["type"].asString() == "directory") type = cmd::DIRECTORY;
+            else if (option["type"].asString() == "command") type = cmd::COMMAND;
             else {
                 error("Error: Invalid option type in " + optionName + ".");
-                type = TEXT_T;
+                type = cmd::TEXT;
             }
             const string optionDescription = option["description"].asString();
             vector<string> aliases;
