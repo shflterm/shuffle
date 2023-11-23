@@ -5,14 +5,10 @@
 #ifndef APPMGR_H
 #define APPMGR_H
 
-#include "commandmgr.h"
 #include "utils.h"
 
 #include <vector>
 #include <string>
-#include <python3.10/Python.h>
-
-extern map<string, PyObject *> stdoutMap;
 
 class App {
 protected:

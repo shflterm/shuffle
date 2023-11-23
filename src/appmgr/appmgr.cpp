@@ -1,6 +1,7 @@
 #include "appmgr.h"
 
 #include <iostream>
+#include <fstream>
 #include <console.h>
 #include <vector>
 #include <string>
@@ -10,7 +11,7 @@
 
 #include "lua/luaapi.h"
 
-using std::make_shared, std::cout, std::to_string;
+using std::make_shared, std::cout, std::to_string, std::ofstream;
 
 #ifdef _WIN32
 #define NOMINMAX 1
@@ -210,8 +211,6 @@ Command loadCommandVersion1(Json::Value appInfo, const string&libPath) {
     return Command(name, description, usage, subcommands, options, aliases, examples, cmd);
 }
 
-map<string, PyObject *> stdoutMap;
-
 Command loadCommandVersion2(Json::Value appInfo, const string&libPath) {
     // NOLINT(*-no-recursion)
     string name = appInfo["name"].asString();
@@ -258,15 +257,16 @@ Command loadCommandVersion2(Json::Value appInfo, const string&libPath) {
                 "sys.path.append(\"" + replace(commandPath, "\\", "\\\\") + "\")\n").c_str());
 
             if (backgroundMode) {
+                const path output = DOT_SHUFFLE / "outputs" / (id + ".log");
                 PyObject* sys = PyImport_ImportModule("sys");
-                PyObject* io = PyImport_ImportModule("io");;
 
-                PyObject* captureOutput = PyObject_GetAttrString(io, "StringIO");
-                PyObject* capturedOutput = PyObject_CallObject(captureOutput, nullptr);
+                create_directories(output.parent_path());
+                FILE* customStream = fopen(output.string().c_str(), "w, ccs=UTF-8");
+                PyObject* customFile =
+                        PyFile_FromFd(fileno(customStream), output.string().c_str(), "w", -1, nullptr, nullptr, nullptr, 1);
 
-                PyObject_SetAttrString(sys, "stdout", capturedOutput);
-                PyObject_SetAttrString(sys, "stderr", capturedOutput);
-                stdoutMap[id] = capturedOutput;
+                PyObject_SetAttrString(sys, "stdout", customFile);
+                PyObject_SetAttrString(sys, "stderr", customFile);
             }
 
             PyRun_SimpleFile(file, "command.py");
@@ -322,16 +322,6 @@ Command loadCommandVersion2(Json::Value appInfo, const string&libPath) {
         }
         else {
             PyErr_Print();
-        }
-
-        if (stdoutMap.find(id) != stdoutMap.end()) {
-            PyObject* capturedOutput = std::any_cast<PyObject *>(stdoutMap[id]);
-
-            PyObject* capturedOutputStr = PyObject_CallMethod(capturedOutput, "getvalue", nullptr);
-            string outputStr = PyUnicode_AsUTF8(capturedOutputStr);
-
-            info(outputStr);
-            return outputStr;
         }
         Py_Finalize();
         return result;

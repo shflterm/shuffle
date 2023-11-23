@@ -159,33 +159,11 @@ string taskLogCmd(Workspace* ws, map<string, string>&options, const bool bgMode,
                 return "job is null";
             }
             string jobId = task.job->id;
-            if (stdoutMap.find(jobId) != stdoutMap.end()) {
-                PyObject* capturedOutput = stdoutMap[jobId];
 
-                if (!Py_IsInitialized()) error("asdf");
-
-                PyImport_ImportModule("io");
-                if (PyObject_HasAttrString(capturedOutput, "getvalue")) {
-                    PyObject* capturedOutputStr = PyObject_CallMethod(capturedOutput, "getvalue", nullptr);
-                    if (capturedOutputStr != nullptr) {
-                        string outputStr = PyUnicode_AsUTF8(capturedOutputStr);
-                        Py_XDECREF(capturedOutputStr);
-
-                        if (task.getStatus() == FINISHED) outputStr += "\n[FINISHED]";
-                        if (task.getStatus() == STOPPED) outputStr += "\n[STOPPED]";
-
-                        if (!bgMode) info(outputStr);
-                        return outputStr;
-                    }
-
-                    PyErr_Print();
-                    std::cerr << "Error calling getvalue method on capturedOutput." << std::endl;
-                    return "error";
-                }
-
-                std::cerr << "Error: 'getvalue' method does not exist on capturedOutput." << std::endl;
-                return "error";
-            }
+            path jobOutout = DOT_SHUFFLE / "outputs" / (jobId + ".log");
+            string outputStr = readFile(jobOutout);
+            if (!bgMode) info(outputStr);
+            return outputStr;
         }
     }
 
@@ -210,21 +188,24 @@ void loadCommands() {
     commands.push_back(make_shared<Command>(Command(
         "shfl", "Shuffle Command", {
             Command("reload", "Reload all commands.",
-                {"shfl reload"}, shflReloadCmd),
+                    {"shfl reload"}, shflReloadCmd),
             Command("upgrade", "Upgrade Shuffle to a new version.",
-                {"shfl upgrade"}, shflUpgradeCmd),
+                    {"shfl upgrade"}, shflUpgradeCmd),
             Command("credits", "Shuffle Credits",
-                {"shfl credits"}, shflCreditsCmd),
+                    {"shfl credits"}, shflCreditsCmd),
         }, {"shfl"}, shflCmd
     )));
     commands.push_back(make_shared<Command>(Command(
         "appmgr", "App Manager", {
             Command("add", "Get new apps from the repository.", {
                         CommandOption("app", "", TEXT_T)
-                    }, {"appmgr add textutilities", "appmgr add filesystem", "appmgr add /path/to/myapp"}, appMgrAddCmd),
+                    }, {
+                        "appmgr add textutilities", "appmgr add filesystem", "appmgr add /path/to/myapp"
+                    }, appMgrAddCmd),
             Command("remove", "Delete the app from your device.", {
                         CommandOption("app", "", TEXT_T)
-                    }, {"appmgr remove textutilities", "appmgr remove filesystem", "appmgr remove myapp"}, appMgrRemoveCmd),
+                    }, {"appmgr remove textutilities", "appmgr remove filesystem", "appmgr remove myapp"},
+                    appMgrRemoveCmd),
             Command("repo", "Repository Management", {
                         Command("add", "Add Repository", {
                                     CommandOption("repo", "", TEXT_T)
@@ -253,12 +234,12 @@ void loadCommands() {
         "task", "Manage background tasks", {
             Command("start", "Start a new background task.", {
                         CommandOption("job", "", TEXT_T)
-                    }, taskStartCmd),
+                    }, {"task start get https://examples.com/largefile"}, taskStartCmd),
             Command("log", "Print logs", {
                         CommandOption("taskId", "", TEXT_T)
-                    }, taskLogCmd),
-            Command("list", "List tasks", taskListCmd),
-        }, do_nothing
+                    }, {"task log abcdefg12345"}, taskLogCmd),
+            Command("list", "List tasks", {"task list"}, taskListCmd),
+        }, {"task"}, do_nothing
     )));
 
     unloadAllApps();

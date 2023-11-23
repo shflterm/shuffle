@@ -97,11 +97,16 @@ string replace(string str, const string&from, const string&to) {
 }
 
 string readFile(const path&path) {
-    ifstream file(path);
-    ostringstream content_stream;
-    content_stream << file.rdbuf();
-    file.close();
-    return content_stream.str();
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << path << std::endl;
+        return "";
+    }
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+
+    return buffer.str();
 }
 
 void writeFile(const path&path, const string&value) {
