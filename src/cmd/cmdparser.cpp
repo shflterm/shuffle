@@ -85,26 +85,25 @@ namespace cmd {
                 key = arg.substr(1);
                 value = "false";
             }
-            else {
-                if (find(optionNamesWithAbbr.begin(), optionNamesWithAbbr.end(), arg) != optionNamesWithAbbr.end()) {
-                    key = arg;
-                    value = "true";
-                }
-                else if (optionIndex < optionNames.size()) {
-                    key = optionNames[optionIndex++];
-                    value = arg;
-                    // Add this line to handle multiple arguments for an option
-                    while (i + 1 < args.size() && args[i + 1][0] != '-') {
-                        value += " " + args[i + 1];
-                        ++i;
-                    }
-                }
-                else {
-                    error("Unexpected argument '" + arg + "'.");
-                    delete parsedOptions;
-                    return nullptr;
+            else if (find(optionNamesWithAbbr.begin(), optionNamesWithAbbr.end(), arg) != optionNamesWithAbbr.end()) {
+                key = arg;
+                value = "true";
+            }
+            else if (optionIndex < optionNames.size()) {
+                key = optionNames[optionIndex++];
+                value = arg;
+                // Add this line to handle multiple arguments for an option
+                while (i + 1 < args.size() && args[i + 1][0] != '-') {
+                    value += " " + args[i + 1];
+                    ++i;
                 }
             }
+            else {
+                error("Unexpected argument '" + arg + "'.");
+                delete parsedOptions;
+                return nullptr;
+            }
+
 
             bool foundAbbreviation = false;
             for (const auto&[optionName, abbrs]: optionAbbreviations) {

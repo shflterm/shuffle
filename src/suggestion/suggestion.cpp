@@ -53,7 +53,47 @@ namespace suggestion {
                 }
             }
 
-            if (args[cur][0] == '-') {
+            if ((cur > 1 && args[cur - 1][0] == '-') || cur == 1) {
+                cmd::CommandOption option = cmd->getOptions()[0];
+
+                if (cur > 1) {
+                    string optName = args[cur - 1].substr(1);
+                    for (auto opt: cmd->getOptions()) {
+                        if (opt.name == optName || std::find(opt.aliases.begin(), opt.aliases.end(), optName) != opt.
+                            aliases.end()) {
+                            option = opt;
+                            break;
+                        }
+                    }
+                }
+
+                if (option.type == cmd::BOOLEAN) {
+                    suggestion = findSuggestion(ws, args[cur], {"true", "false"})[0];
+                }
+                else if (option.type == cmd::FILE) {
+                    // find files in currnet directory WITHOUT DIRECTORY
+                    vector<string> files;
+                    for (const auto&item: std::filesystem::directory_iterator(ws.currentDirectory())) {
+                        if (item.is_directory()) continue;
+                        files.push_back(item.path().filename().string());
+                    }
+                    suggestion = findSuggestion(ws, args[cur], files)[0];
+                }
+                else if (option.type == cmd::DIRECTORY) {
+                    // find directory in currnet directory WITHOUT FILE
+                    vector<string> dirs;
+                    for (const auto&item: std::filesystem::directory_iterator(ws.currentDirectory())) {
+                        if (!item.is_directory()) continue;
+                        dirs.push_back(item.path().filename().string());
+                    }
+                    suggestion = findSuggestion(ws, args[cur], dirs)[0];
+                }
+                else if (option.type == cmd::COMMAND) {
+                    // find commands
+                    suggestion = getSuggestion(ws, args[cur]);
+                }
+            }
+            else if (args[cur][0] == '-') {
                 // Find unused options
                 vector<string> dict;
                 for (const auto&item: cmd->getOptions()) {
