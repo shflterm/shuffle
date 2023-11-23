@@ -22,7 +22,6 @@ Json::Value getRepo(const string&repo) {
 }
 
 void downloadPythonPkg(const string&pkg) {
-    //install package
     system(("python -m pip install " + pkg + " --user").c_str());
 }
 

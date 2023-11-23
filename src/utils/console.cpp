@@ -99,8 +99,8 @@ void warning(const string&text, const initializer_list<string>&args) {
 }
 
 void error(const string&text, const initializer_list<string>&args) {
-    cerr << translate(text, args) << "\n";
-    cerr.flush();
+    cout << fg_red << translate(text, args) << reset << "\n";
+    cout.flush();
 }
 
 void debug(const string&text) {
