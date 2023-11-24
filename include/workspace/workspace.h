@@ -19,7 +19,6 @@ using std::string, std::vector, std::map, std::filesystem::path, std::filesystem
 
 class Workspace {
     string name;
-    path dir = current_path();
     vector<string> history;
     int historyIndex = 0;
     map<string, string> variables;
@@ -27,9 +26,11 @@ class Workspace {
     [[nodiscard]] string prompt() const;
 
 public:
-    path currentDirectory();
+    string dir = current_path().string();
 
-    void moveDirectory(path newDir);
+    path currentDirectory() const;
+
+    void moveDirectory(const path& newDir);
 
     vector<string> getHistory();
 

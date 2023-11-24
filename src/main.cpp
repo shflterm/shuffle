@@ -1,7 +1,6 @@
 #include <iostream>
 #include <filesystem>
 #include <csignal>
-#include <python3.10/Python.h>
 
 #include "console.h"
 #include "utils.h"
@@ -71,25 +70,6 @@ int main(const int argc, char* argv[]) {
     signal(SIGINT, &handleQuit);
 
     initAnsiCodes();
-
-    Py_Initialize();
-
-    PyObject* global_dict = PyModule_GetDict(PyImport_AddModule("__main__"));
-
-    PyRun_String("import sysconfig", Py_single_input, global_dict, global_dict);
-    if (PyObject* result = PyRun_String("sysconfig.get_platform()", Py_eval_input, global_dict,
-                                        global_dict); result != nullptr) {
-        if (PyUnicode_Check(result)) {
-            pythonPlatform = PyUnicode_AsUTF8(result);
-        }
-
-        Py_XDECREF(result);
-    }
-    else {
-        PyErr_Print();
-    }
-
-    Py_Finalize();
 
     if (getShflJson("repos").empty()) {
         Json::Value repos;

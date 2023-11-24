@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <memory>
-#include <python3.10/Python.h>
 
 #include "console.h"
 #include "downloader.h"

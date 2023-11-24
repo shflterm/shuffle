@@ -5,7 +5,6 @@
 #include <string>
 #include <json/json.h>
 #include <filesystem>
-#include <Python.h>
 
 #include "console.h"
 #include "utils.h"

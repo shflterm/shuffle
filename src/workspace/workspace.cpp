@@ -16,19 +16,19 @@ using std::cout, std::endl, std::cin, std::stringstream, std::make_shared, std::
 
 map<string, Workspace *> wsMap;
 
-path Workspace::currentDirectory() {
-    return dir;
+path Workspace::currentDirectory() const {
+    return absolute(path(dir));
 }
 
-void Workspace::moveDirectory(path newDir) {
+void Workspace::moveDirectory(const path& newDir) {
     if (!is_directory(newDir)) {
         error("Directory '$0' not found.", {newDir.string()});
         return;
     }
-    dir = std::move(newDir);
+    dir = newDir.string();
 
-    if (dir.string()[dir.string().length() - 1] == '\\' || dir.string()[dir.string().length() - 1] == '/')
-        dir = dir.parent_path();
+    if (dir[dir.length() - 1] == '\\' || dir[dir.length() - 1] == '/')
+        dir = currentDirectory().parent_path().string();
 }
 
 vector<string> Workspace::getHistory() {
@@ -143,6 +143,7 @@ string Workspace::prompt() const {
     if (!name.empty())
         ss << fg_yellow << "[" << name << "] ";
 
+    const path dir = currentDirectory();
     ss << fg_cyan << "(";
     if (dir == dir.root_path())
         ss << dir.root_name().string();

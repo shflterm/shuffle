@@ -1,17 +1,20 @@
 #include "appmgr.h"
 
 #include <iostream>
-#include <fstream>
 #include <console.h>
 #include <vector>
 #include <string>
 #include <json/json.h>
 #include <memory>
-#include <python3.10/Python.h>
+#include <fstream>
+#include <pybind11/embed.h>
+#include <pybind11/stl.h>
 
 #include "lua/luaapi.h"
 
-using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption, cmd::OptionType, cmd::commands;
+namespace py = pybind11;
+using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption, cmd::OptionType,
+        cmd::commands;
 
 #ifdef _WIN32
 #define NOMINMAX 1
@@ -119,7 +122,8 @@ namespace appmgr {
         err = lua_pcall(L, 0, 0, 0);
         if (err) error("Error: " + string(lua_tostring(L, -1)));
 
-        cmd_t cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode, string id) -> string {
+        cmd_t cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode,
+                        string id) -> string {
             // Create workspace table
             lua_newtable(L); {
                 lua_pushstring(L, ws->currentDirectory().string().c_str());
@@ -212,7 +216,20 @@ namespace appmgr {
             return res;
         };
 
-        return Command(name, description, usage, subcommands, options, aliases, examples, cmd);
+        return {name, description, usage, subcommands, options, aliases, examples, cmd};
+    }
+
+    PYBIND11_EMBEDDED_MODULE(shfl, m) {
+        m.def("currentDirectory", [](const string&name) {
+            if (wsMap.find(name) != wsMap.end()) return py::str(wsMap[name]->currentDirectory().string());
+
+            error("Error: Cannot find workspace '" + name + "'!");
+            return py::str("");
+        }, "Move workspace directory to another directory.");
+        m.def("moveDirectory", [](const string&name, const string&newDir) {
+            if (wsMap.find(name) != wsMap.end()) { wsMap[name]->moveDirectory(newDir); }
+            else error("Error: Cannot find workspace '" + name + "'!");
+        }, "Move workspace directory to another directory.");
     }
 
     Command loadCommandVersion2(Json::Value appInfo, const string&libPath) {
@@ -257,81 +274,26 @@ namespace appmgr {
 
         cmd_t cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode,
                         const string&id) -> string {
-            Py_Initialize();
+            py::scoped_interpreter guard{};
 
-            if (FILE* file = fopen((commandPath + "command.py").c_str(), "r"); file != nullptr) {
-                PyRun_SimpleString(("import sys\n"
-                    "sys.path.append(\"" + replace(commandPath, "\\", "\\\\") + "\")\n").c_str());
+            py::dict pOptionValues;
+            for (const auto&[key, value]: optionValues)
+                pOptionValues[key.c_str()] = value;
 
-                if (backgroundMode) {
-                    const path output = DOT_SHUFFLE / "outputs" / (id + ".log");
-                    PyObject* sys = PyImport_ImportModule("sys");
+            try {
+                const py::module sys = py::module::import("sys");
+                sys.attr("path").attr("append")(commandPath);
 
-                    create_directories(output.parent_path());
-                    FILE* customStream = fopen(output.string().c_str(), "w, ccs=UTF-8");
-                    PyObject* customFile =
-                            PyFile_FromFd(fileno(customStream), output.string().c_str(), "w", -1, nullptr, nullptr, nullptr, 1);
+                const py::module module = py::module::import("command");
 
-                    PyObject_SetAttrString(sys, "stdout", customFile);
-                    PyObject_SetAttrString(sys, "stderr", customFile);
-                }
+                const py::object result = module.attr("entrypoint")(py::str(ws->getName()), pOptionValues,
+                                                                    py::bool_(backgroundMode));
 
-                PyRun_SimpleFile(file, "command.py");
-                fclose(file);
+                return py::str(result);
+            } catch (const std::exception& e) {
+                std::cerr << "Error executing Python function: " << e.what() << std::endl;
+                return "Error";
             }
-            else {
-                PyErr_Print();
-            }
-
-            string result;
-            PyObject* pName = PyUnicode_DecodeFSDefault("command");
-            PyObject* pModule = PyImport_Import(pName);
-            Py_XDECREF(pName);
-
-            if (pModule != nullptr) {
-                if (PyObject* pFunc = PyObject_GetAttrString(pModule, "entrypoint"); pFunc && PyCallable_Check(pFunc)) {
-                    PyObject* pWorkspace = PyCapsule_New(ws, nullptr, nullptr);
-
-                    PyObject* pOptionValues = PyDict_New();
-                    for (const auto&[key, value]: optionValues)
-                        PyDict_SetItemString(pOptionValues, key.c_str(), PyUnicode_FromString(value.c_str()));
-
-                    PyObject* pArgs = PyTuple_Pack(3, pWorkspace, pOptionValues, PyBool_FromLong(backgroundMode));
-                    PyObject* pValue = PyObject_CallObject(pFunc, pArgs);
-                    Py_XDECREF(pArgs);
-
-                    if (pValue != nullptr) {
-                        // Process the result
-                        if (PyNumber_Check(pValue)) {
-                            result = to_string(PyLong_AsLong(pValue));
-                        }
-                        else if (PyUnicode_Check(pValue)) {
-                            result = PyUnicode_AsUTF8(pValue);
-                        }
-                        else {
-                            PyErr_Print();
-                        }
-
-                        Py_XDECREF(pValue);
-                    }
-                    else {
-                        PyErr_Print();
-                    }
-
-                    Py_XDECREF(pWorkspace);
-                    Py_XDECREF(pFunc);
-                }
-                else {
-                    PyErr_Print();
-                }
-
-                Py_XDECREF(pModule);
-            }
-            else {
-                PyErr_Print();
-            }
-            Py_Finalize();
-            return result;
         };
         command.setCmd(cmd);
 
