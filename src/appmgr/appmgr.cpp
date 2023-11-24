@@ -88,7 +88,7 @@ namespace appmgr {
         for (const auto&option: appInfo["options"]) {
             const string optionName = option["name"].asString();
             OptionType type;
-            if (option["type"].asString() == "string") type = cmd::TEXT;
+            if (option["type"].asString() == "string" || option["type"].asString() == "text") type = cmd::TEXT;
             else if (option["type"].asString() == "boolean") type = cmd::BOOLEAN;
             else if (option["type"].asString() == "number") type = cmd::NUMBER;
             else if (option["type"].asString() == "file") type = cmd::FILE;
@@ -232,7 +232,7 @@ namespace appmgr {
         for (const auto&option: appInfo["options"]) {
             const string optionName = option["name"].asString();
             OptionType type;
-            if (option["type"].asString() == "string") type = cmd::TEXT;
+            if (option["type"].asString() == "string" || option["type"].asString() == "text") type = cmd::TEXT;
             else if (option["type"].asString() == "boolean") type = cmd::BOOLEAN;
             else if (option["type"].asString() == "number") type = cmd::NUMBER;
             else if (option["type"].asString() == "file") type = cmd::FILE;

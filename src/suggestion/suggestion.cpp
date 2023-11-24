@@ -53,7 +53,7 @@ namespace suggestion {
                 }
             }
 
-            if ((cur > 1 && args[cur - 1][0] == '-') || cur == 1) {
+            if (((cur > 1 && args[cur - 1][0] == '-') || cur == 1) && !cmd->getOptions().empty()) {
                 cmd::CommandOption option = cmd->getOptions()[0];
 
                 if (cur > 1) {
@@ -67,7 +67,10 @@ namespace suggestion {
                     }
                 }
 
-                if (option.type == cmd::BOOLEAN) {
+                if (option.type == cmd::TEXT || option.type == cmd::NUMBER) {
+                    if (args[cur].empty())
+                        suggestion = "<" + option.name + ">";
+                } else if (option.type == cmd::BOOLEAN) {
                     suggestion = findSuggestion(ws, args[cur], {"true", "false"})[0];
                 }
                 else if (option.type == cmd::FILE) {

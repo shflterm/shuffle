@@ -210,6 +210,8 @@ void Workspace::inputPrompt() {
             }
             case '\t': {
                 string suggestion = getSuggestion(*this, input);
+                if (suggestion[0] == '<' && suggestion.back() == '>') break;
+
                 input += suggestion;
                 cout << "\033[0m" << suggestion;
                 break;
