@@ -12,7 +12,7 @@
 #include "workspace.h"
 #include "job.h"
 
-using std::string, std::thread;
+using std::string, std::thread, job::Job;
 
 enum TaskStatus {
     WAITING,

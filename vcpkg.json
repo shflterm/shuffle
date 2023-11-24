@@ -24,8 +24,8 @@
       "version>=": "3.11.2"
     },
     {
-      "name": "python3",
-      "version>=": "3.10.7#6"
+      "name": "pybind11",
+      "version>=": "2.10.4#1"
     }
   ]
 }

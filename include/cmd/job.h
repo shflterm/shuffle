@@ -10,38 +10,42 @@
 #include <memory>
 #include <utils.h>
 
-class Job;
+namespace job {
+    class Job;
+}
 
 #include "commandmgr.h"
 
 using std::shared_ptr, std::map, std::string;
 
-enum JobType {
-    COMMAND,
-    SNIPPET,
-    VARIABLE,
-    EMPTY
-};
+namespace job {
+    enum JobType {
+        COMMAND,
+        SNIPPET,
+        VARIABLE,
+        EMPTY
+    };
 
-class Job {
-    JobType jobType = EMPTY;
+    class Job {
+        JobType jobType = EMPTY;
 
-public:
-    shared_ptr<Command> command;
-    map<string, string> options;
-    string id = generateRandomString(16);
+    public:
+        shared_ptr<cmd::Command> command;
+        map<string, string> options;
+        string id = generateRandomString(16);
 
-    string start(Workspace* ws, bool backgroundMode = false);
+        string start(Workspace* ws, bool backgroundMode = false);
 
-    bool isCommand() const;
+        bool isCommand() const;
 
-    bool isSuccessed() const;
+        bool isSuccessed() const;
 
-    explicit Job(const shared_ptr<Command>&app);
+        explicit Job(const shared_ptr<cmd::Command>&app);
 
-    explicit Job(JobType commandType);
+        explicit Job(JobType commandType);
 
-    Job();
-};
+        Job();
+    };
+}
 
 #endif //SHFL_PARSEDCMD_H

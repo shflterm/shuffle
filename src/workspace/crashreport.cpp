@@ -11,7 +11,7 @@
 #include "console.h"
 #include "commandmgr.h"
 
-using std::cout, std::endl, std::to_string, std::ofstream;
+using std::cout, std::endl, std::to_string, std::ofstream, cmd::commands;
 
 #ifdef _WIN32
 
