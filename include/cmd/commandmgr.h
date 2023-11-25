@@ -32,6 +32,7 @@ namespace cmd {
         BOOLEAN,
         FILE,
         DIRECTORY,
+        FILE_OR_DIRECTORY,
         COMMAND
     };
 

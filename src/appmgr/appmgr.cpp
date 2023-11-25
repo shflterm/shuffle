@@ -96,6 +96,7 @@ namespace appmgr {
             else if (option["type"].asString() == "number") type = cmd::NUMBER;
             else if (option["type"].asString() == "file") type = cmd::FILE;
             else if (option["type"].asString() == "directory") type = cmd::DIRECTORY;
+            else if (option["type"].asString() == "fileordir") type = cmd::FILE_OR_DIRECTORY;
             else if (option["type"].asString() == "command") type = cmd::COMMAND;
             else {
                 error("Error: Invalid option type in " + optionName + ".");
@@ -254,6 +255,7 @@ namespace appmgr {
             else if (option["type"].asString() == "number") type = cmd::NUMBER;
             else if (option["type"].asString() == "file") type = cmd::FILE;
             else if (option["type"].asString() == "directory") type = cmd::DIRECTORY;
+            else if (option["type"].asString() == "fileordir") type = cmd::FILE_OR_DIRECTORY;
             else if (option["type"].asString() == "command") type = cmd::COMMAND;
             else {
                 error("Error: Invalid option type in " + optionName + ".");

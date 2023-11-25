@@ -53,8 +53,8 @@ namespace suggestion {
                 }
             }
 
-            if (((cur > 1 && args[cur - 1][0] == '-') || cur == 1) && !cmd->getOptions().empty()) {
-                cmd::CommandOption option = cmd->getOptions()[0];
+            if (cmd->getOptions().size() > cur - 1) {
+                cmd::CommandOption option = cmd->getOptions()[cur - 1];
 
                 if (cur > 1) {
                     string optName = args[cur - 1].substr(1);
@@ -70,11 +70,11 @@ namespace suggestion {
                 if (option.type == cmd::TEXT || option.type == cmd::NUMBER) {
                     if (args[cur].empty())
                         suggestion = "<" + option.name + ">";
-                } else if (option.type == cmd::BOOLEAN) {
+                }
+                else if (option.type == cmd::BOOLEAN) {
                     suggestion = findSuggestion(ws, args[cur], {"true", "false"})[0];
                 }
                 else if (option.type == cmd::FILE) {
-                    // find files in currnet directory WITHOUT DIRECTORY
                     vector<string> files;
                     for (const auto&item: std::filesystem::directory_iterator(ws.currentDirectory())) {
                         if (item.is_directory()) continue;
@@ -83,13 +83,19 @@ namespace suggestion {
                     suggestion = findSuggestion(ws, args[cur], files)[0];
                 }
                 else if (option.type == cmd::DIRECTORY) {
-                    // find directory in currnet directory WITHOUT FILE
                     vector<string> dirs;
                     for (const auto&item: std::filesystem::directory_iterator(ws.currentDirectory())) {
                         if (!item.is_directory()) continue;
                         dirs.push_back(item.path().filename().string());
                     }
                     suggestion = findSuggestion(ws, args[cur], dirs)[0];
+                }
+                else if (option.type == cmd::FILE_OR_DIRECTORY) {
+                    vector<string> files;
+                    for (const auto&item: std::filesystem::directory_iterator(ws.currentDirectory())) {
+                        files.push_back(item.path().filename().string());
+                    }
+                    suggestion = findSuggestion(ws, args[cur], files)[0];
                 }
                 else if (option.type == cmd::COMMAND) {
                     // find commands
