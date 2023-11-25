@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(shuffle)
 
-set(APP_SOURCES main.cpp builtincmd.cpp)
+set(APP_SOURCES main.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 

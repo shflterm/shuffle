@@ -9,6 +9,7 @@
 #include <pybind11/embed.h>
 #include <pybind11/pytypes.h>
 #include <pybind11/stl.h>
+#include <pybind11/pybind11.h>
 
 #include "lua/luaapi.h"
 
@@ -139,12 +140,11 @@ namespace appmgr {
             try {
                 const py::module sys = py::module::import("sys");
                 sys.attr("path").attr("append")(py::str(PY_PKGS.string()));
-                sys.attr("path").attr("append")(py::str(commandPath));
 
-                const py::module module = py::module::import("command");
+                py::eval_file(commandPath + "command.py");
 
-                const py::object result = module.attr("entrypoint")(py::str(ws->getName()), pOptionValues,
-                                                                    py::bool_(backgroundMode));
+                const py::object entrypoint = py::globals()["entrypoint"];
+                const py::object result = entrypoint(py::str(ws->getName()), pOptionValues, py::bool_(backgroundMode));
 
                 return py::str(result);
             }
