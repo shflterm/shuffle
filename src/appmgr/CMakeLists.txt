@@ -32,11 +32,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${Python_LIBRARIES})
 find_package(pybind11 CONFIG)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE pybind11::pybind11)
-set_target_properties(${PROJECT_NAME} PROPERTIES
-        INTERPROCEDURAL_OPTIMIZATION ON
-        CXX_VISIBILITY_PRESET ON
-        VISIBILITY_INLINES_HIDDEN ON
-)
 
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 
