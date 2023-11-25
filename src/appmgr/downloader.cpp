@@ -21,7 +21,7 @@ namespace appmgr {
     }
 
     void downloadPythonPkg(const string&pkg) {
-        system(("python -m pip install " + pkg + " --user").c_str());
+        system(("python -m pip install --target=\"" + PY_PKGS.string() + "\" " + pkg).c_str());
     }
 
     vector<string> getRepos() {
@@ -53,7 +53,6 @@ namespace appmgr {
             for (const auto&repoUrl: getRepos()) {
                 Json::Value repo = getRepo(repoUrl);
 
-                cout << teleport(0, wherey() - 1) << erase_line;
                 string message = R"(Start downloading '{APP}' from '{REPO}'...)";
                 message = replace(message, "{APP}", name);
                 message = replace(message, "{REPO}", repo["repo"].asString());
@@ -72,23 +71,19 @@ namespace appmgr {
                     }
                 }
                 else {
-                    cout << teleport(0, wherey() - 1) << erase_line;
                     warning("Unknown repository version: " + to_string(ver));
                 }
             }
         }
 
         if (!installed) {
-            cout << teleport(0, wherey() - 1) << erase_line;
             error("The app could not be found in the repository.");
             return false;
         }
 
-        cout << teleport(0, wherey() - 1) << erase_line;
         info("Adding to config...");
 
         if (!addApp(name)) {
-            cout << teleport(0, wherey() - 1) << erase_line;
             error("Failed to add app. (The app has already been added.)");
             return false;
         }
@@ -104,7 +99,6 @@ namespace appmgr {
         }
 
 
-        cout << teleport(0, wherey() - 1) << erase_line;
         success("Done!");
         return true;
     }

@@ -6,8 +6,8 @@
 #include <string>
 #include <json/json.h>
 #include <memory>
-#include <fstream>
 #include <pybind11/embed.h>
+#include <pybind11/pytypes.h>
 #include <pybind11/stl.h>
 
 #include "lua/luaapi.h"
@@ -97,7 +97,7 @@ namespace appmgr {
 
         vector<shared_ptr<Command>> subcommands;
         for (const auto&subcommandInfo: appInfo["subcommands"]) {
-            subcommands.push_back(make_shared<Command>(loadCommandVersion1(subcommandInfo, commandPath + "/")));
+            subcommands.push_back(make_shared<Command>(loadCommandVersion2(subcommandInfo, commandPath + "/")));
         }
 
         vector<CommandOption> options;
@@ -134,11 +134,14 @@ namespace appmgr {
 
             py::dict pOptionValues;
             for (const auto&[key, value]: optionValues)
-                pOptionValues[key.c_str()] = value;
+                pOptionValues[py::str(key)] = py::str(value);
 
             try {
                 const py::module sys = py::module::import("sys");
-                sys.attr("path").attr("append")(commandPath);
+                sys.attr("path").attr("append")(py::str(PY_PKGS.string()));
+                sys.attr("path").attr("append")(py::str(commandPath));
+
+                warning(py::str(sys.attr("path")));
 
                 const py::module module = py::module::import("command");
 
@@ -146,7 +149,8 @@ namespace appmgr {
                                                                     py::bool_(backgroundMode));
 
                 return py::str(result);
-            } catch (const std::exception& e) {
+            }
+            catch (const std::exception&e) {
                 std::cerr << "Error executing Python function: " << e.what() << std::endl;
                 return "Error";
             }

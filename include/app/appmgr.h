@@ -22,8 +22,6 @@ namespace appmgr {
     public:
         explicit App(const string&name);
 
-        void loadVersion1(const string&appPath, Json::Value appRoot);
-
         void loadVersion2(const string&appPath, Json::Value appRoot);
 
         [[nodiscard]] string getName() const {

@@ -10,6 +10,7 @@
 #include "builtincmd.h"
 
 using std::filesystem::create_directories, std::filesystem::exists, std::cout, std::cerr, std::endl;
+#define PYBIND11_DETAILED_ERROR_MESSAGES
 
 #ifdef _WIN32
 

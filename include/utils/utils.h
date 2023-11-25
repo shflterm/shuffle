@@ -12,6 +12,7 @@
 #endif
 #define DOT_SHUFFLE (HOME / ".shuffle")
 #define SHFL_JSON (DOT_SHUFFLE / "shfl.json")
+#define PY_PKGS (DOT_SHUFFLE / "py_pkgs")
 
 #include <string>
 #include <vector>
