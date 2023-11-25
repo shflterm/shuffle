@@ -26,23 +26,35 @@ namespace suggestion {
     }
 
     string getSuggestion(Workspace&ws, const string&input) {
-        vector<string> args = splitBySpace(input);
-        if (args.empty()) return "";
+        vector<string> spl = splitBySpace(input);
+        if (spl.empty()) return "";
 
         string suggestion;
-        if (input[input.length() - 1] == ' ') args.emplace_back("");
+        if (input[input.length() - 1] == ' ') spl.emplace_back("");
 
-        if (args.size() == 1) {
-            suggestion = findSuggestion(ws, args[0], makeDictionary(commands))[0];
+        if (spl.size() == 1) {
+            suggestion = findSuggestion(ws, spl[0], makeDictionary(commands))[0];
         }
         else {
-            const shared_ptr<Command> cmd = findCommand(args[0]);
+            shared_ptr<Command> cmd = findCommand(spl[0]);
             if (cmd == nullptr) return "";
 
-            const size_t cur = args.size() - 1;
+            int loops = 1;
+
+            for (int i = 1; i < spl.size() - 1; ++i) {
+                const shared_ptr<Command> sub = findCommand(spl[i], cmd->getSubcommands());
+                if (sub != nullptr) {
+                    cmd = sub;
+                    loops++;
+                }
+            }
+
+            vector args(spl.begin() + loops, spl.end());
+
+            const size_t cur = args.size();
 
             vector<string> usedOptions;
-            for (int i = 1; i < args.size(); ++i) {
+            for (int i = 0; i < args.size(); ++i) {
                 if (string item = args[i]; item[0] == '-') {
                     usedOptions.push_back(item.substr(1));
                 }
@@ -56,7 +68,7 @@ namespace suggestion {
             if (cmd->getOptions().size() > cur - 1) {
                 cmd::CommandOption option = cmd->getOptions()[cur - 1];
 
-                if (cur > 1) {
+                if (cur - 1 > 1) {
                     string optName = args[cur - 1].substr(1);
                     for (auto opt: cmd->getOptions()) {
                         if (opt.name == optName || std::find(opt.aliases.begin(), opt.aliases.end(), optName) != opt.
@@ -68,11 +80,11 @@ namespace suggestion {
                 }
 
                 if (option.type == cmd::TEXT || option.type == cmd::NUMBER) {
-                    if (args[cur].empty())
+                    if (args[cur-1].empty())
                         suggestion = "<" + option.name + ">";
                 }
                 else if (option.type == cmd::BOOLEAN) {
-                    suggestion = findSuggestion(ws, args[cur], {"true", "false"})[0];
+                    suggestion = findSuggestion(ws, args[cur-1], {"true", "false"})[0];
                 }
                 else if (option.type == cmd::FILE) {
                     vector<string> files;
@@ -80,7 +92,7 @@ namespace suggestion {
                         if (item.is_directory()) continue;
                         files.push_back(item.path().filename().string());
                     }
-                    suggestion = findSuggestion(ws, args[cur], files)[0];
+                    suggestion = findSuggestion(ws, args[cur-1], files)[0];
                 }
                 else if (option.type == cmd::DIRECTORY) {
                     vector<string> dirs;
@@ -88,21 +100,21 @@ namespace suggestion {
                         if (!item.is_directory()) continue;
                         dirs.push_back(item.path().filename().string());
                     }
-                    suggestion = findSuggestion(ws, args[cur], dirs)[0];
+                    suggestion = findSuggestion(ws, args[cur-1], dirs)[0];
                 }
                 else if (option.type == cmd::FILE_OR_DIRECTORY) {
                     vector<string> files;
                     for (const auto&item: std::filesystem::directory_iterator(ws.currentDirectory())) {
                         files.push_back(item.path().filename().string());
                     }
-                    suggestion = findSuggestion(ws, args[cur], files)[0];
+                    suggestion = findSuggestion(ws, args[cur-1], files)[0];
                 }
                 else if (option.type == cmd::COMMAND) {
                     // find commands
-                    suggestion = getSuggestion(ws, args[cur]);
+                    suggestion = getSuggestion(ws, args[cur-1]);
                 }
             }
-            else if (args[cur][0] == '-') {
+            else if (spl[cur][0] == '-') {
                 // Find unused options
                 vector<string> dict;
                 for (const auto&item: cmd->getOptions()) {
@@ -111,13 +123,13 @@ namespace suggestion {
                     }
                 }
 
-                suggestion = findSuggestion(ws, args[cur].substr(1), dict)[0];
+                suggestion = findSuggestion(ws, spl[cur].substr(1), dict)[0];
             }
-            else if (args[cur][0] == '(') {
-                suggestion = getSuggestion(ws, args[cur].substr(1));
+            else if (spl[cur][0] == '(') {
+                suggestion = getSuggestion(ws, spl[cur].substr(1));
             }
-            else if (args[cur][0] == '$') {
-                suggestion = findSuggestion(ws, args[cur].substr(1), makeDictionary(ws.getVariables()))[0];
+            else if (spl[cur][0] == '$') {
+                suggestion = findSuggestion(ws, spl[cur].substr(1), makeDictionary(ws.getVariables()))[0];
             }
             else {
                 vector<string> dict;
@@ -132,7 +144,7 @@ namespace suggestion {
                 for (const auto&item: cmd->getSubcommands())
                     dict.push_back(item->getName());
 
-                suggestion = findSuggestion(ws, args[cur], dict)[0];
+                suggestion = findSuggestion(ws, spl[cur], dict)[0];
             }
         }
         return suggestion;
