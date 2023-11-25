@@ -56,10 +56,10 @@ namespace appmgr {
                 string message = R"(Start downloading '{APP}' from '{REPO}'...)";
                 message = replace(message, "{APP}", name);
                 message = replace(message, "{REPO}", repo["repo"].asString());
+                info(message);
 
                 if (const int ver = repo["version"].asInt(); ver == 1) {
                     string downloadFrom = repo["download_at"].asString();
-                    info(downloadFrom);
                     downloadFrom = replace(downloadFrom, "{APP}", name);
 #ifdef _WIN32
                     downloadFrom = replace(downloadFrom, "{OS}", "windows");

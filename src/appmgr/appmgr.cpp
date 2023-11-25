@@ -6,17 +6,12 @@
 #include <string>
 #include <json/json.h>
 #include <memory>
-#include <pybind11/embed.h>
-#include <pybind11/pytypes.h>
-#include <pybind11/stl.h>
-#include <pybind11/pybind11.h>
 #ifdef _WIN32
 #include <windows.h>
 #elif defined(__linux__) || defined(__APPLE__)
 #include <dlfcn.h>
 #endif
 
-namespace py = pybind11;
 using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption, cmd::OptionType,
         cmd::commands;
 
@@ -78,89 +73,6 @@ namespace appmgr {
     //     return {};
     // }
 
-    PYBIND11_EMBEDDED_MODULE(shfl, m) {
-        m.def("currentDirectory", [](const string&name) {
-            if (wsMap.find(name) != wsMap.end()) return py::str(wsMap[name]->currentDirectory().string());
-
-            error("Error: Cannot find workspace '" + name + "'!");
-            return py::str("");
-        }, "Move workspace directory to another directory.");
-        m.def("moveDirectory", [](const string&name, const string&newDir) {
-            if (wsMap.find(name) != wsMap.end()) { wsMap[name]->moveDirectory(newDir); }
-            else error("Error: Cannot find workspace '" + name + "'!");
-        }, "Move workspace directory to another directory.");
-    }
-
-    Command loadCommandVersion2(Json::Value appInfo, const string&libPath) {
-        // NOLINT(*-no-recursion)
-        string name = appInfo["name"].asString();
-        string usage = appInfo["usage"].asString();
-        string description = appInfo["description"].asString();
-
-        const string commandPath = libPath + name + "/";
-
-        vector<shared_ptr<Command>> subcommands;
-        for (const auto&subcommandInfo: appInfo["subcommands"]) {
-            subcommands.push_back(make_shared<Command>(loadCommandVersion2(subcommandInfo, commandPath + "/")));
-        }
-
-        vector<CommandOption> options;
-        for (const auto&option: appInfo["options"]) {
-            const string optionName = option["name"].asString();
-            OptionType type;
-            if (option["type"].asString() == "string" || option["type"].asString() == "text") type = cmd::TEXT;
-            else if (option["type"].asString() == "boolean") type = cmd::BOOLEAN;
-            else if (option["type"].asString() == "number") type = cmd::NUMBER;
-            else if (option["type"].asString() == "file") type = cmd::FILE;
-            else if (option["type"].asString() == "directory") type = cmd::DIRECTORY;
-            else if (option["type"].asString() == "fileordir") type = cmd::FILE_OR_DIRECTORY;
-            else if (option["type"].asString() == "command") type = cmd::COMMAND;
-            else {
-                error("Error: Invalid option type in " + optionName + ".");
-                type = cmd::TEXT;
-            }
-            const string optionDescription = option["description"].asString();
-            vector<string> aliases;
-            for (const auto&alias: option["aliases"]) aliases.push_back(alias.asString());
-            options.emplace_back(optionName, optionDescription, type, aliases);
-        }
-
-        vector<string> aliases;
-        for (const auto&alias: appInfo["aliases"]) aliases.push_back(alias.asString());
-
-        vector<string> examples;
-        for (const auto&example: appInfo["examples"]) examples.push_back(example.asString());
-        Command command = Command(name, description, usage, subcommands, options, aliases, examples);
-
-        cmd_t cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode,
-                        const string&id) -> string {
-            py::scoped_interpreter guard{};
-
-            py::dict pOptionValues;
-            for (const auto&[key, value]: optionValues)
-                pOptionValues[py::str(key)] = py::str(value);
-
-            try {
-                const py::module sys = py::module::import("sys");
-                sys.attr("path").attr("append")(py::str(PY_PKGS.string()));
-
-                py::eval_file(commandPath + "command.py");
-
-                const py::object entrypoint = py::globals()["entrypoint"];
-                const py::object result = entrypoint(py::str(ws->getName()), pOptionValues, py::bool_(backgroundMode));
-
-                return py::str(result);
-            }
-            catch (const std::exception&e) {
-                std::cerr << "Error executing Python function: " << e.what() << std::endl;
-                return "Error";
-            }
-        };
-        command.setCmd(cmd);
-
-        return command;
-    }
-
     extern "C" {
     typedef string (*entrypoint_t)(string, const map<string, string>&, bool);
     }
@@ -185,7 +97,7 @@ namespace appmgr {
 
         vector<shared_ptr<Command>> subcommands;
         for (const auto&subcommandInfo: appInfo["subcommands"]) {
-            subcommands.push_back(make_shared<Command>(loadCommandVersion2(subcommandInfo, commandPath + "/")));
+            subcommands.push_back(make_shared<Command>(loadCommandVersion3(subcommandInfo, commandPath + "/")));
         }
 
         vector<CommandOption> options;
@@ -264,19 +176,6 @@ namespace appmgr {
         return command;
     }
 
-    void App::loadVersion2(const string&appPath, Json::Value appRoot) {
-        this->name = appRoot["name"].asString();
-        description = appRoot["description"].asString();
-        author = appRoot["author"].asString();
-        version = appRoot["version"].asString();
-
-        Json::Value commandsJson = appRoot["commands"];
-        for (const auto&commandInfo: commandsJson) {
-            commands.push_back(
-                make_shared<Command>(loadCommandVersion2(commandInfo, appPath + "/lib/")));
-        }
-    }
-
     void App::loadVersion3(const string&appPath, Json::Value appRoot) {
         this->name = appRoot["name"].asString();
         description = appRoot["description"].asString();
@@ -300,10 +199,8 @@ namespace appmgr {
 
         apiVersion = appRoot["api-version"].asInt();
 
-        if (apiVersion == 1)
+        if (apiVersion == 1 || apiVersion == 2)
             error("App '" + name + "' is not supported anymore! (Because of api-version)");
-        else if (apiVersion == 2)
-            loadVersion2(absolute(appPath).string(), appRoot);
         else if (apiVersion == 3)
             loadVersion3(absolute(appPath).string(), appRoot);
         else

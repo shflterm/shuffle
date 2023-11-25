@@ -25,14 +25,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE CURL::libcurl)
 find_package(kubazip CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE kubazip::kubazip)
 
-find_package(Python COMPONENTS Interpreter Development)
-include_directories(${Python_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} PRIVATE ${Python_LIBRARIES})
-
-find_package(pybind11 CONFIG)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE pybind11::pybind11)
-
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ../../include ../../include/cmd ../../include/app ../../include/suggestion ../../include/workspace ../../include/utils)
