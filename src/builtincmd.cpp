@@ -220,7 +220,7 @@ void loadCommands() {
     )));
     commands.push_back(make_shared<Command>(Command(
         "help", "Show help", {
-            CommandOption("command", "", cmd::TEXT, {"cmd", "help"})
+            CommandOption("command", "", cmd::COMMAND, {"cmd", "help"})
         }, {"help", "help shfl", "help appmgr"}, helpCmd
     )));
     // commands.push_back(make_shared<Command>(Command(
@@ -235,8 +235,8 @@ void loadCommands() {
     commands.push_back(make_shared<Command>(Command(
         "task", "Manage background tasks", {
             Command("start", "Start a new background task.", {
-                        CommandOption("job", "", cmd::TEXT)
-                    }, {"task start get https://examples.com/largefile"}, taskStartCmd),
+                        CommandOption("job", "", cmd::COMMAND)
+                    }, {"task start dwnld https://examples.com/largefile"}, taskStartCmd),
             Command("log", "Print logs", {
                         CommandOption("taskId", "", cmd::TEXT)
                     }, {"task log abcdefg12345"}, taskLogCmd),
