@@ -21,7 +21,7 @@ namespace appmgr {
     }
 
     void downloadPythonPkg(const string&pkg) {
-        system(("python -m pip install --target=\"" + PY_PKGS.string() + "\" " + pkg).c_str());
+        system(("python -m pip install " + pkg).c_str());
     }
 
     vector<string> getRepos() {
