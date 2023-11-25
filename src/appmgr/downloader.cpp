@@ -20,10 +20,6 @@ namespace appmgr {
         return root;
     }
 
-    void downloadPythonPkg(const string&pkg) {
-        system(("python -m pip install " + pkg).c_str());
-    }
-
     vector<string> getRepos() {
         vector<string> result;
         Json::Value repos = getShflJson("repos");
@@ -95,16 +91,6 @@ namespace appmgr {
             return false;
         }
 
-        path appInfo = appPath / "app.shfl";
-
-        Json::Value appInfoRoot;
-        Json::Reader appInfoReader;
-        appInfoReader.parse(readFile(appInfo), appInfoRoot, false);
-
-        for (const auto&pkg: appInfoRoot["python-pkgs"]) {
-            downloadPythonPkg(pkg.asString());
-        }
-
         success("Done!");
         return true;
     }
@@ -116,9 +102,7 @@ namespace appmgr {
             remove_all(appPath);
 
             Json::Value json = getShflJson("apps");
-            for (int i = 0; i < json.size(); ++i) {
-                json.removeMember(name);
-            }
+            json.removeMember(name);
             setShflJson("apps", json);
 
             success("Done!");
