@@ -10,8 +10,11 @@
 #include <pybind11/pytypes.h>
 #include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
-
-#include "lua/luaapi.h"
+#ifdef _WIN32
+#include <windows.h>
+#elif defined(__linux__) || defined(__APPLE__)
+#include <dlfcn.h>
+#endif
 
 namespace py = pybind11;
 using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption, cmd::OptionType,
@@ -158,6 +161,109 @@ namespace appmgr {
         return command;
     }
 
+    extern "C" {
+    typedef string (*entrypoint_t)(string, const map<string, string>&, bool);
+    }
+
+#ifdef _WIN32
+    void closeLibrary(HMODULE libraryHandle) {
+        FreeLibrary(libraryHandle);
+    }
+#else
+    void closeLibrary(void* libraryHandle) {
+        dlclose(libraryHandle);
+    }
+#endif
+
+    Command loadCommandVersion3(Json::Value appInfo, const string&libPath) {
+        // NOLINT(*-no-recursion)
+        string name = appInfo["name"].asString();
+        string usage = appInfo["usage"].asString();
+        string description = appInfo["description"].asString();
+
+        const string commandPath = libPath + name + "/";
+
+        vector<shared_ptr<Command>> subcommands;
+        for (const auto&subcommandInfo: appInfo["subcommands"]) {
+            subcommands.push_back(make_shared<Command>(loadCommandVersion2(subcommandInfo, commandPath + "/")));
+        }
+
+        vector<CommandOption> options;
+        for (const auto&option: appInfo["options"]) {
+            const string optionName = option["name"].asString();
+            OptionType type;
+            if (option["type"].asString() == "string" || option["type"].asString() == "text") type = cmd::TEXT;
+            else if (option["type"].asString() == "boolean") type = cmd::BOOLEAN;
+            else if (option["type"].asString() == "number") type = cmd::NUMBER;
+            else if (option["type"].asString() == "file") type = cmd::FILE;
+            else if (option["type"].asString() == "directory") type = cmd::DIRECTORY;
+            else if (option["type"].asString() == "fileordir") type = cmd::FILE_OR_DIRECTORY;
+            else if (option["type"].asString() == "command") type = cmd::COMMAND;
+            else {
+                error("Error: Invalid option type in " + optionName + ".");
+                type = cmd::TEXT;
+            }
+            const string optionDescription = option["description"].asString();
+            vector<string> aliases;
+            for (const auto&alias: option["aliases"]) aliases.push_back(alias.asString());
+            options.emplace_back(optionName, optionDescription, type, aliases);
+        }
+
+        vector<string> aliases;
+        for (const auto&alias: appInfo["aliases"]) aliases.push_back(alias.asString());
+
+        vector<string> examples;
+        for (const auto&example: appInfo["examples"]) examples.push_back(example.asString());
+        Command command = Command(name, description, usage, subcommands, options, aliases, examples);
+
+        cmd_t cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode,
+                        const string&id) -> string {
+            // 라이브러리 경로
+            string libraryPath =
+#ifdef _WIN32
+                    commandPath + "command.dll";
+#elif __APPLE__
+                    commandPath + "command.dylib";
+#else
+                    commandPath + "command.so";
+#endif
+
+            // 라이브러리 열기
+#ifdef _WIN32
+            HMODULE libraryHandle = LoadLibraryA(libraryPath.c_str());
+#elif defined(__linux__) || defined(__APPLE__)
+            void* libraryHandle = dlopen(libraryPath.c_str(), RTLD_LAZY);
+#endif
+
+            if (!libraryHandle) {
+                error("Failed to open the library. Please check if the library exists.");
+                return "ERROR_OPENING_LIBRARY";
+            }
+
+            // 라이브러리에서 함수 로드
+            const auto entrypoint =
+#ifdef _WIN32
+                    reinterpret_cast<entrypoint_t>(GetProcAddress(libraryHandle, "entrypoint"));
+#elif defined(__APPLE__) || defined(__linux__)
+                    reinterpret_cast<entrypoint_t>(dlsym(libraryHandle, "entrypoint"));
+#endif
+
+            if (!entrypoint) {
+                error("Failed to load the entrypoint function.");
+                closeLibrary(libraryHandle);
+                return "ERROR_LOADING_FUNCTION";
+            }
+
+            string res = entrypoint(ws->getName(), optionValues, backgroundMode);
+            closeLibrary(libraryHandle);
+
+            return res;
+        };
+        command.setCmd(cmd);
+
+        return command;
+    }
+
     void App::loadVersion2(const string&appPath, Json::Value appRoot) {
         this->name = appRoot["name"].asString();
         description = appRoot["description"].asString();
@@ -168,6 +274,19 @@ namespace appmgr {
         for (const auto&commandInfo: commandsJson) {
             commands.push_back(
                 make_shared<Command>(loadCommandVersion2(commandInfo, appPath + "/lib/")));
+        }
+    }
+
+    void App::loadVersion3(const string&appPath, Json::Value appRoot) {
+        this->name = appRoot["name"].asString();
+        description = appRoot["description"].asString();
+        author = appRoot["author"].asString();
+        version = appRoot["version"].asString();
+
+        Json::Value commandsJson = appRoot["commands"];
+        for (const auto&commandInfo: commandsJson) {
+            commands.push_back(
+                make_shared<Command>(loadCommandVersion3(commandInfo, appPath + "/lib/")));
         }
     }
 
@@ -185,6 +304,8 @@ namespace appmgr {
             error("App '" + name + "' is not supported anymore! (Because of api-version)");
         else if (apiVersion == 2)
             loadVersion2(absolute(appPath).string(), appRoot);
+        else if (apiVersion == 3)
+            loadVersion3(absolute(appPath).string(), appRoot);
         else
             error("App '" + name + "' has an invalid API version! (" + std::to_string(apiVersion) + ")");
     }
@@ -200,15 +321,7 @@ namespace appmgr {
         vector<string> res;
 
         Json::Value commandList = getShflJson("apps");
-
-        Json::Value value(Json::objectValue);
-        value["name"] = name;
-        for (const auto&item: commandList) {
-            if (item["name"] == name) return false;
-        }
-
-        commandList.append(value);
-
+        commandList.append(name);
         setShflJson("apps", commandList);
         return true;
     }
@@ -222,7 +335,7 @@ namespace appmgr {
 
         Json::Value commandList = getShflJson("apps");
         for (auto command: commandList) {
-            res.push_back(command["name"].asString());
+            res.push_back(command.asString());
         }
 
         return res;

@@ -56,12 +56,19 @@ namespace appmgr {
                 string message = R"(Start downloading '{APP}' from '{REPO}'...)";
                 message = replace(message, "{APP}", name);
                 message = replace(message, "{REPO}", repo["repo"].asString());
-                info(message);
 
                 if (const int ver = repo["version"].asInt(); ver == 1) {
-                    if (const string downloadFrom = replace(repo["download_at"].asString(), "{APP}", name);
-                        downloadFile(
-                            downloadFrom, downloadTo)) {
+                    string downloadFrom = repo["download_at"].asString();
+                    info(downloadFrom);
+                    downloadFrom = replace(downloadFrom, "{APP}", name);
+#ifdef _WIN32
+                    downloadFrom = replace(downloadFrom, "{OS}", "windows");
+#elif defined(__linux__)
+                    downloadFrom = replace(downloadFrom, "{OS}", "linux");
+#elif defined(__APPLE__)
+                    downloadFrom = replace(downloadFrom, "{OS}", "macos");
+#endif
+                    if (downloadFile(downloadFrom, downloadTo)) {
                         info("Downloading... (Done!)");
                         cout << "\n";
 
@@ -98,7 +105,6 @@ namespace appmgr {
             downloadPythonPkg(pkg.asString());
         }
 
-
         success("Done!");
         return true;
     }
@@ -111,9 +117,7 @@ namespace appmgr {
 
             Json::Value json = getShflJson("apps");
             for (int i = 0; i < json.size(); ++i) {
-                if (json[i]["name"] == name) {
-                    json.removeIndex(i, &json[i]);
-                }
+                json.removeMember(name);
             }
             setShflJson("apps", json);
 

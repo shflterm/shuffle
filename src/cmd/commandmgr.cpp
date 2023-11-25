@@ -2,7 +2,6 @@
 
 #include <appmgr.h>
 #include <console.h>
-#include <lua/luaapi.h>
 #include <memory>
 #include <utility>
 

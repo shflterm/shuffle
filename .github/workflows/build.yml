@@ -17,12 +17,12 @@ jobs:
     strategy:
       matrix:
         config:
+          - os: windows
+            configure: .\vcpkg\bootstrap-vcpkg.bat
           - os: ubuntu
             configure: ./vcpkg/bootstrap-vcpkg.sh
           - os: macos
             configure: ./vcpkg/bootstrap-vcpkg.sh
-          - os: windows
-            configure: .\vcpkg\bootstrap-vcpkg.bat
 
     steps:
       - name: Checkout Repository
