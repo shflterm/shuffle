@@ -141,8 +141,6 @@ namespace appmgr {
                 sys.attr("path").attr("append")(py::str(PY_PKGS.string()));
                 sys.attr("path").attr("append")(py::str(commandPath));
 
-                warning(py::str(sys.attr("path")));
-
                 const py::module module = py::module::import("command");
 
                 const py::object result = module.attr("entrypoint")(py::str(ws->getName()), pOptionValues,
