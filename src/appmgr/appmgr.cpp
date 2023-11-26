@@ -178,11 +178,11 @@ namespace appmgr {
         return command;
     }
 
-    void App::loadVersion3(const string&appPath, Json::Value appRoot) {
-        this->name = appRoot["name"].asString();
-        description = appRoot["description"].asString();
-        author = appRoot["author"].asString();
-        version = appRoot["version"].asString();
+    void loadVersion3(App *app, const string&appPath, Json::Value appRoot) {
+        app->name = appRoot["name"].asString();
+        app->description = appRoot["description"].asString();
+        app->author = appRoot["author"].asString();
+        app->version = appRoot["version"].asString();
 
         Json::Value commandsJson = appRoot["commands"];
         for (const auto&commandInfo: commandsJson) {
@@ -204,7 +204,7 @@ namespace appmgr {
         if (apiVersion == 1 || apiVersion == 2)
             error("App '" + name + "' is not supported anymore! (Because of api-version)");
         else if (apiVersion == 3)
-            loadVersion3(absolute(appPath).string(), appRoot);
+            loadVersion3(this, absolute(appPath).string(), appRoot);
         else
             error("App '" + name + "' has an invalid API version! (" + std::to_string(apiVersion) + ")");
     }

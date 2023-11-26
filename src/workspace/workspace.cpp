@@ -3,6 +3,7 @@
 #include <iostream>
 #include <utility>
 #include <map>
+#include <sstream>
 
 #include "cmd/cmdparser.h"
 #include "cmd/job.h"
@@ -332,9 +333,9 @@ string Workspace::getName() {
 }
 
 Workspace::Workspace(
-    const string&name) : name(name), dir(current_path()) {
+    const string&name) : name(name) {
     wsMap[name] = this;
 }
 
-Workspace::Workspace() : dir(current_path()) {
+Workspace::Workspace() {
 }

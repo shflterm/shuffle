@@ -1,5 +1,10 @@
 #include "utils/shfljson.h"
 
+#include <filesystem>
+#include <utils/utils.h>
+
+using std::filesystem::exists, std::filesystem::path;
+
 void initShflJson() {
     if (!exists(path(SHFL_JSON))) {
         writeFile(SHFL_JSON, R"({"apps": [], "libs": []})");

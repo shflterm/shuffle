@@ -6,6 +6,7 @@
 #include <filesystem>
 
 #include "utils/console.h"
+#include "utils/shfljson.h"
 #include "utils/utils.h"
 #include "app/appmgr.h"
 

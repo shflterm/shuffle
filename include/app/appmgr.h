@@ -5,7 +5,7 @@
 #ifndef APPMGR_H
 #define APPMGR_H
 
-#include "../utils/utils.h"
+#include "utils/utils.h"
 
 #include <vector>
 #include <string>
@@ -14,15 +14,13 @@ namespace appmgr {
     class App {
     protected:
         App(const App&new_parent, const string&name);
-
-        string name, description, author;
-        string version;
         int apiVersion = -1;
 
     public:
-        explicit App(const string&name);
+        string name, description, author;
+        string version;
 
-        void loadVersion3(const string&appPath, Json::Value appRoot);
+        explicit App(const string&name);
 
         [[nodiscard]] string getName() const {
             return name;
