@@ -10,12 +10,14 @@
 #include <memory>
 
 #include "commandmgr.h"
-#include "parsedcmd.h"
+#include "job.h"
 
-using std::shared_ptr;
+using std::shared_ptr, job::Job;
 
-ParsedCommand parseCommand(Command* app, const vector<string> &args);
+namespace cmd {
+    Job parseCommand(shared_ptr<Command> app, const vector<string>&args);
 
-map<string, string> *parseOptions(Command* app, const vector<string> &args);
+    map<string, string>* parseOptions(const shared_ptr<Command>&app, const vector<string>&args);
+}
 
 #endif //SHFL_CMDPARSER_H

@@ -1,37 +1,39 @@
+#include "utils/i18n.h"
+
 #include <string>
 #include <initializer_list>
-#include "term.h"
 
-#include "json/json.h"
-#include "utils.h"
+#include <json/json.h>
+#include "utils/utils.h"
+#include "utils/console.h"
 
 using std::map, std::initializer_list, std::to_string, std::string;
 
 string langJson;
 map<string, string> colorMap = {
-        {"RESET", resetColor},
-//    {"BOLD", bold},
-//    {"ITALIC", italic},
-//    {"UNDERLINE", underline},
-        {"FG_BLACK",   color(FOREGROUND, Black)},
-        {"FG_RED",     color(FOREGROUND, Red)},
-        {"FG_GREEN",   color(FOREGROUND, Green)},
-        {"FG_YELLOW",  color(FOREGROUND, Yellow)},
-        {"FG_BLUE",    color(FOREGROUND, Blue)},
-        {"FG_MAGENTA", color(FOREGROUND, Magenta)},
-        {"FG_CYAN",    color(FOREGROUND, Cyan)},
-        {"FG_WHITE",   color(FOREGROUND, White)},
-        {"BG_BLACK",   color(BACKGROUND, Black)},
-        {"BG_RED",     color(BACKGROUND, Red)},
-        {"BG_GREEN",   color(BACKGROUND, Green)},
-        {"BG_YELLOW",  color(BACKGROUND, Yellow)},
-        {"BG_BLUE",    color(BACKGROUND, Blue)},
-        {"BG_MAGENTA", color(BACKGROUND, Magenta)},
-        {"BG_CYAN",    color(BACKGROUND, Cyan)},
-        {"BG_WHITE",   color(BACKGROUND, White)},
+    {"RESET", reset},
+    //    {"BOLD", bold},
+    //    {"ITALIC", italic},
+    //    {"UNDERLINE", underline},
+    {"FG_BLACK", fg_black},
+    {"FG_RED", fg_red},
+    {"FG_GREEN", fg_green},
+    {"FG_YELLOW", fg_yellow},
+    {"FG_BLUE", fg_blue},
+    {"FG_MAGENTA", fg_magenta},
+    {"FG_CYAN", fg_cyan},
+    {"FG_WHITE", fg_white},
+    {"BG_BLACK", bg_black},
+    {"BG_RED", bg_red},
+    {"BG_GREEN", bg_green},
+    {"BG_YELLOW", bg_yellow},
+    {"BG_BLUE", bg_blue},
+    {"BG_MAGENTA", bg_magenta},
+    {"BG_CYAN", bg_cyan},
+    {"BG_WHITE", bg_white},
 };
 
-string translate(const string &translate_code, const initializer_list<string> &args) {
+string translate(const string&translate_code, const initializer_list<string>&args) {
     Json::Value root;
     Json::Reader reader;
     reader.parse(langJson, root, false);
@@ -39,18 +41,18 @@ string translate(const string &translate_code, const initializer_list<string> &a
     if (str.empty()) str = translate_code;
 
     int i = 0;
-    for (const string &elem: args) {
+    for (const string&elem: args) {
         str = replace(str, "$" + to_string(i), elem);
         i++;
     }
 
-    for (const auto & [name, value]: colorMap) {
+    for (const auto&[name, value]: colorMap) {
         str = replace(str, "{" + name + "}", value);
     }
 
     return str;
 }
 
-string translate(const string &translate_code) {
+string translate(const string&translate_code) {
     return translate(translate_code, {});
 }

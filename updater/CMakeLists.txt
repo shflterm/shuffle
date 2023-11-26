@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(updater)
 
-set(SOURCES ../include/cmd/parsedcmd.h)
+set(SOURCES ../include/cmd/job.h)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_executable(${PROJECT_NAME} ${SOURCES} main.cpp)

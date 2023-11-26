@@ -12,14 +12,16 @@
 #endif
 #define DOT_SHUFFLE (HOME / ".shuffle")
 #define SHFL_JSON (DOT_SHUFFLE / "shfl.json")
+#define PY_PKGS (DOT_SHUFFLE / "py_pkgs")
 
 #include <string>
 #include <vector>
 #include <regex>
-#include <json/json.h>
 #include <filesystem>
 
 using std::regex, std::vector, std::string, std::filesystem::path;
+
+extern string pythonPlatform;
 
 std::vector<std::string> splitBySpace(const std::string&input);
 
@@ -43,12 +45,8 @@ path extractZip(const path&zipFile, path extractPath);
 
 void updateShuffle();
 
-void initShflJson();
-
-Json::Value getShflJson(const string&part);
-
-void setShflJson(const string&part, Json::Value value);
-
 bool checkUpdate(bool checkBackground = true);
+
+std::string generateRandomString(int length);
 
 #endif //SHUFFLE_INCLUDE_UTILS_H_

@@ -7,16 +7,18 @@
 
 #include <string>
 #include <vector>
-#include <workspace.h>
+#include "workspace/workspace.h"
 
 using std::string, std::vector;
 
-vector<string> findSuggestion(const Workspace&ws,
-                              const string&input,
-                              const vector<string>&DICTIONARY);
+namespace suggestion {
+    string getSuggestion(Workspace&ws, const string&input);
 
-vector<string> createSuggestions(const Workspace&ws,
-                                 const string&str,
-                                 const vector<string>&DICTIONARY);
+    vector<string> findSuggestion(const Workspace&ws,
+                                  const string&input,
+                                  const vector<string>&DICTIONARY);
+
+    string getHint(Workspace ws, const string&input);
+}
 
 #endif //SHUFFLE_INCLUDE_SUGGESTION_H_

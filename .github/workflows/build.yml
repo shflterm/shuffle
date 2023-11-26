@@ -17,16 +17,21 @@ jobs:
     strategy:
       matrix:
         config:
+          - os: windows
+            configure: .\vcpkg\bootstrap-vcpkg.bat
           - os: ubuntu
             configure: ./vcpkg/bootstrap-vcpkg.sh
           - os: macos
             configure: ./vcpkg/bootstrap-vcpkg.sh
-          - os: windows
-            configure: .\vcpkg\bootstrap-vcpkg.bat
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4.7.1
+        with:
+          python-version: 3.11.6
 
       - name: Cache Vcpkg and Build Directories
         uses: actions/cache@v3
@@ -35,9 +40,6 @@ jobs:
             ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}
             ${{github.workspace}}/build-${{ matrix.config.os }}
           key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json', '**/CMakeLists.txt') }}
-
-      - name: Update Submodule
-        run: git submodule update --init --recursive
 
       - name: Download vcpkg
         run: git clone https://github.com/Microsoft/vcpkg.git
@@ -58,3 +60,9 @@ jobs:
         with:
           name: build-${{ matrix.config.os }}
           path: ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}/src/**
+
+      - name: Upload Updater
+        uses: actions/upload-artifact@v3
+        with:
+          name: updater-${{ matrix.config.os }}
+          path: ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}/updater/**

@@ -9,16 +9,17 @@
 #include <filesystem>
 #include <vector>
 #include <map>
+#include <memory>
 
 class Workspace;
 
-#include "parsedcmd.h"
+#include "cmd/job.h"
 
-using std::string, std::vector, std::map, std::filesystem::path, std::filesystem::current_path;
+using std::string, std::vector, std::map, std::filesystem::path, std::filesystem::current_path, std::shared_ptr;
 
 class Workspace {
     string name;
-    path dir;
+    string dir = current_path().string();
     vector<string> history;
     int historyIndex = 0;
     map<string, string> variables;
@@ -26,19 +27,23 @@ class Workspace {
     [[nodiscard]] string prompt() const;
 
 public:
-    path currentDirectory();
+    path currentDirectory() const;
 
-    void moveDirectory(path newDir);
+    void moveDirectory(const path& newDir);
 
     vector<string> getHistory();
 
     void addHistory(const string&s);
 
+    map<string, string> getVariables();
+
     string historyUp();
 
     string historyDown();
 
-    ParsedCommand parse(const string&input);
+    string processArgument(string argument);
+
+    shared_ptr<job::Job> createJob(string &input);
 
     void inputPrompt();
 

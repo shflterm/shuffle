@@ -1,4 +1,4 @@
-#include <term.h>
+#include <iostream>
 #include <filesystem>
 #include <csignal>
 
@@ -8,17 +8,20 @@
 #include "version.h"
 #include "snippetmgr.h"
 #include "builtincmd.h"
+#include "shfljson.h"
 
-using std::filesystem::create_directories, std::filesystem::exists;
+using std::filesystem::create_directories, std::filesystem::exists, std::cout, std::cerr, std::endl;
+#define PYBIND11_DETAILED_ERROR_MESSAGES
 
 #ifdef _WIN32
+#include <DbgHelp.h>
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS* exceptionPointers) {
-    term << newLine;
+    cout << endl;
     error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
     error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
-    term << newLine;
+    cout << endl;
     const CrashReport report = CrashReport()
             .setStackTrace(genStackTrace(exceptionPointers->ContextRecord));
     error(report.make());
@@ -32,10 +35,10 @@ LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS* exceptionPointers) {
 #include <termios.h>
 
 extern "C" void handleCrash(int sig) {
-    term << newLine;
+    cout << endl;
     error("Sorry. Something went wrong with Shuffle. Go to the URL below and report the problem.");
     error("https://github.com/shflterm/shuffle/issues/new?template=crash-report.yaml");
-    term << newLine;
+    cout << endl;
     CrashReport report = CrashReport()
             .setStackTrace(genStackTrace())
             .setSignalNumber(sig);
@@ -47,7 +50,7 @@ extern "C" void handleCrash(int sig) {
 #endif
 
 extern "C" void handleQuit(const int sig) {
-    term << newLine << "Bye." << newLine;
+    cout << endl << "Bye." << endl;
     exit(sig);
 }
 
@@ -69,44 +72,52 @@ int main(const int argc, char* argv[]) {
 #endif
     signal(SIGINT, &handleQuit);
 
-    initShflJson();
+    initAnsiCodes();
+
     if (getShflJson("repos").empty()) {
         Json::Value repos;
         repos.append("https://raw.githubusercontent.com/shflterm/apps/main/repo.json");
         setShflJson("repos", repos);
     }
 
-    if (!exists(DOT_SHUFFLE)) create_directories(DOT_SHUFFLE);
-
     if (argc > 1) {
         if (const string arg = argv[1];
             arg == "--version" || arg == "-v") {
-            term << "Shuffle " << SHUFFLE_VERSION.str() << newLine;
+            cout << "Shuffle " << SHUFFLE_VERSION.str() << endl;
             return 0;
         }
 
         loadCommands();
         loadSnippets();
-        currentWorkspace = new Workspace();
+        Workspace workspace;
         string cmd;
         for (int i = 1; i < argc; ++i) {
             cmd += argv[i];
             cmd += " ";
         }
-        currentWorkspace->parse(cmd).executeApp(currentWorkspace);
+        workspace.createJob(cmd)->start(&workspace);
         return 0;
     }
 
-    term << "Welcome to" << color(FOREGROUND, Blue) << " Shuffle " << SHUFFLE_VERSION.str() << resetColor << "!"
-            << newLine
-            << "(C) 2023 Kim Sihu. All Rights Reserved." << newLine << newLine;
+    if (!exists(DOT_SHUFFLE)) create_directories(DOT_SHUFFLE);
+    initShflJson();
 
-    if (checkUpdate()) term << newLine;
+    cout << "Welcome to" << fg_blue << " Shuffle " << SHUFFLE_VERSION.str() << reset << "!"
+            << endl
+            << "(C) 2023 Kim Sihu. All Rights Reserved." << endl << endl;
+
+    if (!isAnsiSupported()) {
+        error("ANSI escape codes are not supported on this terminal.");
+        error("Shuffle may not work properly.");
+        error("");
+    }
+
+    if (checkUpdate()) cout << endl;
 
     loadCommands();
     loadSnippets();
 
-    term << "Type 'help' to get help!" << newLine;
+    cout << "Type 'help' to get help!" << endl;
 
     currentWorkspace = new Workspace("main");
     // ReSharper disable once CppDFAEndlessLoop

@@ -9,12 +9,14 @@
 
 using std::string;
 
-bool installApp(string&name);
+namespace appmgr {
+    bool installApp(string&name);
 
-bool removeApp(const string&name);
+    bool removeApp(const string&name);
 
-bool addRepo(const string&url);
+    bool addRepo(const string&url);
 
-bool removeRepo(const string&url);
+    bool removeRepo(const string&url);
+}
 
 #endif //SHUFFLE_INCLUDE_SAPP_DOWNLOADER_H_

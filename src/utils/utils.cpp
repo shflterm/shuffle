@@ -1,43 +1,44 @@
 #define NOMINMAX
 
-#include "utils.h"
+#include "utils/utils.h"
 
+#include <iostream>
 #include <vector>
 #include <string>
 #include <regex>
 #include <algorithm>
 #include <fstream>
 #include <cstdlib>
+#include <random>
 #include <curl/curl.h>
-#include "term.h"
+#include <zip/zip.h>
 
-#include "console.h"
+#include "utils/console.h"
 #include "version.h"
-#include "zip/zip.h"
+
+using std::cout, std::endl;
 
 using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, std::smatch, std::to_string,
         std::filesystem::temp_directory_path;
 
+string pythonPlatform;
+
 vector<string> splitBySpace(const string&input) {
-    vector<std::string> result;
-    regex regex("\"([^\"]*)\"|(\\S+)");
-    sregex_iterator iterator(input.begin(), input.end(), regex);
-    sregex_iterator end;
+    std::regex regex_pattern(R"((\S|^)\"[^"]*"|\([^)]*\)|"[^"]*"|\S+)");
+    std::vector<std::string> tokens;
 
-    while (iterator != end) {
-        smatch match = *iterator;
-        string token = match.str();
+    auto words_begin = std::sregex_iterator(input.begin(), input.end(), regex_pattern);
+    auto words_end = std::sregex_iterator();
 
-        // Remove leading and trailing quotes if present
-        if (!token.empty() && token.front() == '"' && token.back() == '"') {
-            token = token.substr(1, token.size() - 2);
-        }
-
-        result.push_back(token);
-        ++iterator;
+    for (std::sregex_iterator i = words_begin; i != words_end; ++i) {
+        if (const std::smatch&match = *i;
+            !tokens.empty() &&
+            tokens.back()[tokens.back().size() - 1] == ')' && match.str()[0] == '!')
+            tokens.back() += match.str();
+        else tokens.push_back(match.str());
     }
 
-    return result;
+    return tokens;
 }
 
 vector<string> split(const string&s, const regex&regex) {
@@ -96,11 +97,16 @@ string replace(string str, const string&from, const string&to) {
 }
 
 string readFile(const path&path) {
-    ifstream file(path);
-    ostringstream content_stream;
-    content_stream << file.rdbuf();
-    file.close();
-    return content_stream.str();
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << path << std::endl;
+        return "";
+    }
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+
+    return buffer.str();
 }
 
 void writeFile(const path&path, const string&value) {
@@ -141,18 +147,18 @@ string readTextFromWeb(const string&url) {
 int lastPercent = -1;
 
 // ReSharper disable once CppDFAConstantFunctionResult
-int progress_callback([[maybe_unused]] void* clientp, const curl_off_t dltotal,
-                      const curl_off_t dlnow, [[maybe_unused]] curl_off_t ultotal,
-                      [[maybe_unused]] curl_off_t ulnow) {
+int progress_callback(void* clientp, const curl_off_t dltotal,
+                      const curl_off_t dlnow, curl_off_t ultotal,
+                      curl_off_t ulnow) {
     if (dltotal == 0) return 0;
 
     const int percent = static_cast<int>(static_cast<float>(dlnow) / static_cast<float>(dltotal) * 100);
     if (lastPercent == percent) return 0;
 
     lastPercent = percent;
-    term << eraseLine;
+    cout << erase_line;
     info("Downloading... (" + to_string(percent) + "%)");
-    term << teleport(wherex(), wherey() - 1);
+    cout << teleport(wherex(), wherey() - 1);
 
     return 0;
 }
@@ -181,9 +187,9 @@ bool downloadFile(const string&url, const string&file) {
     return false;
 }
 
-int onExtractEntry(const char* filename, [[maybe_unused]] void* arg) {
+int onExtractEntry(const char* filename, void* arg) {
     if (const string name = path(filename).filename().string(); !name.empty()) {
-        term << teleport(0, wherey()) << eraseLine << "Extracting... (" << name << ")" << newLine;
+        cout << erase_line << "Extracting... (" << name << ")" << teleport(0, wherey() - 1) << endl;
     }
     return 0;
 }
@@ -191,6 +197,7 @@ int onExtractEntry(const char* filename, [[maybe_unused]] void* arg) {
 path extractZip(const path&zipFile, path extractPath) {
     int arg = 0;
     zip_extract(zipFile.string().c_str(), extractPath.string().c_str(), onExtractEntry, &arg);
+    cout << erase_line << "Extracting... (Done!)" << endl;
     return extractPath;
 }
 
@@ -226,42 +233,37 @@ void updateShuffle() {
                   nullptr,
                   &si,
                   &pi);
-#else
+#elif defined(__linux__) || defined(__APPLE__)
+    const string command = extractPath.append("updater").string();
+    system(("chmod +x " + command).c_str());
+    system(command.c_str());
 #endif
     exit(0);
-}
-
-void initShflJson() {
-    if (!exists(path(SHFL_JSON))) {
-        writeFile(SHFL_JSON, R"({"apps": [], "libs": []})");
-    }
-}
-
-Json::Value getShflJson(const string&part) {
-    Json::Value root;
-    Json::Reader reader;
-    reader.parse(readFile(SHFL_JSON), root, false);
-    return root[part];
-}
-
-void setShflJson(const string&part, Json::Value value) {
-    Json::Value root;
-    Json::Reader reader;
-    reader.parse(readFile(SHFL_JSON), root, false);
-
-    root[part] = std::move(value);
-
-    writeFile(SHFL_JSON, root.toStyledString());
 }
 
 bool checkUpdate(const bool checkBackground) {
     if (const string latest = trim(readTextFromWeb(
         "https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST")); latest != SHUFFLE_VERSION.str()) {
-        term << "New version available: " << SHUFFLE_VERSION.str() << " -> "
-                << latest << newLine;
-        if (checkBackground) term << "Type 'shfl update' to get new version!" << newLine;
+        cout << "New version available: " << SHUFFLE_VERSION.str() << " -> "
+                << latest << endl;
+        if (checkBackground) cout << "Type 'shfl upgrade' to get new version!" << endl;
         return true;
     }
-    if (!checkBackground) term << "You are using the latest version of Shuffle." << newLine;
+    if (!checkBackground) cout << "You are using the latest version of Shuffle." << endl;
     return false;
+}
+
+std::string generateRandomString(const int length) {
+    std::string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::uniform_int_distribution<int> distribution(0, characters.length() - 1);
+
+    std::string randomString;
+    for (int i = 0; i < length; ++i) {
+        randomString += characters[distribution(generator)];
+    }
+
+    return randomString;
 }

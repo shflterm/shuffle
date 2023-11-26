@@ -4,10 +4,6 @@
   "builtin-baseline": "40619a55c3e76dc4005c8d1b7395071471bb8b96",
   "dependencies": [
     {
-      "name": "lua",
-      "version>=": "5.4.4#7"
-    },
-    {
       "name": "curl",
       "version>=": "8.0.1"
     },

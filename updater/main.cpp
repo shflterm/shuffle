@@ -1,11 +1,11 @@
-#include <kubazip/zip/zip.h>
+#include <iostream>
 #include <filesystem>
+#include <json/json.h>
 
 #include "utils.h"
 #include "console.h"
-#include "term.h"
 
-using std::vector, std::string, std::filesystem::exists, std::filesystem::create_directories, std::filesystem::remove,
+using std::cout, std::endl, std::vector, std::string, std::filesystem::exists, std::filesystem::create_directories, std::filesystem::remove,
         std::filesystem::path, std::filesystem::temp_directory_path;
 
 string SHUFFLE = "   _____ _    _ _    _ ______ ______ _      ______           __        ___  \n"
@@ -42,8 +42,8 @@ bool installNativeApps() {
 }
 
 int main() {
-    term << SHUFFLE << newLine
-            << "Installing Shuffle..." << newLine;
+    cout << SHUFFLE << endl
+            << "Installing Shuffle..." << endl;
     string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
 #ifdef _WIN32
     string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-windows.zip";
@@ -63,19 +63,19 @@ int main() {
         error("Failed to download Shuffle.");
         return 1;
     }
-    term << teleport(0, wherey() - 1) << eraseLine << "Installed!" << newLine;
+    cout << teleport(0, wherey() - 1) << erase_line << "Installed!" << endl;
 
     extractZip(temp, updatePath);
-    term << teleport(0, wherey() - 1) << eraseLine << "Extracted!" << newLine;
+    cout << teleport(0, wherey() - 1) << erase_line << "Extracted!" << endl;
 
-    term << teleport(0, wherey() - 1) << eraseLine << "Install native apps.." << newLine;
+    cout << teleport(0, wherey() - 1) << erase_line << "Install native apps.." << endl;
     if (installNativeApps()) {
-        term << teleport(0, wherey() - 1) << eraseLine << "Shuffle has been successfully installed!";
+        cout << teleport(0, wherey() - 1) << erase_line << "Shuffle has been successfully installed!";
     }
     else {
-        term << teleport(0, wherey() - 1) << eraseLine
+        cout << teleport(0, wherey() - 1) << erase_line
                 << "Shuffle is installed, but the some default app is not installed"
-                << newLine
+                << endl
                 << "After running Shuffle, you may need to manually install the default apps.";
     }
 }

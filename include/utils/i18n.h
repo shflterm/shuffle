@@ -8,6 +8,8 @@
 #include <string>
 #include <initializer_list>
 
+using std::string, std::initializer_list;
+
 string translate(const string &translate_code, const initializer_list<string> &args);
 
 string translate(const string &translate_code);
