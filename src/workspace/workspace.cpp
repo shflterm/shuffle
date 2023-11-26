@@ -206,8 +206,7 @@ void Workspace::inputPrompt() {
                         else warning("Did you mean '$0'?", {similarWord.second.getName()});
                         return;
                     }
-
-                    job->start(this);
+                    if (job->isCommand()) job->start(this);
                 }
                 return;
             }
