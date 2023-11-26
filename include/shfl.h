@@ -13,6 +13,7 @@
 #include "cmd/job.h"
 
 #include "suggestion/suggestion.h"
+#include "suggestion/proponent.h"
 
 #include "utils/console.h"
 #include "utils/credit.h"

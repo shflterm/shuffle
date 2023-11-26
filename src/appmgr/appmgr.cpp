@@ -14,7 +14,7 @@
 #include "utils/console.h"
 #include "utils/shfljson.h"
 
-using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption, cmd::OptionType,
+using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption,
         cmd::commands;
 
 #ifdef _WIN32
@@ -80,7 +80,7 @@ namespace appmgr {
     }
 
 #ifdef _WIN32
-    void closeLibrary(HMODULE libraryHandle) {
+    void closeLibrary(const HMODULE libraryHandle) {
         FreeLibrary(libraryHandle);
     }
 #else
@@ -105,22 +105,11 @@ namespace appmgr {
         vector<CommandOption> options;
         for (const auto&option: appInfo["options"]) {
             const string optionName = option["name"].asString();
-            OptionType type;
-            if (option["type"].asString() == "string" || option["type"].asString() == "text") type = cmd::TEXT;
-            else if (option["type"].asString() == "boolean") type = cmd::BOOLEAN;
-            else if (option["type"].asString() == "number") type = cmd::NUMBER;
-            else if (option["type"].asString() == "file") type = cmd::FILE;
-            else if (option["type"].asString() == "directory") type = cmd::DIRECTORY;
-            else if (option["type"].asString() == "fileordir") type = cmd::FILE_OR_DIRECTORY;
-            else if (option["type"].asString() == "command") type = cmd::COMMAND;
-            else {
-                error("Error: Invalid option type in " + optionName + ".");
-                type = cmd::TEXT;
-            }
             const string optionDescription = option["description"].asString();
+            const string optionType = option["type"].asString();
             vector<string> aliases;
             for (const auto&alias: option["aliases"]) aliases.push_back(alias.asString());
-            options.emplace_back(optionName, optionDescription, type, aliases);
+            options.emplace_back(optionName, optionDescription, optionType, aliases);
         }
 
         vector<string> aliases;
@@ -130,7 +119,7 @@ namespace appmgr {
         for (const auto&example: appInfo["examples"]) examples.push_back(example.asString());
         Command command = Command(name, description, usage, subcommands, options, aliases, examples);
 
-        cmd_t cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode,
+        cmd_t cmd = [=](Workspace* ws, const map<string, string>&optionValues, const bool backgroundMode,
                         const string&id) -> string {
             // 라이브러리 경로
             string libraryPath =

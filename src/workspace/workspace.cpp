@@ -119,7 +119,7 @@ shared_ptr<Job> Workspace::createJob(string&input) {
             args.push_back("script=" + absolute(script).string());
             app = make_shared<Command>(Command(
                 "SCRIPT", "A SCRIPT COMMAND",
-                {cmd::CommandOption("script", "scriptPath", cmd::TEXT)},
+                {cmd::CommandOption("script", "scriptPath", "text")},
                 {},
                 [=](Workspace* ws, map<string, string>&options, bool bgMode, string id) {
                     vector<string> scriptCommands;
