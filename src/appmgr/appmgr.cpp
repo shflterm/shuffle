@@ -76,7 +76,7 @@ namespace appmgr {
     // }
 
     extern "C" {
-    typedef string (*entrypoint_t)(string, const map<string, string>&, bool);
+    typedef string (*entrypoint_t)(Workspace*, const map<string, string>&, bool);
     }
 
 #ifdef _WIN32
@@ -168,7 +168,7 @@ namespace appmgr {
                 return "ERROR_LOADING_FUNCTION";
             }
 
-            string res = entrypoint(ws->getName(), optionValues, backgroundMode);
+            string res = entrypoint(ws, optionValues, backgroundMode);
             closeLibrary(libraryHandle);
 
             return res;
@@ -178,7 +178,7 @@ namespace appmgr {
         return command;
     }
 
-    void loadVersion3(App *app, const string&appPath, Json::Value appRoot) {
+    void loadVersion3(App* app, const string&appPath, Json::Value appRoot) {
         app->name = appRoot["name"].asString();
         app->description = appRoot["description"].asString();
         app->author = appRoot["author"].asString();
