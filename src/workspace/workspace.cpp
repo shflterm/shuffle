@@ -4,12 +4,12 @@
 #include <utility>
 #include <map>
 
-#include "console.h"
-#include "utils.h"
-#include "suggestion.h"
+#include "cmd/cmdparser.h"
+#include "cmd/job.h"
+#include "suggestion/suggestion.h"
+#include "utils/console.h"
+#include "utils/utils.h"
 #include "workspace/snippetmgr.h"
-#include "job.h"
-#include "cmdparser.h"
 
 using std::cout, std::endl, std::cin, std::stringstream, std::make_shared, std::map, job::Job, cmd::Command,
         cmd::commands, suggestion::getSuggestion, suggestion::getHint;
@@ -21,11 +21,12 @@ path Workspace::currentDirectory() const {
 }
 
 void Workspace::moveDirectory(const path& newDir) {
-    if (!is_directory(newDir)) {
-        error("Directory '$0' not found.", {newDir.string()});
+    const path path = absolute(dir / newDir);
+    if (!is_directory(path)) {
+        error("Directory '$0' not found.", {path.string()});
         return;
     }
-    dir = newDir.string();
+    dir = path.string();
 
     if (dir[dir.length() - 1] == '\\' || dir[dir.length() - 1] == '/')
         dir = currentDirectory().parent_path().string();

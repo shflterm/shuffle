@@ -13,6 +13,7 @@ using std::filesystem::create_directories, std::filesystem::exists, std::cout, s
 #define PYBIND11_DETAILED_ERROR_MESSAGES
 
 #ifdef _WIN32
+#include <DbgHelp.h>
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 LONG WINAPI ExceptionHandler(EXCEPTION_POINTERS* exceptionPointers) {

@@ -13,7 +13,7 @@
 
 class Workspace;
 
-#include "job.h"
+#include "cmd/job.h"
 
 using std::string, std::vector, std::map, std::filesystem::path, std::filesystem::current_path, std::shared_ptr;
 

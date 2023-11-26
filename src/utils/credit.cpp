@@ -1,12 +1,12 @@
-#include "credit.h"
+#include "utils/credit.h"
 
 #include <string>
 #include <sstream>
+#include <json/json.h>
 
+#include "utils/console.h"
+#include "utils/utils.h"
 #include "version.h"
-#include "utils.h"
-#include "json/json.h"
-#include "console.h"
 
 using std::endl;
 

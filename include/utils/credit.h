@@ -8,7 +8,6 @@
 #include <vector>
 #include <map>
 #include <string>
-#include <algorithm>
 
 using std::string, std::vector, std::map;
 

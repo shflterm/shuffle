@@ -1,6 +1,6 @@
-#include "job.h"
+#include "cmd/job.h"
 
-#include "console.h"
+#include "utils/console.h"
 
 namespace job {
     Job::Job(const shared_ptr<cmd::Command>&app) : command(app), jobType(COMMAND) {

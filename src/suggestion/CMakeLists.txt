@@ -24,4 +24,4 @@ target_link_libraries(${PROJECT_NAME} kubazip::kubazip)
 
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ../../include ../../include/cmd ../../include/app ../../include/suggestion ../../include/workspace ../../include/utils)
+target_include_directories(${PROJECT_NAME} PRIVATE ../../include)

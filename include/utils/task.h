@@ -9,8 +9,8 @@
 #include <utility>
 #include <thread>
 
-#include "workspace.h"
-#include "job.h"
+#include "workspace/workspace.h"
+#include "cmd/job.h"
 
 using std::string, std::thread, job::Job;
 

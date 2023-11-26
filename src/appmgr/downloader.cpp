@@ -1,13 +1,14 @@
-#include "downloader.h"
+#include "app/downloader.h"
 
-#include <appmgr.h>
 #include <iostream>
 #include <string>
 #include <json/json.h>
 #include <filesystem>
 
-#include "console.h"
-#include "utils.h"
+#include "utils/console.h"
+#include "utils/utils.h"
+#include "app/appmgr.h"
+
 using std::cout, std::to_string, std::filesystem::path, std::filesystem::temp_directory_path, std::filesystem::exists,
         std::filesystem::remove_all, std::filesystem::copy_options, appmgr::addApp;
 

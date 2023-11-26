@@ -12,9 +12,6 @@
 #ifdef _WIN32
 
 #include "Windows.h"
-#include "DbgHelp.h"
-#include "TlHelp32.h"
-#include <cstddef>
 
 #pragma comment(lib, "Dbghelp.lib")
 

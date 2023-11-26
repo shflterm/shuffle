@@ -1,7 +1,6 @@
-#include "appmgr.h"
+#include "app/appmgr.h"
 
 #include <iostream>
-#include <console.h>
 #include <vector>
 #include <string>
 #include <json/json.h>
@@ -11,6 +10,8 @@
 #elif defined(__linux__) || defined(__APPLE__)
 #include <dlfcn.h>
 #endif
+
+#include "utils/console.h"
 
 using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption, cmd::OptionType,
         cmd::commands;

@@ -5,15 +5,15 @@
 #include <ctime>
 #include <fstream>
 
-#include "utils.h"
-
+#include "cmd/commandmgr.h"
+#include "utils/console.h"
+#include "utils/utils.h"
 #include "version.h"
-#include "console.h"
-#include "commandmgr.h"
 
 using std::cout, std::endl, std::to_string, std::ofstream, cmd::commands;
 
 #ifdef _WIN32
+#include "DbgHelp.h"
 
 string genStackTrace(CONTEXT* context) {
     stringstream ss;

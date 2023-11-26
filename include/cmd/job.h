@@ -8,12 +8,13 @@
 #include <map>
 #include <string>
 #include <memory>
-#include <utils.h>
 
 namespace job {
     class Job;
 }
 
+#include "utils/utils.h"
+#include "workspace/workspace.h"
 #include "commandmgr.h"
 
 using std::shared_ptr, std::map, std::string;
@@ -36,9 +37,9 @@ namespace job {
 
         string start(Workspace* ws, bool backgroundMode = false);
 
-        bool isCommand() const;
+        [[nodiscard]] bool isCommand() const;
 
-        bool isSuccessed() const;
+        [[nodiscard]] bool isSuccessed() const;
 
         explicit Job(const shared_ptr<cmd::Command>&app);
 

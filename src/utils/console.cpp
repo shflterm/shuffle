@@ -1,9 +1,9 @@
-#include "console.h"
+#include "utils/console.h"
 
 #include <string>
 #include <iostream>
 
-#include "i18n.h"
+#include "utils/i18n.h"
 
 #ifdef _WIN32
 #include <Windows.h>

@@ -17,7 +17,7 @@ namespace cmd {
     class Command;
 }
 
-#include "workspace.h"
+#include "workspace/workspace.h"
 
 using std::pair, std::shared_ptr, std::string, std::vector, std::map, std::any;
 

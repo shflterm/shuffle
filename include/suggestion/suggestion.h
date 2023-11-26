@@ -7,7 +7,7 @@
 
 #include <string>
 #include <vector>
-#include <workspace.h>
+#include "workspace/workspace.h"
 
 using std::string, std::vector;
 

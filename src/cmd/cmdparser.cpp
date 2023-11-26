@@ -1,10 +1,10 @@
-#include "cmdparser.h"
+#include "cmd/cmdparser.h"
 
 #include <algorithm>
 
-#include "console.h"
-#include "utils.h"
-#include "job.h"
+#include "utils/console.h"
+#include "utils/utils.h"
+#include "cmd/job.h"
 
 namespace cmd {
     Job parseCommand(shared_ptr<Command> app, const vector<string>&args) {

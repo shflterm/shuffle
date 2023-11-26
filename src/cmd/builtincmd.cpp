@@ -1,17 +1,17 @@
-#include "builtincmd.h"
+#include "cmd/builtincmd.h"
 
 #include <iostream>
 #include <memory>
 
-#include "console.h"
-#include "downloader.h"
-#include "credit.h"
-#include "utils.h"
+#include "app/appmgr.h"
+#include "app/downloader.h"
+#include "cmd/job.h"
+#include "utils/console.h"
+#include "utils/credit.h"
+#include "utils/utils.h"
+#include "workspace/snippetmgr.h"
+#include "utils/task.h"
 #include "version.h"
-#include "snippetmgr.h"
-#include "appmgr.h"
-#include "job.h"
-#include "task.h"
 
 using std::cout, std::endl, std::make_shared,
         cmd::Command, cmd::CommandOption, cmd::commands, cmd::findCommand,

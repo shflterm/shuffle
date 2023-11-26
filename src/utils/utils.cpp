@@ -1,6 +1,6 @@
 #define NOMINMAX
 
-#include "utils.h"
+#include "utils/utils.h"
 
 #include <iostream>
 #include <vector>
@@ -11,10 +11,10 @@
 #include <cstdlib>
 #include <random>
 #include <curl/curl.h>
+#include <zip/zip.h>
 
-#include "console.h"
+#include "utils/console.h"
 #include "version.h"
-#include "zip/zip.h"
 
 using std::cout, std::endl;
 

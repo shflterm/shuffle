@@ -1,9 +1,11 @@
-#include "commandmgr.h"
+#include "cmd/commandmgr.h"
 
-#include <appmgr.h>
-#include <console.h>
 #include <memory>
 #include <utility>
+
+#include "app/appmgr.h"
+#include "utils/console.h"
+#include "workspace/workspace.h"
 
 using std::make_shared;
 

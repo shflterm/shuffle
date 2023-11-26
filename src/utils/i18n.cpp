@@ -1,11 +1,11 @@
-#include "i18n.h"
+#include "utils/i18n.h"
 
 #include <string>
 #include <initializer_list>
 
-#include "json/json.h"
-#include "utils.h"
-#include "console.h"
+#include <json/json.h>
+#include "utils/utils.h"
+#include "utils/console.h"
 
 using std::map, std::initializer_list, std::to_string, std::string;
 

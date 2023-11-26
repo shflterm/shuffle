@@ -1,8 +1,6 @@
-#include "suggestion.h"
+#include "suggestion/suggestion.h"
 
 #include <vector>
-
-#include "utils.h"
 
 using std::vector, std::string, cmd::Command, cmd::commands, cmd::findCommand;
 
