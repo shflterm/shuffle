@@ -150,8 +150,7 @@ namespace appmgr {
 #endif
 
             if (!libraryHandle) {
-                error("Failed to open the library. Please check if the library exists. (Error code: " +
-                      to_string(GetLastError()) + "");
+                error("Failed to open the library. Please check if the library exists.");
                 return "ERROR_OPENING_LIBRARY";
             }
 
