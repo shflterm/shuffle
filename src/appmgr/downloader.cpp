@@ -102,7 +102,17 @@ namespace appmgr {
             remove_all(appPath);
 
             Json::Value json = getShflJson("apps");
-            json.removeMember(name);
+            bool removed = false;
+            for (int i = 0; i < json.size(); ++i) {
+                if (json[i].asString() == name) {
+                    removed = json.removeIndex(i, &json[i]);
+                    break;
+                }
+            }
+            if (!removed) {
+                error("Failed to remove app.");
+                return false;
+            }
             setShflJson("apps", json);
 
             success("Done!");
