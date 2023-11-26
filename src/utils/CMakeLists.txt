@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(utils)
 
-set(UTILS_SRC utils.cpp credit.cpp console.cpp i18n.cpp task.cpp)
+set(UTILS_SRC utils.cpp credit.cpp console.cpp i18n.cpp task.cpp shfljson.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 

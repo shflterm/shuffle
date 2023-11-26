@@ -17,7 +17,6 @@
 #include <string>
 #include <vector>
 #include <regex>
-#include <json/json.h>
 #include <filesystem>
 
 using std::regex, std::vector, std::string, std::filesystem::path;
@@ -45,12 +44,6 @@ bool downloadFile(const string&url, const string&file);
 path extractZip(const path&zipFile, path extractPath);
 
 void updateShuffle();
-
-void initShflJson();
-
-Json::Value getShflJson(const string&part);
-
-void setShflJson(const string&part, Json::Value value);
 
 bool checkUpdate(bool checkBackground = true);
 

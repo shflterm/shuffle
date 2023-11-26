@@ -12,6 +12,7 @@
 #endif
 
 #include "utils/console.h"
+#include "utils/shfljson.h"
 
 using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption, cmd::OptionType,
         cmd::commands;

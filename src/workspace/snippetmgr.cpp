@@ -3,7 +3,7 @@
 #include <utility>
 #include "json/json.h"
 
-#include "utils/utils.h"
+#include "utils/shfljson.h"
 
 using std::vector, std::make_shared;
 
