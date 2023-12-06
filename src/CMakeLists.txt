@@ -12,9 +12,10 @@ add_subdirectory(appmgr)
 add_subdirectory(suggestion)
 add_subdirectory(workspace)
 add_subdirectory(utils)
+add_subdirectory(ai)
 
-add_dependencies(${PROJECT_NAME} commandmgr appmgr suggestion workspace utils)
-target_link_libraries(${PROJECT_NAME} PRIVATE commandmgr appmgr suggestion workspace utils)
+add_dependencies(${PROJECT_NAME} commandmgr appmgr suggestion workspace utils ai)
+target_link_libraries(${PROJECT_NAME} PRIVATE commandmgr appmgr suggestion workspace utils ai)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 

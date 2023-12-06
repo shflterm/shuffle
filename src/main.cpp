@@ -1,6 +1,7 @@
 #include <iostream>
 #include <filesystem>
 #include <csignal>
+#include <ai/genllama.h>
 
 #include "console.h"
 #include "utils.h"
@@ -55,6 +56,15 @@ extern "C" void handleQuit(const int sig) {
 }
 
 int main(const int argc, char* argv[]) {
+    info("Loading AI model...");
+    loadAiModel(R"(../../dolphin-2.2.1-mistral-7b.Q5_K_M.gguf)");
+    success("Done.");
+#ifdef _WIN32
+    system("cls");
+#elif defined(__linux__) || defined(__APPLE__)
+    system("clear");
+#endif
+
 #ifdef _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 
