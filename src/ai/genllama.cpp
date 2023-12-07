@@ -8,6 +8,7 @@
 #include <utils/utils.h>
 
 llama_model* model;
+llama_context* ctx;
 
 void loadAiModel(const string&modelPath) {
     llama_backend_init(false);
@@ -17,55 +18,63 @@ void loadAiModel(const string&modelPath) {
 
     model = llama_load_model_from_file(modelPath.c_str(), model_params);
     if (model == nullptr) fprintf(stderr, "%s: error: unable to load model\n", __func__);
+
+    llama_context_params ctx_params = llama_context_default_params();
+
+    ctx_params.n_ctx = 2048;
+    ctx_params.n_batch = 2048;
+    ctx_params.n_threads = get_num_physical_cores();
+    ctx_params.n_threads_batch = get_num_physical_cores();
+
+    ctx = llama_new_context_with_model(model, ctx_params);
+
+    if (ctx == nullptr) fprintf(stderr, "%s: error: failed to create the llama_context\n", __func__);
 }
 
 string systemPrompt =
-        "Analyze the text, find the command that performs the action in Docs, and write the entire command. The answer is just that one line of command. "
-        "When you finish one command line, print \"END\" on the next line.";
+        "You are an AI built into a shell program called 'Shuffle'. Basic Linux commands cannot be used."
+        "However, users want it to be concise, so please refrain from providing additional explanations. "
+        "If you think the user wants an exact command (complete with arguments), please provide it. "
+        "When you finish answering, write \"END\""
+        "NEVER give explanations for other commands.\n"
+        "Here's an example of your response:\n\n"
+        "Here's how to {}:\n"
+        "<{COMMAND}>\n"
+        " - {a concise description of the command}\n";
 
 string writeDocs(const shared_ptr<cmd::Command>&command, const string&prefix = "") {
     string docs;
     string examples;
     for (const auto&example: command->getExamples()) examples += example + ", ";
-    docs += prefix + command->getName() + " - " + command->getDescription() + " / Usage: " + command->getUsage() + " / Examples: " + examples
+    docs += prefix + command->getName() + " - " + command->getDescription() + " / Usage: " + command->getUsage() +
+            " / Examples: " + examples
             + "\n";
-    for (const auto subcommand : command->getSubcommands()) {
+    for (const auto&subcommand: command->getSubcommands()) {
         docs += writeDocs(subcommand, prefix + command->getName() + " ");
     }
     return docs;
 }
 
-string generateResponse(string prompt) {
+string generateResponse(const string&prompt) {
     string docs;
-        docs += writeDocs(cmd::commands[0]);
+    for (const auto&command: cmd::commands) {
+        docs += writeDocs(command);
+    }
 
     gpt_params params;
-    params.prompt = "Tip to answer: " + systemPrompt + "\n"
-                    // "Docs: " + docs + "\n\n" +
-                    "Q: " + std::move(prompt);
+    params.prompt = "[INST] <<SYS>>" +
+                    docs + "\n\n" +
+                    systemPrompt +
+                    "<</SYS>>" +
+                    prompt + "[/INST]"
+                             "END";
 
     const int n_len = 100;
 
-    if (model == nullptr) {
-        fprintf(stderr, "%s: Model is NULL\n", __func__);
+    if (model == nullptr || ctx == nullptr) {
+        fprintf(stderr, "%s: AI not loaded\n", __func__);
         return "ERROR";
     }
-
-    // initialize the context
-
-    llama_context_params ctx_params = llama_context_default_params();
-
-    ctx_params.n_ctx = 2048;
-    ctx_params.n_threads = params.n_threads;
-    ctx_params.n_threads_batch = params.n_threads_batch == -1 ? params.n_threads : params.n_threads_batch;
-
-    llama_context* ctx = llama_new_context_with_model(model, ctx_params);
-
-    if (ctx == NULL) {
-        fprintf(stderr, "%s: error: failed to create the llama_context\n", __func__);
-        return "ERROR";
-    }
-
     // tokenize the prompt
 
     std::vector<llama_token> tokens_list;
@@ -83,7 +92,7 @@ string generateResponse(string prompt) {
 
     // create a llama_batch with size 512
     // we use this object to submit token data for decoding
-    llama_batch batch = llama_batch_init(512, 0, 1);
+    llama_batch batch = llama_batch_init(1024, 0, 1);
     // evaluate the initial prompt
     for (size_t i = 0; i < tokens_list.size(); i++) {
         llama_batch_add(batch, tokens_list[i], i, {0}, false);
@@ -104,7 +113,8 @@ string generateResponse(string prompt) {
 
     const auto t_main_start = ggml_time_us();
 
-    while (true) {
+    std::cout << erase_line;
+    while (n_cur < n_len) {
         // sample the next token
         {
             auto n_vocab = llama_n_vocab(model);
@@ -129,11 +139,17 @@ string generateResponse(string prompt) {
             }
 
             string next = llama_token_to_piece(ctx, new_token_id).c_str();
-            LOG_TEE("%s", next.c_str());
+            next = replace(next, ">", reset);
+            next = replace(next, "<", bgb_black);
 
             // prepare the next batch
             llama_batch_clear(batch);
-            if (next == "END") break;
+
+            if (next == "END") {
+                LOG_TEE("\n");
+                break;
+            }
+            LOG_TEE("%s", next.c_str());
 
             // push this new token for next evaluation
             llama_batch_add(batch, new_token_id, n_cur, {0}, true);

@@ -3,7 +3,7 @@ project(shfl)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(DLLAMA_CUBLAS ON)
+set(LLAMA_CUBLAS ON)
 add_subdirectory(llama.cpp)
 
 add_subdirectory(src)

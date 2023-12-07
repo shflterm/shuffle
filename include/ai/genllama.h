@@ -11,6 +11,6 @@ using std::string;
 
 void loadAiModel(const string& modelPath);
 
-string generateResponse(string prompt);
+string generateResponse(const string&prompt);
 
 #endif //GENLLAMA_CPP_H
