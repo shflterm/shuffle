@@ -8,7 +8,6 @@
 #include <utils/utils.h>
 
 llama_model* model;
-llama_context* ctx;
 
 void loadAiModel(const string&modelPath) {
     llama_backend_init(false);
@@ -18,26 +17,14 @@ void loadAiModel(const string&modelPath) {
 
     model = llama_load_model_from_file(modelPath.c_str(), model_params);
     if (model == nullptr) fprintf(stderr, "%s: error: unable to load model\n", __func__);
-
-    llama_context_params ctx_params = llama_context_default_params();
-
-    ctx_params.n_ctx = 2048;
-    ctx_params.n_batch = 2048;
-    ctx_params.n_threads = get_num_physical_cores();
-    ctx_params.n_threads_batch = get_num_physical_cores();
-
-    ctx = llama_new_context_with_model(model, ctx_params);
-
-    if (ctx == nullptr) fprintf(stderr, "%s: error: failed to create the llama_context\n", __func__);
 }
 
 string systemPrompt =
         "You are an AI built into a shell program called 'Shuffle'. Basic Linux commands cannot be used."
         "However, users want it to be concise, so please refrain from providing additional explanations. "
         "If you think the user wants an exact command (complete with arguments), please provide it. "
-        "When you finish answering, write \"END\""
-        "NEVER give explanations for other commands.\n"
-        "Here's an example of your response:\n\n"
+        "When YOU(without INST) finish answering, write \"END\"\n\n"
+        "Here's an example of your response:\n"
         "Here's how to {}:\n"
         "<{COMMAND}>\n"
         " - {a concise description of the command}\n";
@@ -62,23 +49,33 @@ string generateResponse(const string&prompt) {
     }
 
     gpt_params params;
-    params.prompt = "[INST] <<SYS>>" +
-                    docs + "\n\n" +
+    params.prompt = "[INST] <<SYS>>"
+                    "Here is docs: " + docs + "\n\n" +
                     systemPrompt +
                     "<</SYS>>" +
-                    prompt + "[/INST]"
-                             "END";
+                    prompt + "[/INST] END";
 
     const int n_len = 100;
 
-    if (model == nullptr || ctx == nullptr) {
+    if (model == nullptr) {
         fprintf(stderr, "%s: AI not loaded\n", __func__);
         return "ERROR";
     }
+
+    llama_context_params ctx_params = llama_context_default_params();
+
+    ctx_params.n_ctx = 2048;
+    ctx_params.n_batch = 2048;
+    ctx_params.n_threads = get_num_physical_cores();
+    ctx_params.n_threads_batch = get_num_physical_cores();
+
+    llama_context* ctx = llama_new_context_with_model(model, ctx_params);
+
+    if (ctx == nullptr) fprintf(stderr, "%s: error: failed to create the llama_context\n", __func__);
     // tokenize the prompt
 
     std::vector<llama_token> tokens_list;
-    tokens_list = ::llama_tokenize(ctx, params.prompt, true);
+    tokens_list = llama_tokenize(ctx, params.prompt, true);
 
     const int n_ctx = llama_n_ctx(ctx);
     const int n_kv_req = tokens_list.size() + (n_len - tokens_list.size());
@@ -114,7 +111,7 @@ string generateResponse(const string&prompt) {
     const auto t_main_start = ggml_time_us();
 
     std::cout << erase_line;
-    while (n_cur < n_len) {
+    while (true) {
         // sample the next token
         {
             auto n_vocab = llama_n_vocab(model);
@@ -134,22 +131,17 @@ string generateResponse(const string&prompt) {
 
             // is it an end of stream?
             if (new_token_id == llama_token_eos(model) || n_cur == n_len) {
-                LOG_TEE("\n");
                 break;
             }
 
             string next = llama_token_to_piece(ctx, new_token_id).c_str();
             next = replace(next, ">", reset);
             next = replace(next, "<", bgb_black);
+            LOG_TEE("%s", next.c_str());
 
             // prepare the next batch
             llama_batch_clear(batch);
 
-            if (next == "END") {
-                LOG_TEE("\n");
-                break;
-            }
-            LOG_TEE("%s", next.c_str());
 
             // push this new token for next evaluation
             llama_batch_add(batch, new_token_id, n_cur, {0}, true);
