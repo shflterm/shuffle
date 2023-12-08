@@ -26,9 +26,13 @@
 #include "workspace/workspace.h"
 
 #ifdef _WIN32
+#define CONFIGURE extern "C" __declspec(dllexport) string configure
 #define COMMAND_MAIN extern "C" __declspec(dllexport) string entrypoint
 #else
+#define CONFIGURE extern "C" string configure
 #define COMMAND_MAIN extern "C" string entrypoint
 #endif
+
+#define ADD_PROPNENT(name, maker) suggestion::registerProponent(suggestion::Proponent(name, maker))
 
 #endif //SHFL_H
