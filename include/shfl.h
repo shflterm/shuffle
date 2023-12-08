@@ -26,10 +26,10 @@
 #include "workspace/workspace.h"
 
 #ifdef _WIN32
-#define CONFIGURE extern "C" __declspec(dllexport) string configure
+#define STARTUP extern "C" __declspec(dllexport) string event_load()
 #define COMMAND_MAIN extern "C" __declspec(dllexport) string entrypoint
 #else
-#define CONFIGURE extern "C" string configure
+#define STARTUP extern "C" string event_load()
 #define COMMAND_MAIN extern "C" string entrypoint
 #endif
 
