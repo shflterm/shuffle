@@ -57,7 +57,7 @@ extern "C" void handleQuit(const int sig) {
 
 int main(const int argc, char* argv[]) {
     info("Loading AI model...");
-    loadAiModel(R"(../../llama-2-7b-chat.Q4_K_M.gguf)");
+    loadAiModel(R"(../../llama-2-7b-chat.Q5_K_M.gguf)");
     success("Done.");
 #ifdef _WIN32
     system("cls");

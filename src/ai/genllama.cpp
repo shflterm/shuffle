@@ -20,14 +20,10 @@ void loadAiModel(const string&modelPath) {
 }
 
 string systemPrompt =
-        "You are an AI built into a shell program called 'Shuffle'. Basic Linux commands cannot be used."
-        "However, users want it to be concise, so please refrain from providing additional explanations. "
-        "If you think the user wants an exact command (complete with arguments), please provide it. "
-        "When YOU(without INST) finish answering, write \"END\"\n\n"
-        "Here's an example of your response:\n"
-        "Here's how to {}:\n"
-        "<{COMMAND}>\n"
-        " - {a concise description of the command}\n";
+        "You are a robot that helps you easily use the shell called 'Shuffle'. Shuffle can only use Shuffle's special commands. Let me show you the Shuffle command help."
+        "{DOCS}"
+        "Based on this help, analyze the user's question and answer only the commands the user needs in one line. The command must be complete, including all arguments. The answer can be written as a command or variable declaration that you created. (At this time, you must check the help to see if the command exists.) The answer can be given in the format \"<ANSWER_VALUE>\". ANSWER must include commands and arguments, or in the case of a variable declaration, must provide the entire variable declaration. If the argument is unknown, ask the user again."
+        "I'll teach you how to use variables. To assign a value to a variable, use \"VAR_NAME = VALUE\". You can enter text, variables, and commands in VALUE. Text can be executed as \"TEXT\" without quotes, variables as \"$VAR_NAME\", and commands as \"(COMMAND)!\". (Commands can be used by putting arguments in parentheses!) For example, \"a = text\" (storing \"text\" in a variable called a), \"b = $a\" (storing the variable a into Store the value in b), \"c = (capitalize $a)! \"(run capitalize $a and store the result in c), etc.";
 
 string writeDocs(const shared_ptr<cmd::Command>&command, const string&prefix = "") {
     string docs;
@@ -49,11 +45,10 @@ string generateResponse(const string&prompt) {
     }
 
     gpt_params params;
-    params.prompt = "[INST] <<SYS>>"
-                    "Here is docs: " + docs + "\n\n" +
-                    systemPrompt +
+    params.prompt = "[INST] <<SYS>>" +
+                    replace(systemPrompt, "{DOCS}", docs) +
                     "<</SYS>>" +
-                    prompt + "[/INST] END";
+                    "Q: " + prompt + "[/INST] END";
 
     const int n_len = 100;
 
@@ -89,7 +84,7 @@ string generateResponse(const string&prompt) {
 
     // create a llama_batch with size 512
     // we use this object to submit token data for decoding
-    llama_batch batch = llama_batch_init(1024, 0, 1);
+    llama_batch batch = llama_batch_init(2048, 0, 1);
     // evaluate the initial prompt
     for (size_t i = 0; i < tokens_list.size(); i++) {
         llama_batch_add(batch, tokens_list[i], i, {0}, false);
@@ -131,6 +126,7 @@ string generateResponse(const string&prompt) {
 
             // is it an end of stream?
             if (new_token_id == llama_token_eos(model) || n_cur == n_len) {
+                LOG_TEE("\n");
                 break;
             }
 
