@@ -13,6 +13,7 @@
 #include "cmd/job.h"
 
 #include "suggestion/suggestion.h"
+#include "suggestion/proponent.h"
 
 #include "utils/console.h"
 #include "utils/credit.h"
@@ -25,9 +26,13 @@
 #include "workspace/workspace.h"
 
 #ifdef _WIN32
+#define STARTUP extern "C" __declspec(dllexport) string startup()
 #define COMMAND_MAIN extern "C" __declspec(dllexport) string entrypoint
 #else
+#define STARTUP extern "C" string startup()
 #define COMMAND_MAIN extern "C" string entrypoint
 #endif
+
+#define ADD_PROPNENT(name, maker) suggestion::registerProponent(suggestion::Proponent(name, maker))
 
 #endif //SHFL_H

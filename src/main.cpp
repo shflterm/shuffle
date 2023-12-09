@@ -1,6 +1,8 @@
+#include <appmgr.h>
 #include <iostream>
 #include <filesystem>
 #include <csignal>
+#include <suggestion.h>
 
 #include "console.h"
 #include "utils.h"
@@ -9,6 +11,8 @@
 #include "snippetmgr.h"
 #include "builtincmd.h"
 #include "shfljson.h"
+#include "shflai.h"
+#include "proponent.h"
 
 using std::filesystem::create_directories, std::filesystem::exists, std::cout, std::cerr, std::endl;
 #define PYBIND11_DETAILED_ERROR_MESSAGES
@@ -54,7 +58,80 @@ extern "C" void handleQuit(const int sig) {
     exit(sig);
 }
 
+void loadProponents() {
+    using namespace suggestion;
+    registerProponent(Proponent(
+        "text", [](Workspace* ws, const cmd::CommandOption&option, const vector<string>&args, const size_t cur) {
+            string suggestion;
+            if (args[cur].empty())
+                suggestion = "<" + option.name + ">";
+            return suggestion;
+        }));
+    registerProponent(Proponent(
+        "number", [](Workspace* ws, const cmd::CommandOption&option, const vector<string>&args, const size_t cur) {
+            string suggestion;
+            if (args[cur].empty())
+                suggestion = "<" + option.name + ">";
+            return suggestion;
+        }));
+    registerProponent(Proponent(
+        "boolean", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            return findSuggestion(*ws, args[cur], {"true", "false"})[0];
+    }));
+    registerProponent(Proponent(
+        "file", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            vector<string> files;
+            for (const auto&item: std::filesystem::directory_iterator(ws->currentDirectory())) {
+                if (item.is_directory()) continue;
+                files.push_back(item.path().filename().string());
+            }
+            return findSuggestion(*ws, args[cur], files)[0];
+    }));
+    registerProponent(Proponent(
+        "directory", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            vector<string> files;
+            for (const auto&item: std::filesystem::directory_iterator(ws->currentDirectory())) {
+                if (!item.is_directory()) continue;
+                files.push_back(item.path().filename().string());
+            }
+            return findSuggestion(*ws, args[cur], files)[0];
+    }));
+    registerProponent(Proponent(
+        "fileordir", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            vector<string> files;
+            for (const auto&item: std::filesystem::directory_iterator(ws->currentDirectory())) {
+                files.push_back(item.path().filename().string());
+            }
+            return findSuggestion(*ws, args[cur], files)[0];
+    }));
+    registerProponent(Proponent(
+        "command", [](Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            return getSuggestion(*ws, args[cur]);
+    }));
+    registerProponent(Proponent(
+        "app", [](Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            vector<string> apps;
+            for (const auto loaded_app : appmgr::loadedApps) apps.push_back(loaded_app->name);
+            return findSuggestion(*ws, args[cur], apps)[0];
+        }));
+}
+
 int main(const int argc, char* argv[]) {
+    info("Loading AI model...");
+    bool aiLoaded = shflai::loadAiModel((DOT_SHUFFLE / "ai" / "model.gguf").string());
+    if (!aiLoaded) {
+        error("Failed to load AI model.");
+        error("Shuffle may not work properly.");
+        error("");
+    }
+    else {
+#ifdef _WIN32
+        system("cls");
+#elif defined(__linux__) || defined(__APPLE__)
+        system("clear");
+#endif
+    }
+
 #ifdef _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 
@@ -64,11 +141,6 @@ int main(const int argc, char* argv[]) {
     signal(SIGABRT, &handleCrash);
 
     setlocale(LC_ALL, "");
-
-    termios raw{};
-    tcgetattr(STDIN_FILENO, &raw);
-    raw.c_lflag &= ~(ECHO | ICANON);
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 #endif
     signal(SIGINT, &handleQuit);
 
@@ -116,6 +188,7 @@ int main(const int argc, char* argv[]) {
 
     loadCommands();
     loadSnippets();
+    loadProponents();
 
     cout << "Type 'help' to get help!" << endl;
 

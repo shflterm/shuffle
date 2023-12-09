@@ -5,6 +5,7 @@
 #include <map>
 #include <sstream>
 
+#include "../../shflai/include/shflai.h"
 #include "cmd/cmdparser.h"
 #include "cmd/job.h"
 #include "suggestion/suggestion.h"
@@ -21,7 +22,7 @@ path Workspace::currentDirectory() const {
     return absolute(path(dir));
 }
 
-void Workspace::moveDirectory(const path& newDir) {
+void Workspace::moveDirectory(const path&newDir) {
     const path path = absolute(dir / newDir);
     if (!is_directory(path)) {
         error("Directory '$0' not found.", {path.string()});
@@ -119,7 +120,7 @@ shared_ptr<Job> Workspace::createJob(string&input) {
             args.push_back("script=" + absolute(script).string());
             app = make_shared<Command>(Command(
                 "SCRIPT", "A SCRIPT COMMAND",
-                {cmd::CommandOption("script", "scriptPath", cmd::TEXT)},
+                {cmd::CommandOption("script", "scriptPath", "text")},
                 {},
                 [=](Workspace* ws, map<string, string>&options, bool bgMode, string id) {
                     vector<string> scriptCommands;
@@ -140,23 +141,40 @@ shared_ptr<Job> Workspace::createJob(string&input) {
     return parsed;
 }
 
-string Workspace::prompt() const {
+string Workspace::prompt(bool fullPath) const {
     stringstream ss;
     if (!name.empty())
         ss << fg_yellow << "[" << name << "] ";
 
     const path dir = currentDirectory();
     ss << fg_cyan << "(";
-    if (dir == dir.root_path())
-        ss << dir.root_name().string();
-    else if (dir.parent_path() == dir.root_path())
-        ss << dir.root_name().string() << "/" << dir.filename().string();
-    else
-        ss << dir.root_name().string() << "/.../" << dir.filename().string();
+    if (fullPath)
+        ss << dir.string();
+    else {
+        if (dir == dir.root_path())
+            ss << dir.root_name().string();
+        else if (dir.parent_path() == dir.root_path())
+            ss << dir.root_name().string() << "/" << dir.filename().string();
+        else
+            ss << dir.root_name().string() << "/.../" << dir.filename().string();
+    }
     ss << ")";
 
     ss << fg_yellow << " \u2192 " << reset;
     return ss.str();
+}
+
+string writeDocs(const shared_ptr<cmd::Command>&command, const string&prefix = "") {
+    string docs;
+    string examples;
+    for (const auto&example: command->getExamples()) examples += example + ", ";
+    docs += prefix + command->getName() + " - " + command->getDescription() + " / Usage: " + command->getUsage() +
+            " / Examples: " + examples
+            + "\n";
+    for (const auto&subcommand: command->getSubcommands()) {
+        docs += writeDocs(subcommand, prefix + command->getName() + " ");
+    }
+    return docs;
 }
 
 void Workspace::inputPrompt() {
@@ -206,17 +224,21 @@ void Workspace::inputPrompt() {
                         else warning("Did you mean '$0'?", {similarWord.second.getName()});
                         return;
                     }
-
-                    job->start(this);
+                    if (job->isCommand()) job->start(this);
                 }
                 return;
             }
             case '\t': {
-                string suggestion = getSuggestion(*this, input);
-                if (suggestion[0] == '<' && suggestion.back() == '>') break;
+                if (input.empty()) {
+                    cout << teleport(0, wherey()) << erase_line << prompt(true);
+                }
+                else {
+                    string suggestion = getSuggestion(*this, input);
+                    if (suggestion[0] == '<' && suggestion.back() == '>') break;
 
-                input += suggestion;
-                cout << "\033[0m" << suggestion;
+                    input += suggestion;
+                    cout << "\033[0m" << suggestion;
+                }
                 break;
             }
 #ifdef _WIN32
@@ -303,6 +325,36 @@ void Workspace::inputPrompt() {
                 getline(cin, command);
 
                 system(command.c_str());
+                return;
+            }
+            case '#': {
+                cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
+                cout << erase_cursor_to_end;
+                cout << fg_yellow << "# " << reset ;
+                string prompt;
+                getline(cin, prompt);
+
+                warning("Shuffle AI(Beta) is working... (this may take a while)");
+
+                string docs;
+                for (const auto&command: commands) docs += writeDocs(command);
+
+                string res = shflai::generateResponse(prompt, docs);
+
+                string newRes;
+                bool codeOpened = false;
+                for (char ch: res) {
+                    if (ch == '`') {
+                        if (codeOpened) newRes += reset;
+                        else newRes += bgb_black;
+
+                        codeOpened = !codeOpened;
+                    }
+                    else newRes += ch;
+                }
+
+                info(newRes);
+                warning("* This answer was generated by Shuffle AI(Beta). It may not be correct.");
                 return;
             }
             default: {
