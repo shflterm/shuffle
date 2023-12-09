@@ -1,7 +1,6 @@
 #include <iostream>
 #include <filesystem>
 #include <csignal>
-#include <ai/genllama.h>
 
 #include "console.h"
 #include "utils.h"
@@ -10,6 +9,7 @@
 #include "snippetmgr.h"
 #include "builtincmd.h"
 #include "shfljson.h"
+#include "shflai.h"
 
 using std::filesystem::create_directories, std::filesystem::exists, std::cout, std::cerr, std::endl;
 #define PYBIND11_DETAILED_ERROR_MESSAGES
@@ -57,7 +57,7 @@ extern "C" void handleQuit(const int sig) {
 
 int main(const int argc, char* argv[]) {
     info("Loading AI model...");
-    bool aiLoaded = loadAiModel((DOT_SHUFFLE / "ai" / "model.gguf").string());
+    bool aiLoaded = shflai::loadAiModel((DOT_SHUFFLE / "ai" / "model.gguf").string());
     if (!aiLoaded) {
         error("Failed to load AI model.");
         error("Shuffle may not work properly.");

@@ -12,10 +12,9 @@ add_subdirectory(appmgr)
 add_subdirectory(suggestion)
 add_subdirectory(workspace)
 add_subdirectory(utils)
-add_subdirectory(ai)
 
-add_dependencies(${PROJECT_NAME} commandmgr appmgr suggestion workspace utils ai)
-target_link_libraries(${PROJECT_NAME} PRIVATE commandmgr appmgr suggestion workspace utils ai)
+add_dependencies(${PROJECT_NAME} commandmgr appmgr suggestion workspace utils)
+target_link_libraries(${PROJECT_NAME} PRIVATE commandmgr appmgr suggestion workspace utils)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 
@@ -27,6 +26,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE CURL::libcurl)
 
 find_package(kubazip CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE kubazip::kubazip)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE shflai)
+target_include_directories(${PROJECT_NAME} PRIVATE ../shflai/include)
 
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 

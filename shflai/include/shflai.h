@@ -9,8 +9,10 @@
 
 using std::string;
 
-bool loadAiModel(const string& modelPath);
+namespace shflai {
+    bool loadAiModel(const string&modelPath);
 
-string generateResponse(const string&prompt);
+    string generateResponse(const string&prompt, const string& docs);
+}
 
 #endif //GENLLAMA_CPP_H

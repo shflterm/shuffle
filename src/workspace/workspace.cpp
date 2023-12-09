@@ -4,8 +4,8 @@
 #include <utility>
 #include <map>
 #include <sstream>
-#include <ai/genllama.h>
 
+#include "../../shflai/include/shflai.h"
 #include "cmd/cmdparser.h"
 #include "cmd/job.h"
 #include "suggestion/suggestion.h"
@@ -158,6 +158,19 @@ string Workspace::prompt() const {
 
     ss << fg_yellow << " \u2192 " << reset;
     return ss.str();
+}
+
+string writeDocs(const shared_ptr<cmd::Command>&command, const string&prefix = "") {
+    string docs;
+    string examples;
+    for (const auto&example: command->getExamples()) examples += example + ", ";
+    docs += prefix + command->getName() + " - " + command->getDescription() + " / Usage: " + command->getUsage() +
+            " / Examples: " + examples
+            + "\n";
+    for (const auto&subcommand: command->getSubcommands()) {
+        docs += writeDocs(subcommand, prefix + command->getName() + " ");
+    }
+    return docs;
 }
 
 void Workspace::inputPrompt() {
@@ -314,7 +327,11 @@ void Workspace::inputPrompt() {
 
                 warning("Shuffle AI(Beta) is working... (this may take a while)");
                 cout << teleport(wherex(), wherey() - 1);
-                string res = generateResponse(command);
+
+                string docs;
+                for (const auto&command: commands) docs += writeDocs(command);
+
+                string res = shflai::generateResponse(command, docs);
                 cout << teleport(wherex(), wherey() - 1) << erase_line;
 
                 string newRes;
