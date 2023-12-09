@@ -9,21 +9,31 @@
 
 llama_model* model;
 
-void loadAiModel(const string&modelPath) {
+bool loadAiModel(const string&modelPath) {
     llama_backend_init(false);
     llama_model_params model_params = llama_model_default_params();
 
     model_params.n_gpu_layers = 150; // offload all layers to the GPU
 
     model = llama_load_model_from_file(modelPath.c_str(), model_params);
-    if (model == nullptr) fprintf(stderr, "%s: error: unable to load model\n", __func__);
+    if (model == nullptr) {
+        fprintf(stderr, "%s: error: unable to load model\n", __func__);
+        return false;
+    }
+    return true;
 }
 
+string promptTemplete = "<|im_start|>system"
+        "{SYSTEM}<|im_end|>"
+        "<|im_start|>user"
+        "{USER}<|im_end|>"
+        "<|im_start|>assistant";
+
 string systemPrompt =
-        "You are a robot that helps you easily use the shell called 'Shuffle'. Shuffle can only use Shuffle's special commands. Let me show you the Shuffle command help."
+        "You are a robot that helps you easily use the shell called 'Shuffle'. Shuffle can only use Shuffle's special commands. Let me show you Shuffle command help."
         "{DOCS}"
-        "Based on this help, analyze the user's question and answer only the commands the user needs in one line. The command must be complete, including all arguments. The answer can be written as a command or variable declaration that you created. (At this time, you must check the help to see if the command exists.) The answer can be given in the format \"`ANSWER`\". ANSWER must include commands and arguments, or in the case of a variable declaration, must provide the entire variable declaration. If the argument is unknown, ask the user again."
-        "I'll teach you how to use variables. To assign a value to a variable, use \"VAR_NAME = VALUE\". You can enter text, variables, and commands in VALUE. Text can be executed as \"TEXT\" without quotes, variables as \"$VAR_NAME\", and commands as \"(COMMAND)!\". (Commands can be used by putting arguments in parentheses!) For example, \"a = text\" (storing \"text\" in a variable called a), \"b = $a\" (storing the variable a into Store the value in b), \"c = (capitalize $a)! \"(run capitalize $a and store the result in c), etc.";
+        "Based on this article, we analyze your question and answer only the commands you need, in one line. The command must be complete, including all arguments. The answer can be written as a written command or as a variable declaration (when time permits). Afterwards, you should check the help to see if the command exists.) The answer must be wrapped in ` (e.g. `help`) The ANSWER must contain the command and the arguments. Or it can also declare a variable. The arguments must be known. If not, please contact the user again."
+        "I'll teach you how to use variables. To assign a value to a variable, use \"VAR_NAME = VALUE\". You can enter text, variables, or commands in VALUE. Text can be executed as \"TEXT\". Quotes Without it, variables are displayed as \"$VAR_NAME\" and commands are displayed as \"(COMMAND)!\" (Commands can be used by enclosing their arguments in parentheses!) For example, \"a = text\" (save \"text in a variable called a)\", \"b = $a\" (store the value of variable a in b), \"c = (capitalize $a)! \"(execute $a in uppercase and store result in c), etc.";
 
 string writeDocs(const shared_ptr<cmd::Command>&command, const string&prefix = "") {
     string docs;
@@ -45,16 +55,16 @@ string generateResponse(const string&prompt) {
     }
 
     gpt_params params;
-    params.prompt = "[INST] <<SYS>>" +
-                    replace(systemPrompt, "{DOCS}", docs) +
-                    "<</SYS>>" +
-                    "Q: " + prompt + "[/INST]";
+    params.prompt = promptTemplete;
+    params.prompt = replace(params.prompt, "{SYSTEM}", replace(systemPrompt, "{DOCS}", docs));
+    params.prompt = replace(params.prompt, "{USER}", prompt);
+
 
     const int n_len = 100;
 
     if (model == nullptr) {
         fprintf(stderr, "%s: AI not loaded\n", __func__);
-        return "ERROR";
+        return "AI NOT LOADED";
     }
 
     llama_context_params ctx_params = llama_context_default_params();
@@ -132,8 +142,10 @@ string generateResponse(const string&prompt) {
             }
 
             string next = llama_token_to_piece(ctx, new_token_id);
-            next = replace(next, ">", reset);
-            next = replace(next, "<", bgb_black);
+            if (next == "<|im_end|>") break;
+
+            next = replace(next, "}", reset);
+            next = replace(next, "{", bgb_black);
             res += next;
 
             // prepare the next batch

@@ -9,7 +9,7 @@
 
 using std::string;
 
-void loadAiModel(const string& modelPath);
+bool loadAiModel(const string& modelPath);
 
 string generateResponse(const string&prompt);
 

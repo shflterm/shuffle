@@ -156,9 +156,7 @@ int progress_callback(void* clientp, const curl_off_t dltotal,
     if (lastPercent == percent) return 0;
 
     lastPercent = percent;
-    cout << erase_line;
-    info("Downloading... (" + to_string(percent) + "%)");
-    cout << teleport(wherex(), wherey() - 1);
+    cout << erase_line << "Downloading... (" + to_string(percent) + "%)" << teleport(0, wherey());
 
     return 0;
 }

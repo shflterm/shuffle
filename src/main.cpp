@@ -57,13 +57,19 @@ extern "C" void handleQuit(const int sig) {
 
 int main(const int argc, char* argv[]) {
     info("Loading AI model...");
-    loadAiModel(R"(../../llama-2-7b-chat.Q5_K_M.gguf)");
-    success("Done.");
+    bool aiLoaded = loadAiModel((DOT_SHUFFLE / "ai" / "model.gguf").string());
+    if (!aiLoaded) {
+        error("Failed to load AI model.");
+        error("Shuffle may not work properly.");
+        error("");
+    }
+    else {
 #ifdef _WIN32
-    system("cls");
+        system("cls");
 #elif defined(__linux__) || defined(__APPLE__)
-    system("clear");
+        system("clear");
 #endif
+    }
 
 #ifdef _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
