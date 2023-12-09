@@ -77,6 +77,8 @@ namespace appmgr {
 
     extern "C" {
     typedef string (*entrypoint_t)(Workspace*, const map<string, string>&, bool);
+
+    typedef string (*startup_t)();
     }
 
 #ifdef _WIN32
@@ -119,31 +121,37 @@ namespace appmgr {
         for (const auto&example: appInfo["examples"]) examples.push_back(example.asString());
         Command command = Command(name, description, usage, subcommands, options, aliases, examples);
 
+        string libraryPath =
+#ifdef _WIN32
+                commandPath + "command.dll";
+#elif __APPLE__
+            commandPath + "command.dylib";
+#else
+                commandPath + "command.so";
+#endif
+
+        // 라이브러리 열기
+#ifdef _WIN32
+        HMODULE libraryHandle = LoadLibraryA(libraryPath.c_str());
+#elif defined(__linux__) || defined(__APPLE__)
+        void* libraryHandle = dlopen(libraryPath.c_str(), RTLD_LAZY);
+#endif
+
+        if (!libraryHandle) {
+            error("Failed to open the library. Please check if the library exists.");
+            return command;
+        }
+
+        const auto startup =
+#ifdef _WIN32
+                reinterpret_cast<startup_t>(GetProcAddress(libraryHandle, "startup"));
+#elif defined(__APPLE__) || defined(__linux__)
+                    reinterpret_cast<startup_t>(dlsym(libraryHandle, "startup"));
+#endif
+        if (startup) startup();
+
         cmd_t cmd = [=](Workspace* ws, const map<string, string>&optionValues, const bool backgroundMode,
                         const string&id) -> string {
-            // 라이브러리 경로
-            string libraryPath =
-#ifdef _WIN32
-                    commandPath + "command.dll";
-#elif __APPLE__
-                    commandPath + "command.dylib";
-#else
-                    commandPath + "command.so";
-#endif
-
-            // 라이브러리 열기
-#ifdef _WIN32
-            HMODULE libraryHandle = LoadLibraryA(libraryPath.c_str());
-#elif defined(__linux__) || defined(__APPLE__)
-            void* libraryHandle = dlopen(libraryPath.c_str(), RTLD_LAZY);
-#endif
-
-            if (!libraryHandle) {
-                error("Failed to open the library. Please check if the library exists.");
-                return "ERROR_OPENING_LIBRARY";
-            }
-
-            // 라이브러리에서 함수 로드
             const auto entrypoint =
 #ifdef _WIN32
                     reinterpret_cast<entrypoint_t>(GetProcAddress(libraryHandle, "entrypoint"));
