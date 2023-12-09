@@ -3,5 +3,8 @@ project(shfl)
 
 set(CMAKE_CXX_STANDARD 17)
 
+add_subdirectory(llama.cpp)
+add_subdirectory(shflai)
+
 add_subdirectory(src)
 add_subdirectory(updater)

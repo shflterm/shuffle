@@ -132,14 +132,30 @@ void error(const string&text) {
 #include <conio.h>
 
 #elif defined(__linux__) || defined(__APPLE__)
-#include <unistd.h>
+#include <termios.h>
+termios original_termios;
+
+void init_termios() {
+    tcgetattr(STDIN_FILENO, &original_termios);
+}
+
+void reset_termios() {
+    tcsetattr(STDIN_FILENO, TCSANOW, &original_termios);
+}
 #endif
 
 int readChar() {
 #ifdef _WIN32
     return _getch();
 #elif defined(__linux__) || defined(__APPLE__)
-    return getwchar();
+    termios new_termios{};
+    tcgetattr(STDIN_FILENO, &original_termios);
+    new_termios = original_termios;
+    new_termios.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
+    const int c = getchar();
+    reset_termios();
+    return c;
 #endif
 }
 

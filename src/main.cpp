@@ -11,6 +11,7 @@
 #include "snippetmgr.h"
 #include "builtincmd.h"
 #include "shfljson.h"
+#include "shflai.h"
 #include "proponent.h"
 
 using std::filesystem::create_directories, std::filesystem::exists, std::cout, std::cerr, std::endl;
@@ -116,6 +117,21 @@ void loadProponents() {
 }
 
 int main(const int argc, char* argv[]) {
+    info("Loading AI model...");
+    bool aiLoaded = shflai::loadAiModel((DOT_SHUFFLE / "ai" / "model.gguf").string());
+    if (!aiLoaded) {
+        error("Failed to load AI model.");
+        error("Shuffle may not work properly.");
+        error("");
+    }
+    else {
+#ifdef _WIN32
+        system("cls");
+#elif defined(__linux__) || defined(__APPLE__)
+        system("clear");
+#endif
+    }
+
 #ifdef _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 
@@ -125,11 +141,6 @@ int main(const int argc, char* argv[]) {
     signal(SIGABRT, &handleCrash);
 
     setlocale(LC_ALL, "");
-
-    termios raw{};
-    tcgetattr(STDIN_FILENO, &raw);
-    raw.c_lflag &= ~(ECHO | ICANON);
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 #endif
     signal(SIGINT, &handleQuit);
 

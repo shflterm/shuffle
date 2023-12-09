@@ -5,7 +5,8 @@
 #include "utils.h"
 #include "console.h"
 
-using std::cout, std::endl, std::vector, std::string, std::filesystem::exists, std::filesystem::create_directories, std::filesystem::remove,
+using std::cout, std::endl, std::vector, std::string, std::filesystem::exists, std::filesystem::create_directories,
+        std::filesystem::remove,
         std::filesystem::path, std::filesystem::temp_directory_path;
 
 string SHUFFLE = "   _____ _    _ _    _ ______ ______ _      ______           __        ___  \n"
@@ -34,7 +35,8 @@ bool installNativeApps() {
         system(("chmod +x " + DOT_SHUFFLE.string() + "/bin/shuffle").c_str());
         system((DOT_SHUFFLE.string() + "/bin/shuffle appmgr add " + item.asString()).c_str());
 #endif
-        if (const int status = system(((DOT_SHUFFLE / "bin/shuffle").string() + " appmgr add " + item.asString()).c_str());
+        if (const int status = system(
+                ((DOT_SHUFFLE / "bin/shuffle").string() + " appmgr add " + item.asString()).c_str());
             status != 0)
             appInstalled = false;
     }
@@ -69,13 +71,20 @@ int main() {
     cout << teleport(0, wherey() - 1) << erase_line << "Extracted!" << endl;
 
     cout << teleport(0, wherey() - 1) << erase_line << "Install native apps.." << endl;
-    if (installNativeApps()) {
-        cout << teleport(0, wherey() - 1) << erase_line << "Shuffle has been successfully installed!";
-    }
-    else {
+    bool appInstalled = installNativeApps();
+    if (!appInstalled) {
         cout << teleport(0, wherey() - 1) << erase_line
                 << "Shuffle is installed, but the some default app is not installed"
                 << endl
                 << "After running Shuffle, you may need to manually install the default apps.";
+        return 1;
     }
+    cout << erase_line << "Downloading AI Model.." << endl;
+    if (!downloadFile(
+        "https://huggingface.co/TheBloke/deepseek-coder-6.7B-instruct-GGUF/resolve/main/deepseek-coder-6.7b-instruct.Q4_K_M.gguf?download=true",
+        (DOT_SHUFFLE / "ai" / "model.gguf").string())) {
+        error("Failed to download AI Model.");
+        return 1;
+    }
+    cout << teleport(0, wherey() - 1) << erase_line << "Shuffle has been successfully installed!";
 }

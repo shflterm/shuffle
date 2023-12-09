@@ -27,6 +27,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE CURL::libcurl)
 find_package(kubazip CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE kubazip::kubazip)
 
+target_link_libraries(${PROJECT_NAME} PRIVATE shflai)
+target_include_directories(${PROJECT_NAME} PRIVATE ../shflai/include)
+
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ../include ../include/cmd ../include/app ../include/suggestion ../include/workspace ../include/utils)
