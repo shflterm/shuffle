@@ -28,11 +28,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v4.7.1
-        with:
-          python-version: 3.11.6
-
       - name: Cache Vcpkg and Build Directories
         uses: actions/cache@v3
         with:
@@ -46,6 +41,9 @@ jobs:
 
       - name: Configure vcpkg
         run: ${{ matrix.config.configure }}
+
+      - name: Update Submodule
+        run: git submodule update --init --recursive
 
       - name: Install Packages
         run: ./vcpkg/vcpkg install
