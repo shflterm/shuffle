@@ -44,12 +44,11 @@ namespace shflai {
             "I'll teach you how to use variables. To assign a value to a variable, use \"VAR_NAME = VALUE\". You can enter text, variables, or commands in VALUE. Text can be executed as \"TEXT\". Quotes Without it, variables are displayed as \"$VAR_NAME\" and commands are displayed as \"(COMMAND)!\" (Commands can be used by enclosing their arguments in parentheses!) For example, \"a = text\" (save \"text in a variable called a)\", \"b = $a\" (store the value of variable a in b), \"c = (capitalize $a)! \"(execute $a in uppercase and store result in c), etc."
             "Here is shuffle command help: {DOCS}";
 
-
     string generateResponse(const string&prompt, const string&docs) {
         gpt_params params;
         params.prompt = promptTemplete;
         params.prompt = replaceAll(params.prompt, "{system}", replaceAll(systemPrompt, "{DOCS}", docs));
-        params.prompt = replaceAll(params.prompt, "{prompt}", prompt);
+        params.prompt = replaceAll(params.prompt, "{prompt}", prompt + " in 'Shuffle'");
         params.sparams.penalty_repeat = 1.1f;
         params.sparams.temp = 0.7f;
 
@@ -108,7 +107,7 @@ namespace shflai {
 
         const auto t_main_start = ggml_time_us();
 
-        std::cout << "Generating response, this may take a few seconds. (Almost done!)" << std::endl;
+        std::cout << "\033[33mGenerating response, this may take a few seconds. (Almost done!)\033[0m" << std::endl;
         string res;
         while (true) {
             // sample the next token
@@ -159,6 +158,10 @@ namespace shflai {
                 return "ERROR";
             }
         }
-        return replaceAll(replaceAll(res, "<0x0A>", "\n"), "`sh", "`");
+        res = replaceAll(res, "<0x0A>", "\n");
+        res = replaceAll(res, "`shuffle", "`");
+        res = replaceAll(res, "`sh", "`");
+        res = replaceAll(res, "`bash", "`");
+        return res;
     }
 }
