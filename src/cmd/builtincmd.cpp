@@ -52,6 +52,16 @@ string appMgrRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, 
     return removeApp(options["app"]) ? "true" : "false";
 }
 
+string appMgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+    // print all app infos
+    if (!bgMode) {
+        for (const auto& app: appmgr::loadedApps) {
+            cout << app->name << ": " << app->description << " (by " << app->author << ")" << endl;
+        }
+    }
+    return std::to_string(appmgr::loadedApps.size());
+}
+
 string appMgrRepoAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     return addRepo(options["repo"]) ? "true" : "false";
 }
@@ -208,6 +218,9 @@ void loadCommands() {
                         CommandOption("app", "", "text")
                     }, {"appmgr remove textutilities", "appmgr remove filesystem", "appmgr remove myapp"},
                     appMgrRemoveCmd),
+            Command("list", "List all apps.", {"appmgr list"},
+                    appMgrListCmd
+            ),
             Command("repo", "Repository Management", {
                         Command("add", "Add Repository", {
                                     CommandOption("repo", "", "text")
