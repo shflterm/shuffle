@@ -23,17 +23,17 @@ bool loadAiModel(const string&modelPath) {
     return true;
 }
 
-string promptTemplete = "<|im_start|>system"
-        "{SYSTEM}<|im_end|>"
-        "<|im_start|>user"
-        "{USER}<|im_end|>"
-        "<|im_start|>assistant";
+string promptTemplete =
+        "{system}\n"
+        "### Instruction:\n"
+        "{prompt}\n"
+        "### Response:\n";
 
 string systemPrompt =
-        "You are a robot that helps you easily use the shell called 'Shuffle'. Shuffle can only use Shuffle's special commands. Let me show you Shuffle command help."
-        "{DOCS}"
-        "Based on this article, we analyze your question and answer only the commands you need, in one line. The command must be complete, including all arguments. The answer can be written as a written command or as a variable declaration (when time permits). Afterwards, you should check the help to see if the command exists.) The answer must be wrapped in ` (e.g. `help`) The ANSWER must contain the command and the arguments. Or it can also declare a variable. The arguments must be known. If not, please contact the user again."
-        "I'll teach you how to use variables. To assign a value to a variable, use \"VAR_NAME = VALUE\". You can enter text, variables, or commands in VALUE. Text can be executed as \"TEXT\". Quotes Without it, variables are displayed as \"$VAR_NAME\" and commands are displayed as \"(COMMAND)!\" (Commands can be used by enclosing their arguments in parentheses!) For example, \"a = text\" (save \"text in a variable called a)\", \"b = $a\" (store the value of variable a in b), \"c = (capitalize $a)! \"(execute $a in uppercase and store result in c), etc.";
+        "You are an AI programming assistant that helps you easily use the shell called 'Shuffle'. Shuffle can only use Shuffle's special commands."
+        "Based on this question, it analyzes the user's question and answers only the necessary commands in one line. Answers must be enclosed in `` (e.g. `help`, `cdir`). Your answer must be complete, including all arguments. Answers can be written as commands or variable declarations. You should then check the help to see if the command exists. Your answer must include commands and arguments. Or you can declare a variable."
+        "I'll teach you how to use variables. To assign a value to a variable, use \"VAR_NAME = VALUE\". You can enter text, variables, or commands in VALUE. Text can be executed as \"TEXT\". Quotes Without it, variables are displayed as \"$VAR_NAME\" and commands are displayed as \"(COMMAND)!\" (Commands can be used by enclosing their arguments in parentheses!) For example, \"a = text\" (save \"text in a variable called a)\", \"b = $a\" (store the value of variable a in b), \"c = (capitalize $a)! \"(execute $a in uppercase and store result in c), etc."
+        "Here is shuffle command help: {DOCS}";
 
 string writeDocs(const shared_ptr<cmd::Command>&command, const string&prefix = "") {
     string docs;
@@ -56,9 +56,10 @@ string generateResponse(const string&prompt) {
 
     gpt_params params;
     params.prompt = promptTemplete;
-    params.prompt = replace(params.prompt, "{SYSTEM}", replace(systemPrompt, "{DOCS}", docs));
-    params.prompt = replace(params.prompt, "{USER}", prompt);
-
+    params.prompt = replace(params.prompt, "{system}", replace(systemPrompt, "{DOCS}", docs));
+    params.prompt = replace(params.prompt, "{prompt}", prompt);
+    params.sparams.penalty_repeat = 1.1f;
+    params.sparams.temp = 0.7f;
 
     const int n_len = 100;
 
@@ -116,7 +117,7 @@ string generateResponse(const string&prompt) {
     const auto t_main_start = ggml_time_us();
 
     warning("Generating response, this may take a few seconds. (Almost done!)");
-    string res = "";
+    string res;
     while (true) {
         // sample the next token
         {
@@ -166,5 +167,5 @@ string generateResponse(const string&prompt) {
             return "ERROR";
         }
     }
-    return res;
+    return replace(replace(res, "<0x0A>", "\n"), "`sh", "`");
 }

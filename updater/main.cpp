@@ -81,17 +81,8 @@ int main() {
     }
     cout << erase_line << "Downloading AI Model.." << endl;
     if (!downloadFile(
-        "https://huggingface.co/TheBloke/OpenHermes-2.5-neural-chat-7B-v3-1-7B-GGUF/resolve/main/openhermes-2.5-neural-chat-7b-v3-1-7b.Q4_K_M.gguf?download=true",
+        "https://huggingface.co/TheBloke/deepseek-coder-6.7B-instruct-GGUF/resolve/main/deepseek-coder-6.7b-instruct.Q4_K_M.gguf?download=true",
         (DOT_SHUFFLE / "ai" / "model.gguf").string())) {
-        error("Failed to download AI Model.");
-        return 1;
-    }
-    cout << erase_line << "Downloading AI Model.." << endl;
-    path aiModel = DOT_SHUFFLE / "ai" / "model.gguf";
-    create_directories(aiModel.parent_path());
-    if (!downloadFile(
-        "https://huggingface.co/TheBloke/OpenHermes-2.5-neural-chat-7B-v3-1-7B-GGUF/resolve/main/openhermes-2.5-neural-chat-7b-v3-1-7b.Q4_K_M.gguf?download=true",
-        aiModel.string())) {
         error("Failed to download AI Model.");
         return 1;
     }
