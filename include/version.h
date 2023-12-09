@@ -7,7 +7,7 @@
 
 using std::stringstream;
 
-#define SHUFFLE_VERSION Version(1, 0, 0, 0, "Beta 3")
+#define SHUFFLE_VERSION Version(1, 0, 0, 0, "beta.3")
 
 class Version {
     int major, minor, patch, hotfix;
@@ -29,7 +29,7 @@ public:
         ss << minor << ".";
         ss << patch << ".";
         ss << hotfix;
-        if (!tag.empty()) ss << " (" << tag << ")";
+        if (!tag.empty()) ss << "-" << tag;
 
         return string(ss.str());
     }
