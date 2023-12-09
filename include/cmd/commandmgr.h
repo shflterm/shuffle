@@ -26,25 +26,15 @@ typedef std::function<string(Workspace* ws, map<string, string>&options, bool bg
 string do_nothing(Workspace* ws, map<string, string>&options, bool bgMode, const string&id);
 
 namespace cmd {
-    enum OptionType {
-        TEXT,
-        NUMBER,
-        BOOLEAN,
-        FILE,
-        DIRECTORY,
-        FILE_OR_DIRECTORY,
-        COMMAND
-    };
-
     class CommandOption {
     public:
         string name, description;
-        OptionType type;
+        string type;
         vector<string> aliases;
 
-        CommandOption(string name, string description, OptionType type);
+        CommandOption(string name, string description, string type);
 
-        CommandOption(string name, string description, OptionType type, const vector<string>&aliases);
+        CommandOption(string name, string description, string type, const vector<string>&aliases);
     };
 
     class Command {

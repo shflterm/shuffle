@@ -24,7 +24,7 @@ class Workspace {
     int historyIndex = 0;
     map<string, string> variables;
 
-    [[nodiscard]] string prompt() const;
+    [[nodiscard]] string prompt(bool fullPath = false) const;
 
 public:
     path currentDirectory() const;

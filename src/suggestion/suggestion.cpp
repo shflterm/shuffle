@@ -1,6 +1,7 @@
 #include "suggestion/suggestion.h"
 
 #include <vector>
+#include <suggestion/proponent.h>
 
 using std::vector, std::string, cmd::Command, cmd::commands, cmd::findCommand;
 
@@ -77,40 +78,8 @@ namespace suggestion {
                     }
                 }
 
-                if (option.type == cmd::TEXT || option.type == cmd::NUMBER) {
-                    if (args[cur-1].empty())
-                        suggestion = "<" + option.name + ">";
-                }
-                else if (option.type == cmd::BOOLEAN) {
-                    suggestion = findSuggestion(ws, args[cur-1], {"true", "false"})[0];
-                }
-                else if (option.type == cmd::FILE) {
-                    vector<string> files;
-                    for (const auto&item: std::filesystem::directory_iterator(ws.currentDirectory())) {
-                        if (item.is_directory()) continue;
-                        files.push_back(item.path().filename().string());
-                    }
-                    suggestion = findSuggestion(ws, args[cur-1], files)[0];
-                }
-                else if (option.type == cmd::DIRECTORY) {
-                    vector<string> dirs;
-                    for (const auto&item: std::filesystem::directory_iterator(ws.currentDirectory())) {
-                        if (!item.is_directory()) continue;
-                        dirs.push_back(item.path().filename().string());
-                    }
-                    suggestion = findSuggestion(ws, args[cur-1], dirs)[0];
-                }
-                else if (option.type == cmd::FILE_OR_DIRECTORY) {
-                    vector<string> files;
-                    for (const auto&item: std::filesystem::directory_iterator(ws.currentDirectory())) {
-                        files.push_back(item.path().filename().string());
-                    }
-                    suggestion = findSuggestion(ws, args[cur-1], files)[0];
-                }
-                else if (option.type == cmd::COMMAND) {
-                    // find commands
-                    suggestion = getSuggestion(ws, args[cur-1]);
-                }
+                Proponent proponent = findProponent(option.type);
+                suggestion = proponent.makeProp(&ws, option, args, cur - 1);
             }
             else if (spl[cur][0] == '-') {
                 // Find unused options
@@ -134,7 +103,7 @@ namespace suggestion {
 
                 // For boolean options
                 for (const auto&item: cmd->getOptions())
-                    if (item.type == cmd::BOOLEAN &&
+                    if (item.type == "boolean" &&
                         std::find(usedOptions.begin(), usedOptions.end(), item.name) == usedOptions.end())
                         dict.push_back(item.name);
 
