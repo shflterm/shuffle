@@ -335,13 +335,11 @@ void Workspace::inputPrompt() {
                 getline(cin, prompt);
 
                 warning("Shuffle AI(Beta) is working... (this may take a while)");
-                cout << teleport(wherex(), wherey() - 1);
 
                 string docs;
                 for (const auto&command: commands) docs += writeDocs(command);
 
                 string res = shflai::generateResponse(prompt, docs);
-                cout << teleport(wherex(), wherey() - 1) << erase_line;
 
                 string newRes;
                 bool codeOpened = false;
