@@ -22,7 +22,7 @@ void loadAiModel(const string&modelPath) {
 string systemPrompt =
         "You are a robot that helps you easily use the shell called 'Shuffle'. Shuffle can only use Shuffle's special commands. Let me show you the Shuffle command help."
         "{DOCS}"
-        "Based on this help, analyze the user's question and answer only the commands the user needs in one line. The command must be complete, including all arguments. The answer can be written as a command or variable declaration that you created. (At this time, you must check the help to see if the command exists.) The answer can be given in the format \"<ANSWER_VALUE>\". ANSWER must include commands and arguments, or in the case of a variable declaration, must provide the entire variable declaration. If the argument is unknown, ask the user again."
+        "Based on this help, analyze the user's question and answer only the commands the user needs in one line. The command must be complete, including all arguments. The answer can be written as a command or variable declaration that you created. (At this time, you must check the help to see if the command exists.) The answer can be given in the format \"`{ANSWER}`\". ANSWER must include commands and arguments, or in the case of a variable declaration, must provide the entire variable declaration. If the argument is unknown, ask the user again."
         "I'll teach you how to use variables. To assign a value to a variable, use \"VAR_NAME = VALUE\". You can enter text, variables, and commands in VALUE. Text can be executed as \"TEXT\" without quotes, variables as \"$VAR_NAME\", and commands as \"(COMMAND)!\". (Commands can be used by putting arguments in parentheses!) For example, \"a = text\" (storing \"text\" in a variable called a), \"b = $a\" (storing the variable a into Store the value in b), \"c = (capitalize $a)! \"(run capitalize $a and store the result in c), etc.";
 
 string writeDocs(const shared_ptr<cmd::Command>&command, const string&prefix = "") {
@@ -48,7 +48,7 @@ string generateResponse(const string&prompt) {
     params.prompt = "[INST] <<SYS>>" +
                     replace(systemPrompt, "{DOCS}", docs) +
                     "<</SYS>>" +
-                    "Q: " + prompt + "[/INST] END";
+                    "Q: " + prompt + "[/INST]";
 
     const int n_len = 100;
 
