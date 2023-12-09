@@ -52,6 +52,16 @@ string appMgrRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, 
     return removeApp(options["app"]) ? "true" : "false";
 }
 
+string appMgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+    // print all app infos
+    if (!bgMode) {
+        for (const auto& app: appmgr::loadedApps) {
+            cout << app->name << ": " << app->description << " (by " << app->author << ")" << endl;
+        }
+    }
+    return std::to_string(appmgr::loadedApps.size());
+}
+
 string appMgrRepoAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     return addRepo(options["repo"]) ? "true" : "false";
 }
@@ -200,27 +210,30 @@ void loadCommands() {
     commands.push_back(make_shared<Command>(Command(
         "appmgr", "App Manager", {
             Command("add", "Get new apps from the repository.", {
-                        CommandOption("app", "", cmd::TEXT)
+                        CommandOption("app", "", "text")
                     }, {
                         "appmgr add textutilities", "appmgr add filesystem", "appmgr add /path/to/myapp"
                     }, appMgrAddCmd),
             Command("remove", "Delete the app from your device.", {
-                        CommandOption("app", "", cmd::TEXT)
+                        CommandOption("app", "", "text")
                     }, {"appmgr remove textutilities", "appmgr remove filesystem", "appmgr remove myapp"},
                     appMgrRemoveCmd),
+            Command("list", "List all apps.", {"appmgr list"},
+                    appMgrListCmd
+            ),
             Command("repo", "Repository Management", {
                         Command("add", "Add Repository", {
-                                    CommandOption("repo", "", cmd::TEXT)
+                                    CommandOption("repo", "", "text")
                                 }, {"appmgr repo add https://example.com/shflrepo.json"}, appMgrRepoAddCmd),
                         Command("remove", "Remove Repository", {
-                                    CommandOption("repo", "", cmd::TEXT)
+                                    CommandOption("repo", "", "text")
                                 }, {"appmgr repo remove https://example.com/shflrepo.json"}, appMgrRepoRemoveCmd)
                     }, {"appmgr repo"}, do_nothing),
         }, {"appmgr"}, appMgrCmd
     )));
     commands.push_back(make_shared<Command>(Command(
         "help", "Show help", {
-            CommandOption("command", "", cmd::COMMAND, {"cmd", "help"})
+            CommandOption("command", "", "command", {"cmd", "help"})
         }, {"help", "help shfl", "help appmgr"}, helpCmd
     )));
     // commands.push_back(make_shared<Command>(Command(
@@ -235,10 +248,10 @@ void loadCommands() {
     commands.push_back(make_shared<Command>(Command(
         "task", "Manage background tasks", {
             Command("start", "Start a new background task.", {
-                        CommandOption("job", "", cmd::COMMAND)
+                        CommandOption("job", "", "command")
                     }, {"task start dwnld https://examples.com/largefile"}, taskStartCmd),
             Command("log", "Print logs", {
-                        CommandOption("taskId", "", cmd::TEXT)
+                        CommandOption("taskId", "", "text")
                     }, {"task log abcdefg12345"}, taskLogCmd),
             Command("list", "List tasks", {"task list"}, taskListCmd),
         }, {"task"}, do_nothing

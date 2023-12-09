@@ -145,17 +145,17 @@ namespace cmd {
         : name(std::move(name)), cmd(do_nothing) {
     }
 
-    CommandOption::CommandOption(string name, string description, const OptionType type)
+    CommandOption::CommandOption(string name, string description, string type)
         : name(std::move(name)),
           description(std::move(description)),
-          type(type),
+          type(std::move(type)),
           aliases({}) {
     }
 
-    CommandOption::CommandOption(string name, string description, const OptionType type, const vector<string>&aliases)
+    CommandOption::CommandOption(string name, string description, string type, const vector<string>&aliases)
         : name(std::move(name)),
           description(std::move(description)),
-          type(type),
+          type(std::move(type)),
           aliases(aliases) {
     }
 }

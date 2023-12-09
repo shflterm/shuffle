@@ -1,6 +1,8 @@
+#include <appmgr.h>
 #include <iostream>
 #include <filesystem>
 #include <csignal>
+#include <suggestion.h>
 
 #include "console.h"
 #include "utils.h"
@@ -10,6 +12,7 @@
 #include "builtincmd.h"
 #include "shfljson.h"
 #include "shflai.h"
+#include "proponent.h"
 
 using std::filesystem::create_directories, std::filesystem::exists, std::cout, std::cerr, std::endl;
 #define PYBIND11_DETAILED_ERROR_MESSAGES
@@ -53,6 +56,64 @@ extern "C" void handleCrash(int sig) {
 extern "C" void handleQuit(const int sig) {
     cout << endl << "Bye." << endl;
     exit(sig);
+}
+
+void loadProponents() {
+    using namespace suggestion;
+    registerProponent(Proponent(
+        "text", [](Workspace* ws, const cmd::CommandOption&option, const vector<string>&args, const size_t cur) {
+            string suggestion;
+            if (args[cur].empty())
+                suggestion = "<" + option.name + ">";
+            return suggestion;
+        }));
+    registerProponent(Proponent(
+        "number", [](Workspace* ws, const cmd::CommandOption&option, const vector<string>&args, const size_t cur) {
+            string suggestion;
+            if (args[cur].empty())
+                suggestion = "<" + option.name + ">";
+            return suggestion;
+        }));
+    registerProponent(Proponent(
+        "boolean", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            return findSuggestion(*ws, args[cur], {"true", "false"})[0];
+    }));
+    registerProponent(Proponent(
+        "file", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            vector<string> files;
+            for (const auto&item: std::filesystem::directory_iterator(ws->currentDirectory())) {
+                if (item.is_directory()) continue;
+                files.push_back(item.path().filename().string());
+            }
+            return findSuggestion(*ws, args[cur], files)[0];
+    }));
+    registerProponent(Proponent(
+        "directory", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            vector<string> files;
+            for (const auto&item: std::filesystem::directory_iterator(ws->currentDirectory())) {
+                if (!item.is_directory()) continue;
+                files.push_back(item.path().filename().string());
+            }
+            return findSuggestion(*ws, args[cur], files)[0];
+    }));
+    registerProponent(Proponent(
+        "fileordir", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            vector<string> files;
+            for (const auto&item: std::filesystem::directory_iterator(ws->currentDirectory())) {
+                files.push_back(item.path().filename().string());
+            }
+            return findSuggestion(*ws, args[cur], files)[0];
+    }));
+    registerProponent(Proponent(
+        "command", [](Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            return getSuggestion(*ws, args[cur]);
+    }));
+    registerProponent(Proponent(
+        "app", [](Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            vector<string> apps;
+            for (const auto loaded_app : appmgr::loadedApps) apps.push_back(loaded_app->name);
+            return findSuggestion(*ws, args[cur], apps)[0];
+        }));
 }
 
 int main(const int argc, char* argv[]) {
@@ -127,6 +188,7 @@ int main(const int argc, char* argv[]) {
 
     loadCommands();
     loadSnippets();
+    loadProponents();
 
     cout << "Type 'help' to get help!" << endl;
 

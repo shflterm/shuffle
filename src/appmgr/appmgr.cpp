@@ -14,7 +14,7 @@
 #include "utils/console.h"
 #include "utils/shfljson.h"
 
-using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption, cmd::OptionType,
+using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption,
         cmd::commands;
 
 #ifdef _WIN32
@@ -77,10 +77,12 @@ namespace appmgr {
 
     extern "C" {
     typedef string (*entrypoint_t)(Workspace*, const map<string, string>&, bool);
+
+    typedef string (*startup_t)();
     }
 
 #ifdef _WIN32
-    void closeLibrary(HMODULE libraryHandle) {
+    void closeLibrary(const HMODULE libraryHandle) {
         FreeLibrary(libraryHandle);
     }
 #else
@@ -105,22 +107,11 @@ namespace appmgr {
         vector<CommandOption> options;
         for (const auto&option: appInfo["options"]) {
             const string optionName = option["name"].asString();
-            OptionType type;
-            if (option["type"].asString() == "string" || option["type"].asString() == "text") type = cmd::TEXT;
-            else if (option["type"].asString() == "boolean") type = cmd::BOOLEAN;
-            else if (option["type"].asString() == "number") type = cmd::NUMBER;
-            else if (option["type"].asString() == "file") type = cmd::FILE;
-            else if (option["type"].asString() == "directory") type = cmd::DIRECTORY;
-            else if (option["type"].asString() == "fileordir") type = cmd::FILE_OR_DIRECTORY;
-            else if (option["type"].asString() == "command") type = cmd::COMMAND;
-            else {
-                error("Error: Invalid option type in " + optionName + ".");
-                type = cmd::TEXT;
-            }
             const string optionDescription = option["description"].asString();
+            const string optionType = option["type"].asString();
             vector<string> aliases;
             for (const auto&alias: option["aliases"]) aliases.push_back(alias.asString());
-            options.emplace_back(optionName, optionDescription, type, aliases);
+            options.emplace_back(optionName, optionDescription, optionType, aliases);
         }
 
         vector<string> aliases;
@@ -130,31 +121,37 @@ namespace appmgr {
         for (const auto&example: appInfo["examples"]) examples.push_back(example.asString());
         Command command = Command(name, description, usage, subcommands, options, aliases, examples);
 
-        cmd_t cmd = [=](Workspace* ws, map<string, string>&optionValues, const bool backgroundMode,
-                        const string&id) -> string {
-            // 라이브러리 경로
-            string libraryPath =
+        string libraryPath =
 #ifdef _WIN32
-                    commandPath + "command.dll";
+                commandPath + "command.dll";
 #elif __APPLE__
-                    commandPath + "command.dylib";
+            commandPath + "command.dylib";
 #else
-                    commandPath + "command.so";
+                commandPath + "command.so";
 #endif
 
-            // 라이브러리 열기
+        // 라이브러리 열기
 #ifdef _WIN32
-            HMODULE libraryHandle = LoadLibraryA(libraryPath.c_str());
+        HMODULE libraryHandle = LoadLibraryA(libraryPath.c_str());
 #elif defined(__linux__) || defined(__APPLE__)
-            void* libraryHandle = dlopen(libraryPath.c_str(), RTLD_LAZY);
+        void* libraryHandle = dlopen(libraryPath.c_str(), RTLD_LAZY);
 #endif
 
-            if (!libraryHandle) {
-                error("Failed to open the library. Please check if the library exists.");
-                return "ERROR_OPENING_LIBRARY";
-            }
+        if (!libraryHandle) {
+            error("Failed to open the library. Please check if the library exists.");
+            return command;
+        }
 
-            // 라이브러리에서 함수 로드
+        const auto startup =
+#ifdef _WIN32
+                reinterpret_cast<startup_t>(GetProcAddress(libraryHandle, "startup"));
+#elif defined(__APPLE__) || defined(__linux__)
+                    reinterpret_cast<startup_t>(dlsym(libraryHandle, "startup"));
+#endif
+        if (startup) startup();
+
+        cmd_t cmd = [=](Workspace* ws, const map<string, string>&optionValues, const bool backgroundMode,
+                        const string&id) -> string {
             const auto entrypoint =
 #ifdef _WIN32
                     reinterpret_cast<entrypoint_t>(GetProcAddress(libraryHandle, "entrypoint"));
