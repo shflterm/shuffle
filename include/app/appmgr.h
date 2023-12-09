@@ -9,11 +9,15 @@
 
 #include <vector>
 #include <string>
+#include <memory>
+
+using std::vector, std::string, std::shared_ptr;
 
 namespace appmgr {
     class App {
     protected:
         App(const App&new_parent, const string&name);
+
         int apiVersion = -1;
 
     public:
@@ -42,6 +46,8 @@ namespace appmgr {
             return apiVersion;
         }
     };
+
+    extern vector<shared_ptr<App>> loadedApps;
 
     void loadApp(const string&name);
 

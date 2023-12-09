@@ -21,7 +21,7 @@ path Workspace::currentDirectory() const {
     return absolute(path(dir));
 }
 
-void Workspace::moveDirectory(const path& newDir) {
+void Workspace::moveDirectory(const path&newDir) {
     const path path = absolute(dir / newDir);
     if (!is_directory(path)) {
         error("Directory '$0' not found.", {path.string()});
@@ -140,19 +140,23 @@ shared_ptr<Job> Workspace::createJob(string&input) {
     return parsed;
 }
 
-string Workspace::prompt() const {
+string Workspace::prompt(bool fullPath) const {
     stringstream ss;
     if (!name.empty())
         ss << fg_yellow << "[" << name << "] ";
 
     const path dir = currentDirectory();
     ss << fg_cyan << "(";
-    if (dir == dir.root_path())
-        ss << dir.root_name().string();
-    else if (dir.parent_path() == dir.root_path())
-        ss << dir.root_name().string() << "/" << dir.filename().string();
-    else
-        ss << dir.root_name().string() << "/.../" << dir.filename().string();
+    if (fullPath)
+        ss << dir.string();
+    else {
+        if (dir == dir.root_path())
+            ss << dir.root_name().string();
+        else if (dir.parent_path() == dir.root_path())
+            ss << dir.root_name().string() << "/" << dir.filename().string();
+        else
+            ss << dir.root_name().string() << "/.../" << dir.filename().string();
+    }
     ss << ")";
 
     ss << fg_yellow << " \u2192 " << reset;
@@ -211,11 +215,16 @@ void Workspace::inputPrompt() {
                 return;
             }
             case '\t': {
-                string suggestion = getSuggestion(*this, input);
-                if (suggestion[0] == '<' && suggestion.back() == '>') break;
+                if (input.empty()) {
+                    cout << teleport(0, wherey()) << erase_line << prompt(true);
+                }
+                else {
+                    string suggestion = getSuggestion(*this, input);
+                    if (suggestion[0] == '<' && suggestion.back() == '>') break;
 
-                input += suggestion;
-                cout << "\033[0m" << suggestion;
+                    input += suggestion;
+                    cout << "\033[0m" << suggestion;
+                }
                 break;
             }
 #ifdef _WIN32

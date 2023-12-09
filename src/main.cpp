@@ -1,3 +1,4 @@
+#include <appmgr.h>
 #include <iostream>
 #include <filesystem>
 #include <csignal>
@@ -105,6 +106,12 @@ void loadProponents() {
     registerProponent(Proponent(
         "command", [](Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
             return getSuggestion(*ws, args[cur]);
+    }));
+    registerProponent(Proponent(
+        "app", [](Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            vector<string> apps;
+            for (const auto loaded_app : appmgr::loadedApps) apps.push_back(loaded_app->name);
+            return findSuggestion(*ws, args[cur], apps)[0];
         }));
 }
 
