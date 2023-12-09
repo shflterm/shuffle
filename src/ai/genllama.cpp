@@ -105,7 +105,8 @@ string generateResponse(const string&prompt) {
 
     const auto t_main_start = ggml_time_us();
 
-    std::cout << erase_line;
+    warning("Generating response, this may take a few seconds. (Almost done!)");
+    string res = "";
     while (true) {
         // sample the next token
         {
@@ -126,14 +127,14 @@ string generateResponse(const string&prompt) {
 
             // is it an end of stream?
             if (new_token_id == llama_token_eos(model) || n_cur == n_len) {
-                LOG_TEE("\n");
+                res += "\n";
                 break;
             }
 
-            string next = llama_token_to_piece(ctx, new_token_id).c_str();
+            string next = llama_token_to_piece(ctx, new_token_id);
             next = replace(next, ">", reset);
             next = replace(next, "<", bgb_black);
-            LOG_TEE("%s", next.c_str());
+            res += next;
 
             // prepare the next batch
             llama_batch_clear(batch);
@@ -153,4 +154,5 @@ string generateResponse(const string&prompt) {
             return "ERROR";
         }
     }
+    return res;
 }
