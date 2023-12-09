@@ -321,9 +321,9 @@ void Workspace::inputPrompt() {
             case '#': {
                 cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
                 cout << erase_cursor_to_end;
-                cout << fg_yellow << "# " << reset;
-                string command;
-                getline(cin, command);
+                cout << fg_yellow << "# " << reset ;
+                string prompt;
+                getline(cin, prompt);
 
                 warning("Shuffle AI(Beta) is working... (this may take a while)");
                 cout << teleport(wherex(), wherey() - 1);
@@ -331,7 +331,7 @@ void Workspace::inputPrompt() {
                 string docs;
                 for (const auto&command: commands) docs += writeDocs(command);
 
-                string res = shflai::generateResponse(command, docs);
+                string res = shflai::generateResponse(prompt, docs);
                 cout << teleport(wherex(), wherey() - 1) << erase_line;
 
                 string newRes;
