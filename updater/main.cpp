@@ -39,26 +39,14 @@ bool installNativeApps() {
 }
 
 int main(int argc, char** argv) {
-    if (argc < 2 || argv[1] != "nvidia") {
-        cout << "Usage: " << argv[0] << " [Your GPU]" << endl
-                << "Supported GPU: nvidia" << endl;
-        return 1;
-    }
-
-    string gpu = argv[1];
-    if (gpu != "nvidia") {
-        gpu = "default";
-    }
-
-    cout << SHUFFLE << endl
-            << "Installing Shuffle..." << endl;
+    cout << SHUFFLE << endl << "Installing Shuffle..." << endl;
     string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
 #ifdef _WIN32
-    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-windows-" + gpu + ".zip";
+    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-windows.zip";
 #elif defined(__linux__)
-    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-linux-" + gpu + ".zip";
+    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-linux-.zip";
 #elif defined(__APPLE__)
-    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-macos-" + gpu + ".zip";
+    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-macos-.zip";
 #endif
 
     const path updatePath(DOT_SHUFFLE / "bin");
