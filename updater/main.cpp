@@ -44,9 +44,9 @@ int main(int argc, char** argv) {
 #ifdef _WIN32
     string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-windows.zip";
 #elif defined(__linux__)
-    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-linux-.zip";
+    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-linux.zip";
 #elif defined(__APPLE__)
-    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-macos-.zip";
+    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-macos.zip";
 #endif
 
     const path updatePath(DOT_SHUFFLE / "bin");
