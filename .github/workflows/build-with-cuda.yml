@@ -46,8 +46,7 @@ jobs:
       - name: Install Packages
         run: ./vcpkg/vcpkg install
 
-      - uses: Jimver/cuda-toolkit@v0.2.4
-        id: cuda-toolkit
+      - uses: unimonkiez/cuda-toolkit@v0.2.5
         with:
           cuda: '11.2.2'
       
