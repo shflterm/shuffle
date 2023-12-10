@@ -1,4 +1,4 @@
-name: Build Shuffle
+name: Build Shuffle (CUDA)
 
 on:
   push:
