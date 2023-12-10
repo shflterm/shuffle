@@ -1,3 +1,5 @@
+#define NOMINMAX
+
 #include "utils/utils.h"
 
 #include <iostream>
@@ -77,7 +79,7 @@ int levenshteinDist(const string&str1, const string&str2) {
                 dp[i][j] = dp[i - 1][j - 1];
             }
             else {
-                dp[i][j] = 1 + min(min(dp[i - 1][j], dp[i][j - 1]), dp[i - 1][j - 1]);
+                dp[i][j] = 1 + std::min({dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]});
             }
         }
     }
@@ -154,7 +156,7 @@ int ProgressCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_o
     if (dltotal <= 0) return 0;
     auto* progress = static_cast<ProgressData *>(clientp);
 
-    const double percentage = static_cast<int>(static_cast<float>(dlnow) / static_cast<float>(dltotal) * 100);
+    const int percentage = static_cast<int>(static_cast<float>(dlnow) / static_cast<float>(dltotal) * 100);
     // if (percentage - progress->lastPercentage < 1.0) return 0;
 
     cout << erase_cursor_to_end << "Downloading... (" + to_string(percentage) + "%)" << teleport(0, wherey());
@@ -279,7 +281,7 @@ std::string generateRandomString(const int length) {
 
     std::random_device rd;
     std::mt19937 generator(rd());
-    std::uniform_int_distribution<int> distribution(0, characters.length() - 1);
+    std::uniform_int_distribution<> distribution(0, characters.length() - 1);
 
     std::string randomString;
     for (int i = 0; i < length; ++i) {
