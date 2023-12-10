@@ -33,7 +33,7 @@ bool installNativeApps() {
     bool appInstalled = true;
     for (const auto&item: root) {
         string name = item.asString();
-        if (!appmgr::installApp(name)) appInstalled = false;
+        if (!appmgr::installApp(name, false)) appInstalled = false;
     }
     return appInstalled;
 }

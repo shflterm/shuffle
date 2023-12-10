@@ -29,22 +29,25 @@ namespace appmgr {
         return result;
     }
 
-    bool installApp(string&name) {
+    bool installApp(string&name, bool checkLocalApp) {
         bool installed = false;
 
         const path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp");
 
-        const path localApp = currentWorkspace->currentDirectory() / name;
-        if (const path appShfl = localApp / "appmgr.shfl";
-            exists(localApp) && exists(appShfl)) {
-            name = path(name).filename().string();
-            info("Start downloading '" + name + "' from '" + absolute(localApp).parent_path().string() +
-                 "'...");
-            copy(absolute(localApp), absolute(appPath), copy_options::overwrite_existing | copy_options::recursive);
-            success("Load Completed!");
-            installed = true;
+        if (checkLocalApp) {
+            const path localApp = currentWorkspace->currentDirectory() / name;
+            if (const path appShfl = localApp / "appmgr.shfl";
+                exists(localApp) && exists(appShfl)) {
+                name = path(name).filename().string();
+                info("Start downloading '" + name + "' from '" + absolute(localApp).parent_path().string() +
+                     "'...");
+                copy(absolute(localApp), absolute(appPath), copy_options::overwrite_existing | copy_options::recursive);
+                success("Load Completed!");
+                installed = true;
+            }
         }
-        else {
+        
+        if (!installed) {
             const string downloadTo = temp_directory_path().append("appmgr.shflapp").string();
 
             info("Downloading Repository information...");
