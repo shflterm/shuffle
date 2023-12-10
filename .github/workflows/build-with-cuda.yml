@@ -46,8 +46,12 @@ jobs:
       - name: Install Packages
         run: ./vcpkg/vcpkg install
 
-      - name: Install CUDA Toolkit
-        uses: Jimver/cuda-toolkit@v0.2.4
+      - uses: Jimver/cuda-toolkit@v0.2.4
+        id: cuda-toolkit
+        with:
+          cuda: '11.2.2'
+      
+      - run: nvcc -V
 
       - name: Configure and Build
         run: |
