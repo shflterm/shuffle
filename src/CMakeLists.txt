@@ -32,4 +32,4 @@ target_include_directories(${PROJECT_NAME} PRIVATE ../shflai/include)
 
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ../include ../include/cmd ../include/app ../include/suggestion ../include/workspace ../include/utils)
+target_include_directories(${PROJECT_NAME} PRIVATE ../include ../include/cmd ../include/appmgr ../include/suggestion ../include/workspace ../include/utils)

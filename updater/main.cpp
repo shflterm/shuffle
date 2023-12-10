@@ -2,8 +2,9 @@
 #include <filesystem>
 #include <json/json.h>
 
-#include "utils.h"
-#include "console.h"
+#include "utils/utils.h"
+#include "utils/console.h"
+#include "appmgr/downloader.h"
 
 using std::cout, std::endl, std::vector, std::string, std::filesystem::exists, std::filesystem::create_directories,
         std::filesystem::remove,
@@ -31,28 +32,33 @@ bool installNativeApps() {
 
     bool appInstalled = true;
     for (const auto&item: root) {
-#if defined(__linux__) || defined(__APPLE__)
-        system(("chmod +x " + DOT_SHUFFLE.string() + "/bin/shuffle").c_str());
-        system((DOT_SHUFFLE.string() + "/bin/shuffle appmgr add " + item.asString()).c_str());
-#endif
-        if (const int status = system(
-                ((DOT_SHUFFLE / "bin/shuffle").string() + " appmgr add " + item.asString()).c_str());
-            status != 0)
-            appInstalled = false;
+        string name = item.asString();
+        if (!appmgr::installApp(name)) appInstalled = false;
     }
     return appInstalled;
 }
 
-int main() {
+int main(int argc, char** argv) {
+    if (argc < 2 || argv[1] != "nvidia") {
+        cout << "Usage: " << argv[0] << " [Your GPU]" << endl
+                << "Supported GPU: nvidia" << endl;
+        return 1;
+    }
+
+    string gpu = argv[1];
+    if (gpu != "nvidia") {
+        gpu = "default";
+    }
+
     cout << SHUFFLE << endl
             << "Installing Shuffle..." << endl;
     string latest = trim(readTextFromWeb("https://raw.githubusercontent.com/shflterm/shuffle/main/LATEST"));
 #ifdef _WIN32
-    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-windows.zip";
+    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-windows-" + gpu + ".zip";
 #elif defined(__linux__)
-    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-linux.zip";
+    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-linux-" + gpu + ".zip";
 #elif defined(__APPLE__)
-    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-macos.zip";
+    string url = "https://github.com/shflterm/shuffle/releases/download/" + latest + "/bin-macos-" + gpu + ".zip";
 #endif
 
     const path updatePath(DOT_SHUFFLE / "bin");
@@ -68,23 +74,26 @@ int main() {
     cout << teleport(0, wherey() - 1) << erase_line << "Installed!" << endl;
 
     extractZip(temp, updatePath);
-    cout << teleport(0, wherey() - 1) << erase_line << "Extracted!" << endl;
+    cout << teleport(0, wherey() - 1) << erase_cursor_to_end << "Extracted!" << endl;
 
-    cout << teleport(0, wherey() - 1) << erase_line << "Install native apps.." << endl;
-    bool appInstalled = installNativeApps();
-    if (!appInstalled) {
-        cout << teleport(0, wherey() - 1) << erase_line
-                << "Shuffle is installed, but the some default app is not installed"
-                << endl
-                << "After running Shuffle, you may need to manually install the default apps.";
-        return 1;
-    }
-    cout << erase_line << "Downloading AI Model.." << endl;
+    cout << erase_cursor_to_end << "Start to download AI Model!" << endl;
     if (!downloadFile(
         "https://huggingface.co/TheBloke/deepseek-coder-6.7B-instruct-GGUF/resolve/main/deepseek-coder-6.7b-instruct.Q4_K_M.gguf?download=true",
         (DOT_SHUFFLE / "ai" / "model.gguf").string())) {
         error("Failed to download AI Model.");
         return 1;
     }
+    cout << teleport(0, wherey()) << erase_cursor_to_end << "Downloaded!" << endl;
+
+    cout << erase_line << "Install native apps.." << endl;
+    const bool appInstalled = installNativeApps();
+    if (!appInstalled) {
+        cout << teleport(0, wherey() - 1) << erase_line
+                << "Shuffle is installed, but the some default appmgr is not installed"
+                << endl
+                << "After running Shuffle, you may need to manually install the default apps.";
+        return 1;
+    }
     cout << teleport(0, wherey() - 1) << erase_line << "Shuffle has been successfully installed!";
+    return 0;
 }

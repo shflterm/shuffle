@@ -50,17 +50,17 @@ jobs:
 
       - name: Configure and Build
         run: |
-          cmake -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{github.workspace}} -B ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+          cmake -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{github.workspace}} -B ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DLLAMA_CUBLAS=ON
           cmake --build ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}} --config ${{env.BUILD_TYPE}}
 
       - name: Upload Files
         uses: actions/upload-artifact@v3
         with:
-          name: build-${{ matrix.config.os }}-default
+          name: build-${{ matrix.config.os }}-cuda
           path: ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}/src/**
 
       - name: Upload Updater
         uses: actions/upload-artifact@v3
         with:
-          name: updater-${{ matrix.config.os }}-default
+          name: updater-${{ matrix.config.os }}-cuda
           path: ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}/updater/**

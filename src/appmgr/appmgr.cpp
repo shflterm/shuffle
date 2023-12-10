@@ -1,4 +1,4 @@
-#include "app/appmgr.h"
+#include "appmgr/appmgr.h"
 
 #include <iostream>
 #include <vector>
@@ -190,7 +190,7 @@ namespace appmgr {
 
     App::App(const string&name) {
         path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp");
-        path appShfl = appPath / "app.shfl";
+        path appShfl = appPath / "appmgr.shfl";
 
         Json::Value appRoot;
         Json::Reader appReader;

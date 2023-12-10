@@ -156,7 +156,7 @@ int progress_callback(void* clientp, const curl_off_t dltotal,
     if (lastPercent == percent) return 0;
 
     lastPercent = percent;
-    cout << erase_line << "Downloading... (" + to_string(percent) + "%)" << teleport(0, wherey());
+    cout << erase_cursor_to_end << "Downloading... (" + to_string(percent) + "%)" << teleport(0, wherey());
 
     return 0;
 }
@@ -187,7 +187,7 @@ bool downloadFile(const string&url, const string&file) {
 
 int onExtractEntry(const char* filename, void* arg) {
     if (const string name = path(filename).filename().string(); !name.empty()) {
-        cout << erase_line << "Extracting... (" << name << ")" << teleport(0, wherey() - 1) << endl;
+        cout << erase_cursor_to_end << "Extracting... (" << name << ")" << teleport(0, wherey() - 1) << endl;
     }
     return 0;
 }
@@ -195,7 +195,7 @@ int onExtractEntry(const char* filename, void* arg) {
 path extractZip(const path&zipFile, path extractPath) {
     int arg = 0;
     zip_extract(zipFile.string().c_str(), extractPath.string().c_str(), onExtractEntry, &arg);
-    cout << erase_line << "Extracting... (Done!)" << endl;
+    cout << erase_cursor_to_end << "Extracting... (Done!)" << endl;
     return extractPath;
 }
 
