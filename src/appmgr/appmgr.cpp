@@ -190,7 +190,7 @@ namespace appmgr {
 
     App::App(const string&name) {
         path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp");
-        path appShfl = appPath / "appmgr.shfl";
+        path appShfl = appPath / "app.shfl";
 
         Json::Value appRoot;
         Json::Reader appReader;

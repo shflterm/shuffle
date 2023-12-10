@@ -36,7 +36,7 @@ namespace appmgr {
 
         if (checkLocalApp) {
             const path localApp = currentWorkspace->currentDirectory() / name;
-            if (const path appShfl = localApp / "appmgr.shfl";
+            if (const path appShfl = localApp / "app.shfl";
                 exists(localApp) && exists(appShfl)) {
                 name = path(name).filename().string();
                 info("Start downloading '" + name + "' from '" + absolute(localApp).parent_path().string() +
@@ -48,7 +48,7 @@ namespace appmgr {
         }
         
         if (!installed) {
-            const string downloadTo = temp_directory_path().append("appmgr.shflapp").string();
+            const string downloadTo = temp_directory_path().append("app.shflapp").string();
 
             info("Downloading Repository information...");
             for (const auto&repoUrl: getRepos()) {

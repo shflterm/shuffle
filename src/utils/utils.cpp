@@ -24,7 +24,7 @@ using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, st
 string pythonPlatform;
 
 vector<string> splitBySpace(const string&input) {
-    std::regex regex_pattern(R"((\S|^)\"[^"]*"|\([^)]*\)|"[^"]*"|\S+)");
+    std::regex regex_pattern(R"((\S|^)\"[^"]*"|\([^)]*(\)*)|"[^"]*"|\S+)");
     std::vector<std::string> tokens;
 
     auto words_begin = std::sregex_iterator(input.begin(), input.end(), regex_pattern);
