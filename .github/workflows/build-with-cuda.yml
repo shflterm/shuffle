@@ -48,9 +48,6 @@ jobs:
 
       - name: Install CUDA Toolkit
         uses: Jimver/cuda-toolkit@v0.2.4
-        id: cuda-toolkit
-        with:
-          cuda: '12.3.1'
 
       - name: Configure and Build
         run: |
