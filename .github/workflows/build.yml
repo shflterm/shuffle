@@ -56,11 +56,11 @@ jobs:
       - name: Upload Files
         uses: actions/upload-artifact@v3
         with:
-          name: build-${{ matrix.config.os }}
+          name: build-${{ matrix.config.os }}-default
           path: ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}/src/**
 
       - name: Upload Updater
         uses: actions/upload-artifact@v3
         with:
-          name: updater-${{ matrix.config.os }}
+          name: updater-${{ matrix.config.os }}-default
           path: ${{github.workspace}}/${{env.VCPKG_INSTALL_DIR}}/updater/**

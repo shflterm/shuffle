@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <suggestion/proponent.h>
+#include <utils/console.h>
 
 using std::vector, std::string, cmd::Command, cmd::commands, cmd::findCommand;
 
@@ -81,7 +82,9 @@ namespace suggestion {
                 Proponent proponent = findProponent(option.type);
                 suggestion = proponent.makeProp(&ws, option, args, cur - 1);
             }
-            else if (spl[cur][0] == '-') {
+            if (!suggestion.empty()) return suggestion;
+
+            if (spl[cur][0] == '-') {
                 // Find unused options
                 vector<string> dict;
                 for (const auto&item: cmd->getOptions()) {

@@ -10,7 +10,7 @@
 using std::string;
 
 namespace appmgr {
-    bool installApp(string&name);
+    bool installApp(string&name, bool checkLocalApp = true);
 
     bool removeApp(const string&name);
 

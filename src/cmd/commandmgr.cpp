@@ -3,8 +3,7 @@
 #include <memory>
 #include <utility>
 
-#include "app/appmgr.h"
-#include "utils/console.h"
+#include "appmgr/appmgr.h"
 #include "workspace/workspace.h"
 
 using std::make_shared;

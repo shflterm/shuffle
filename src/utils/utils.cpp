@@ -24,7 +24,7 @@ using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, st
 string pythonPlatform;
 
 vector<string> splitBySpace(const string&input) {
-    std::regex regex_pattern(R"((\S|^)\"[^"]*"|\([^)]*\)|"[^"]*"|\S+)");
+    std::regex regex_pattern(R"((\S|^)\"[^"]*"|\([^)]*(\)*)|"[^"]*"|\S+)");
     std::vector<std::string> tokens;
 
     auto words_begin = std::sregex_iterator(input.begin(), input.end(), regex_pattern);
@@ -144,50 +144,75 @@ string readTextFromWeb(const string&url) {
     return response;
 }
 
-int lastPercent = -1;
+struct ProgressData {
+    double lastPercentage;
+};
 
-// ReSharper disable once CppDFAConstantFunctionResult
-int progress_callback(void* clientp, const curl_off_t dltotal,
-                      const curl_off_t dlnow, curl_off_t ultotal,
-                      curl_off_t ulnow) {
-    if (dltotal == 0) return 0;
+size_t WriteCallback(const void* ptr, const size_t size, const size_t nmemb, FILE* stream) {
+    return fwrite(ptr, size, nmemb, stream);
+}
 
-    const int percent = static_cast<int>(static_cast<float>(dlnow) / static_cast<float>(dltotal) * 100);
-    if (lastPercent == percent) return 0;
+int ProgressCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
+    if (dltotal <= 0) return 0;
+    auto* progress = static_cast<ProgressData *>(clientp);
 
-    lastPercent = percent;
-    cout << erase_line << "Downloading... (" + to_string(percent) + "%)" << teleport(0, wherey());
+    const int percentage = static_cast<int>(static_cast<float>(dlnow) / static_cast<float>(dltotal) * 100);
+    // if (percentage - progress->lastPercentage < 1.0) return 0;
+
+    cout << erase_cursor_to_end << "Downloading... (" + to_string(percentage) + "%)" << teleport(0, wherey());
+    progress->lastPercentage = percentage;
 
     return 0;
 }
 
-size_t write_data(const void* ptr, const size_t size, const size_t nmemb, FILE* stream) {
-    return fwrite(ptr, size, nmemb, stream);
-}
+bool downloadFile(const std::string&url, const path&file) {
+    create_directories(file.parent_path());
+    ProgressData progress = {0.0};
 
-bool downloadFile(const string&url, const string&file) {
-    if (const auto curl = curl_easy_init()) {
-        // ReSharper disable once CppDeprecatedEntity
-        FILE* fp = fopen(file.c_str(), "wb");
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, progress_callback);
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
-        curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
-        const CURLcode res = curl_easy_perform(curl);
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
+    if (CURL* curl = curl_easy_init()) {
+        CURLcode res;
+
+        if (FILE* fp = fopen(file.string().c_str(), "wb")) {
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
+            curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &progress);
+            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+            curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
+            curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
+
+            res = curl_easy_perform(curl);
+
+            fclose(fp);
+        }
+        else {
+            std::cerr << "Failed to open local file for writing." << std::endl;
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            return false;
+        }
+
+        if (res != CURLE_OK) {
+            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            return false;
+        }
 
         curl_easy_cleanup(curl);
-        fclose(fp);
-        return res == CURLE_OK;
+        curl_global_cleanup();
+        return true;
     }
+
     return false;
 }
 
 int onExtractEntry(const char* filename, void* arg) {
     if (const string name = path(filename).filename().string(); !name.empty()) {
-        cout << erase_line << "Extracting... (" << name << ")" << teleport(0, wherey() - 1) << endl;
+        cout << erase_cursor_to_end << "Extracting... (" << name << ")" << teleport(0, wherey() - 1) << endl;
     }
     return 0;
 }
@@ -195,7 +220,7 @@ int onExtractEntry(const char* filename, void* arg) {
 path extractZip(const path&zipFile, path extractPath) {
     int arg = 0;
     zip_extract(zipFile.string().c_str(), extractPath.string().c_str(), onExtractEntry, &arg);
-    cout << erase_line << "Extracting... (Done!)" << endl;
+    cout << erase_cursor_to_end << "Extracting... (Done!)" << endl;
     return extractPath;
 }
 
@@ -256,7 +281,7 @@ std::string generateRandomString(const int length) {
 
     std::random_device rd;
     std::mt19937 generator(rd());
-    std::uniform_int_distribution<int> distribution(0, characters.length() - 1);
+    std::uniform_int_distribution<> distribution(0, characters.length() - 1);
 
     std::string randomString;
     for (int i = 0; i < length; ++i) {

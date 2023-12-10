@@ -1,4 +1,4 @@
-#include "app/downloader.h"
+#include "appmgr/downloader.h"
 
 #include <iostream>
 #include <string>
@@ -8,7 +8,7 @@
 #include "utils/console.h"
 #include "utils/shfljson.h"
 #include "utils/utils.h"
-#include "app/appmgr.h"
+#include "appmgr/appmgr.h"
 
 using std::cout, std::to_string, std::filesystem::path, std::filesystem::temp_directory_path, std::filesystem::exists,
         std::filesystem::remove_all, std::filesystem::copy_options, appmgr::addApp;
@@ -29,22 +29,25 @@ namespace appmgr {
         return result;
     }
 
-    bool installApp(string&name) {
+    bool installApp(string&name, bool checkLocalApp) {
         bool installed = false;
 
         const path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp");
 
-        const path localApp = currentWorkspace->currentDirectory() / name;
-        if (const path appShfl = localApp / "app.shfl";
-            exists(localApp) && exists(appShfl)) {
-            name = path(name).filename().string();
-            info("Start downloading '" + name + "' from '" + absolute(localApp).parent_path().string() +
-                 "'...");
-            copy(absolute(localApp), absolute(appPath), copy_options::overwrite_existing | copy_options::recursive);
-            success("Load Completed!");
-            installed = true;
+        if (checkLocalApp) {
+            const path localApp = currentWorkspace->currentDirectory() / name;
+            if (const path appShfl = localApp / "app.shfl";
+                exists(localApp) && exists(appShfl)) {
+                name = path(name).filename().string();
+                info("Start downloading '" + name + "' from '" + absolute(localApp).parent_path().string() +
+                     "'...");
+                copy(absolute(localApp), absolute(appPath), copy_options::overwrite_existing | copy_options::recursive);
+                success("Load Completed!");
+                installed = true;
+            }
         }
-        else {
+        
+        if (!installed) {
             const string downloadTo = temp_directory_path().append("app.shflapp").string();
 
             info("Downloading Repository information...");
@@ -82,14 +85,14 @@ namespace appmgr {
         }
 
         if (!installed) {
-            error("The app could not be found in the repository.");
+            error("The appmgr could not be found in the repository.");
             return false;
         }
 
         info("Adding to config...");
 
         if (!addApp(name)) {
-            error("Failed to add app. (The app has already been added.)");
+            error("Failed to add appmgr. (The appmgr has already been added.)");
             return false;
         }
 
@@ -112,7 +115,7 @@ namespace appmgr {
                 }
             }
             if (!removed) {
-                error("Failed to remove app.");
+                error("Failed to remove appmgr.");
                 return false;
             }
             setShflJson("apps", json);

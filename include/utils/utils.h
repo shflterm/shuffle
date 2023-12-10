@@ -39,7 +39,7 @@ void writeFile(const path&path, const string&value);
 
 string readTextFromWeb(const string&url);
 
-bool downloadFile(const string&url, const string&file);
+bool downloadFile(const string&url, const path&file);
 
 path extractZip(const path&zipFile, path extractPath);
 

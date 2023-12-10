@@ -6,8 +6,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_executable(${PROJECT_NAME} ${SOURCES} main.cpp)
 
-add_dependencies(${PROJECT_NAME} utils)
-target_link_libraries(${PROJECT_NAME} PRIVATE utils)
+add_dependencies(${PROJECT_NAME} utils appmgr)
+target_link_libraries(${PROJECT_NAME} PRIVATE utils appmgr)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 
@@ -19,4 +19,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE kubazip::kubazip)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ../include ../include/cmd ../include/app ../include/suggestion ../include/workspace ../include/utils)
+target_include_directories(${PROJECT_NAME} PRIVATE ../include)

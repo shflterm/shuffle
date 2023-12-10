@@ -3,8 +3,8 @@
 #include <iostream>
 #include <memory>
 
-#include "app/appmgr.h"
-#include "app/downloader.h"
+#include "appmgr/appmgr.h"
+#include "appmgr/downloader.h"
 #include "cmd/job.h"
 #include "utils/console.h"
 #include "utils/credit.h"
@@ -45,15 +45,15 @@ string shflCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
 }
 
 string appMgrAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    return installApp(options["app"]) ? "true" : "false";
+    return installApp(options["appmgr"]) ? "true" : "false";
 }
 
 string appMgrRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    return removeApp(options["app"]) ? "true" : "false";
+    return removeApp(options["appmgr"]) ? "true" : "false";
 }
 
 string appMgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    // print all app infos
+    // print all appmgr infos
     if (!bgMode) {
         for (const auto& app: appmgr::loadedApps) {
             cout << app->name << ": " << app->description << " (by " << app->author << ")" << endl;
@@ -210,12 +210,12 @@ void loadCommands() {
     commands.push_back(make_shared<Command>(Command(
         "appmgr", "App Manager", {
             Command("add", "Get new apps from the repository.", {
-                        CommandOption("app", "", "text")
+                        CommandOption("appmgr", "", "text")
                     }, {
                         "appmgr add textutilities", "appmgr add filesystem", "appmgr add /path/to/myapp"
                     }, appMgrAddCmd),
-            Command("remove", "Delete the app from your device.", {
-                        CommandOption("app", "", "text")
+            Command("remove", "Delete the appmgr from your device.", {
+                        CommandOption("appmgr", "", "text")
                     }, {"appmgr remove textutilities", "appmgr remove filesystem", "appmgr remove myapp"},
                     appMgrRemoveCmd),
             Command("list", "List all apps.", {"appmgr list"},
