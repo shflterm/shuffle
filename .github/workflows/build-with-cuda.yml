@@ -21,8 +21,6 @@ jobs:
             configure: .\vcpkg\bootstrap-vcpkg.bat
           - os: ubuntu
             configure: ./vcpkg/bootstrap-vcpkg.sh
-          - os: macos
-            configure: ./vcpkg/bootstrap-vcpkg.sh
 
     steps:
       - name: Checkout Repository
@@ -47,6 +45,12 @@ jobs:
 
       - name: Install Packages
         run: ./vcpkg/vcpkg install
+
+      - name: Install CUDA Toolkit
+        uses: Jimver/cuda-toolkit@v0.2.4
+        id: cuda-toolkit
+        with:
+          cuda: '12.3.1'
 
       - name: Configure and Build
         run: |
