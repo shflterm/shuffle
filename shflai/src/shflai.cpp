@@ -44,7 +44,7 @@ namespace shflai {
             "I'll teach you how to use variables. To assign a value to a variable, use \"VAR_NAME = VALUE\". You can enter text, variables, or commands in VALUE. Text can be executed as \"TEXT\". Quotes Without it, variables are displayed as \"$VAR_NAME\" and commands are displayed as \"(COMMAND)!\" (Commands can be used by enclosing their arguments in parentheses!) For example, \"a = text\" (save \"text in a variable called a)\", \"b = $a\" (store the value of variable a in b), \"c = (capitalize $a)! \"(execute $a in uppercase and store result in c), etc."
             "Here is shuffle command help: {DOCS}";
 
-    string generateResponse(const string&prompt, const string&docs) {
+    void generateResponse(const string&prompt, const string&docs) {
         gpt_params params;
         params.prompt = promptTemplete;
         params.prompt = replaceAll(params.prompt, "{system}", replaceAll(systemPrompt, "{DOCS}", docs));
@@ -56,7 +56,6 @@ namespace shflai {
 
         if (model == nullptr) {
             fprintf(stderr, "%s: AI not loaded\n", __func__);
-            return "AI NOT LOADED";
         }
 
         llama_context_params ctx_params = llama_context_default_params();
@@ -81,7 +80,6 @@ namespace shflai {
         if (n_kv_req > n_ctx) {
             LOG_TEE("%s: error: n_kv_req > n_ctx, the required KV cache size is not big enough\n", __func__);
             LOG_TEE("%s:        either reduce n_len or increase n_ctx\n", __func__);
-            return "ERROR";
         }
 
         // create a llama_batch with size 512
@@ -97,7 +95,6 @@ namespace shflai {
 
         if (llama_decode(ctx, batch) != 0) {
             LOG_TEE("%s: llama_decode() failed\n", __func__);
-            return "ERROR";
         }
 
         // main loop
@@ -108,7 +105,7 @@ namespace shflai {
         const auto t_main_start = ggml_time_us();
 
         std::cout << "\033[33mGenerating response, this may take a few seconds. (Almost done!)\033[0m" << std::endl;
-        string res;
+        bool codeOpened = false;
         while (true) {
             // sample the next token
             {
@@ -129,16 +126,29 @@ namespace shflai {
 
                 // is it an end of stream?
                 if (new_token_id == llama_token_eos(model) || n_cur == n_len) {
-                    res += "\n";
+                    LOG_TEE("\n");
                     break;
                 }
 
                 string next = llama_token_to_piece(ctx, new_token_id);
-                if (next == "<|im_end|>") break;
 
                 next = replaceAll(next, "}", "\033[0m");
                 next = replaceAll(next, "{", "\033[100m");
-                res += next;
+                next = replaceAll(next, "<0x0A>", "\n");
+                next = replaceAll(next, "`shuffle", "`");
+                next = replaceAll(next, "`sh", "`");
+                next = replaceAll(next, "`bash", "`");
+                string newRes;
+                for (char ch: next) {
+                    if (ch == '`') {
+                        if (codeOpened) newRes += "\033[0m";
+                        else newRes += "\033[100m";
+
+                        codeOpened = !codeOpened;
+                    }
+                    else newRes += ch;
+                }
+                LOG_TEE("%s", newRes.c_str());
 
                 // prepare the next batch
                 llama_batch_clear(batch);
@@ -155,13 +165,8 @@ namespace shflai {
             // evaluate the current batch with the transformer model
             if (llama_decode(ctx, batch)) {
                 fprintf(stderr, "%s : failed to eval, return code %d\n", __func__, 1);
-                return "ERROR";
+                return;
             }
         }
-        res = replaceAll(res, "<0x0A>", "\n");
-        res = replaceAll(res, "`shuffle", "`");
-        res = replaceAll(res, "`sh", "`");
-        res = replaceAll(res, "`bash", "`");
-        return res;
     }
 }
