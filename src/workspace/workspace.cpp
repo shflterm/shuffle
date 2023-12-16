@@ -5,6 +5,7 @@
 #include <map>
 #include <sstream>
 
+#include "appmgr/appmgr.h"
 #include "../../shflai/include/shflai.h"
 #include "cmd/cmdparser.h"
 #include "cmd/job.h"
@@ -14,7 +15,7 @@
 #include "workspace/snippetmgr.h"
 
 using std::cout, std::endl, std::cin, std::stringstream, std::make_shared, std::map, job::Job, cmd::Command,
-        cmd::commands, suggestion::getSuggestion, suggestion::getHint;
+        suggestion::getSuggestion, suggestion::getHint;
 
 map<string, Workspace *> wsMap;
 
@@ -214,7 +215,7 @@ void Workspace::inputPrompt() {
                         vector<string> inSpl = splitBySpace(input);
                         error("Sorry. Command '$0' not found.", {inSpl[0]});
                         pair similarWord = {1000000000, Command("")};
-                        for (const auto&cmd: commands) {
+                        for (const auto&cmd: appmgr::getCommands()) {
                             if (int dist = levenshteinDist(inSpl[0], cmd->getName());
                                 dist < similarWord.first)
                                 similarWord = {dist, *cmd};
@@ -330,14 +331,14 @@ void Workspace::inputPrompt() {
             case '#': {
                 cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
                 cout << erase_cursor_to_end;
-                cout << fg_yellow << "# " << reset ;
+                cout << fg_yellow << "# " << reset;
                 string prompt;
                 getline(cin, prompt);
 
                 warning("Shuffle AI(Beta) is working... (this may take a while)");
 
                 string docs;
-                for (const auto&command: commands) docs += writeDocs(command);
+                for (const auto&command: appmgr::getCommands()) docs += writeDocs(command);
 
                 string res = shflai::generateResponse(prompt, docs);
 

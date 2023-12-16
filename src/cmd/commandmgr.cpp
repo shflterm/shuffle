@@ -13,8 +13,6 @@ string do_nothing(Workspace* ws, map<string, string>&options, const bool bgMode,
 }
 
 namespace cmd {
-    vector<shared_ptr<Command>> commands;
-
     shared_ptr<Command> findCommand(const string&name, const vector<shared_ptr<Command>>&DICTIONARY) {
         for (auto&item: DICTIONARY) {
             if (item->getName() == name) {
@@ -25,7 +23,7 @@ namespace cmd {
     }
 
     shared_ptr<Command> findCommand(const string&name) {
-        return findCommand(name, commands);
+        return findCommand(name, appmgr::getCommands());
     }
 
     const string& Command::getName() const {

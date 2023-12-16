@@ -14,9 +14,9 @@
 #include "version.h"
 
 using std::cout, std::endl, std::make_shared,
-        cmd::Command, cmd::CommandOption, cmd::commands, cmd::findCommand,
+        cmd::Command, cmd::CommandOption, cmd::findCommand,
         appmgr::loadApp, appmgr::unloadAllApps,appmgr::getApps, appmgr::installApp, appmgr::removeApp, appmgr::addRepo,
-        appmgr::removeRepo;
+        appmgr::removeRepo, appmgr::App;
 
 string shflReloadCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
     if (!bgMode) info("Reloading command...");
@@ -56,7 +56,7 @@ string appMgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, co
     // print all appmgr infos
     if (!bgMode) {
         for (const auto& app: appmgr::loadedApps) {
-            cout << app->name << ": " << app->description << " (by " << app->author << ")" << endl;
+            cout << app->name << " v" << app->getVersion() << ": " << app->description << " (by " << app->author << ")" << endl;
         }
     }
     return std::to_string(appmgr::loadedApps.size());
@@ -80,7 +80,7 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
         cout << "== Shuffle Help ==" << endl
                 << "Version: " << SHUFFLE_VERSION.str() << endl << endl
                 << "Commands: " << endl;
-        for (const auto&item: commands) {
+        for (const auto&item: appmgr::getCommands()) {
             if (auto command = *item; command.getDescription() != "-") {
                 cout << "  " << command.getName() << " : " << command.getDescription()
                         << endl;
@@ -195,9 +195,10 @@ string taskListCmd(Workspace* ws, map<string, string>&options, const bool bgMode
 }
 
 void loadCommands() {
-    commands.clear();
+    unloadAllApps();
 
-    commands.push_back(make_shared<Command>(Command(
+    vector<shared_ptr<Command>> builtinCommands;
+     builtinCommands.push_back(make_shared<Command>(Command(
         "shfl", "Shuffle Command", {
             Command("reload", "Reload all commands.",
                     {"shfl reload"}, shflReloadCmd),
@@ -207,7 +208,7 @@ void loadCommands() {
                     {"shfl credits"}, shflCreditsCmd),
         }, {"shfl"}, shflCmd
     )));
-    commands.push_back(make_shared<Command>(Command(
+    builtinCommands.push_back(make_shared<Command>(Command(
         "appmgr", "App Manager", {
             Command("add", "Get new apps from the repository.", {
                         CommandOption("appmgr", "", "text")
@@ -231,7 +232,7 @@ void loadCommands() {
                     }, {"appmgr repo"}, do_nothing),
         }, {"appmgr"}, appMgrCmd
     )));
-    commands.push_back(make_shared<Command>(Command(
+    builtinCommands.push_back(make_shared<Command>(Command(
         "help", "Show help", {
             CommandOption("command", "", "command", {"cmd", "help"})
         }, {"help", "help shfl", "help appmgr"}, helpCmd
@@ -242,10 +243,10 @@ void loadCommands() {
     //         CommandOption("value", "", TEXT_T, {"v"}),
     //     }, {"snf create sayhello echo Hi!"}, snippetCmd
     // )));
-    commands.push_back(make_shared<Command>(Command(
+    builtinCommands.push_back(make_shared<Command>(Command(
         "clear", "Clear everything", {"clear"}, clearCmd
     )));
-    commands.push_back(make_shared<Command>(Command(
+    builtinCommands.push_back(make_shared<Command>(Command(
         "task", "Manage background tasks", {
             Command("start", "Start a new background task.", {
                         CommandOption("job", "", "command")
@@ -256,9 +257,10 @@ void loadCommands() {
             Command("list", "List tasks", {"task list"}, taskListCmd),
         }, {"task"}, do_nothing
     )));
+    auto builtinApp = App("shuffle", "Shuffle built-in app", "Shuffle", SHUFFLE_VERSION.str().substr(1), builtinCommands);
+    loadApp(make_shared<App>(builtinApp));
 
-    unloadAllApps();
     for (const string&appName: getApps()) {
-        loadApp(appName);
+        loadApp(make_shared<App>(appName));
     }
 }
