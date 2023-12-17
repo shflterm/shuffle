@@ -32,23 +32,10 @@ namespace shflai {
         return true;
     }
 
-    string promptTemplete =
-            "{system}\n"
-            "### Instruction:\n"
-            "{prompt}\n"
-            "### Response:\n";
-
-    string systemPrompt =
-            "You are an AI programming assistant that helps you easily use the shell called 'Shuffle'. Shuffle can only use Shuffle's special commands."
-            "Based on this question, it analyzes the user's question and answers only the necessary commands in one line. Answers must be enclosed in `` (e.g. `help`, `cdir`). Your answer must be complete, including all arguments. Answers can be written as commands or variable declarations. You should then check the help to see if the command exists. Your answer must include commands and arguments. Or you can declare a variable."
-            "I'll teach you how to use variables. To assign a value to a variable, use \"VAR_NAME = VALUE\". You can enter text, variables, or commands in VALUE. Text can be executed as \"TEXT\". Quotes Without it, variables are displayed as \"$VAR_NAME\" and commands are displayed as \"(COMMAND)!\" (Commands can be used by enclosing their arguments in parentheses!) For example, \"a = text\" (save \"text in a variable called a)\", \"b = $a\" (store the value of variable a in b), \"c = (capitalize $a)! \"(execute $a in uppercase and store result in c), etc."
-            "Here is shuffle command help: {DOCS}";
-
-    void generateResponse(const string&prompt, const string&docs) {
+    void generateResponse(const string&prompt, const string&instruction) {
         gpt_params params;
-        params.prompt = promptTemplete;
-        params.prompt = replaceAll(params.prompt, "{system}", replaceAll(systemPrompt, "{DOCS}", docs));
-        params.prompt = replaceAll(params.prompt, "{prompt}", prompt + " in 'Shuffle'");
+        params.prompt = instruction +
+            "[INST]" + prompt + "[/INST]";
         params.sparams.penalty_repeat = 1.1f;
         params.sparams.temp = 0.7f;
 

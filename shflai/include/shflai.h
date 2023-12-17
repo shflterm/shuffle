@@ -12,7 +12,7 @@ using std::string;
 namespace shflai {
     bool loadAiModel(const string&modelPath);
 
-    void generateResponse(const string&prompt, const string& docs);
+    void generateResponse(const string&prompt, const string& instruction);
 }
 
 #endif //GENLLAMA_CPP_H

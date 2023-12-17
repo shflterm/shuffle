@@ -55,7 +55,7 @@ string appMgrRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, 
 string appMgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     // print all appmgr infos
     if (!bgMode) {
-        for (const auto& app: appmgr::loadedApps) {
+        for (const auto&app: appmgr::loadedApps) {
             cout << app->name << ": " << app->description << " (by " << app->author << ")" << endl;
         }
     }
@@ -114,7 +114,7 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
 
     string examples;
     for (const auto&item: cmd->getExamples()) {
-        examples += "\n  - " + item;
+        examples += "\n  - `" + item.command + "` : " + item.whatItDoes;
     }
 
     cout << "== About '" << cmd->getName() << "' ==" << endl;
@@ -200,41 +200,75 @@ void loadCommands() {
     commands.push_back(make_shared<Command>(Command(
         "shfl", "Shuffle Command", {
             Command("reload", "Reload all commands.",
-                    {"shfl reload"}, shflReloadCmd),
+                    {
+                        {"shfl reload", "Reload all commands."}
+                    }, shflReloadCmd),
             Command("upgrade", "Upgrade Shuffle to a new version.",
-                    {"shfl upgrade"}, shflUpgradeCmd),
+                    {
+                        {"shfl upgrade", "Upgrade Shuffle to a new version."}
+                    }, shflUpgradeCmd),
             Command("credits", "Shuffle Credits",
-                    {"shfl credits"}, shflCreditsCmd),
-        }, {"shfl"}, shflCmd
+                    {
+                        {"shfl credits", "Shuffle Credits"}
+                    }, shflCreditsCmd),
+        }, {}, shflCmd
     )));
     commands.push_back(make_shared<Command>(Command(
         "appmgr", "App Manager", {
             Command("add", "Get new apps from the repository.", {
                         CommandOption("appmgr", "", "text")
                     }, {
-                        "appmgr add textutilities", "appmgr add filesystem", "appmgr add /path/to/myapp"
+                        {
+                            "appmgr add textutilities",
+                            "Download and add the app 'textutilities' from a known repository."
+                        },
+                        {"appmgr add filesystem", "Download and add the app 'filesystem' from a known repository."},
+                        {"appmgr add /path/to/myapp", "Add the app 'myapp' from a local file."}
                     }, appMgrAddCmd),
             Command("remove", "Delete the appmgr from your device.", {
                         CommandOption("appmgr", "", "text")
-                    }, {"appmgr remove textutilities", "appmgr remove filesystem", "appmgr remove myapp"},
+                    }, {
+                        {"appmgr remove textutilities", "Delete the app 'textutilities'."},
+                        {"appmgr remove filesystem", "Delete the app 'filesystem'."},
+                        {"appmgr remove myapp", "Delete the app 'myapp'."}
+                    },
                     appMgrRemoveCmd),
-            Command("list", "List all apps.", {"appmgr list"},
+            Command("list", "List all apps.", {
+                        {"appmgr list", "List all apps."}
+                    },
                     appMgrListCmd
             ),
             Command("repo", "Repository Management", {
                         Command("add", "Add Repository", {
                                     CommandOption("repo", "", "text")
-                                }, {"appmgr repo add https://example.com/shflrepo.json"}, appMgrRepoAddCmd),
+                                }, {
+                                    {
+                                        "appmgr repo add https://example.com/shflrepo.json",
+                                        "Add 'https://example.com/shflrepo.json' to known repositories."
+                                    }
+                                }, appMgrRepoAddCmd),
                         Command("remove", "Remove Repository", {
                                     CommandOption("repo", "", "text")
-                                }, {"appmgr repo remove https://example.com/shflrepo.json"}, appMgrRepoRemoveCmd)
-                    }, {"appmgr repo"}, do_nothing),
-        }, {"appmgr"}, appMgrCmd
+                                }, {
+                                    {
+                                        "appmgr repo remove https://example.com/shflrepo.json",
+                                        "Remove 'https://example.com/shflrepo.json' from known repositories."
+                                    }
+                                }, appMgrRepoRemoveCmd)
+                    }, {}, do_nothing),
+        }, {}, appMgrCmd
     )));
     commands.push_back(make_shared<Command>(Command(
         "help", "Show help", {
             CommandOption("command", "", "command", {"cmd", "help"})
-        }, {"help", "help shfl", "help appmgr"}, helpCmd
+        }, {
+            {
+                {"help", "Show help"},
+                {"help shfl", "Show help for 'shfl'"},
+                {"help shfl upgrade", "Show help for 'shfl upgrade'"},
+                {"help appmgr", "Show help for 'appmgr'"},
+            }
+        }, helpCmd
     )));
     // commands.push_back(make_shared<Command>(Command(
     //     "snf", "Manage Snippets", {
@@ -243,18 +277,29 @@ void loadCommands() {
     //     }, {"snf create sayhello echo Hi!"}, snippetCmd
     // )));
     commands.push_back(make_shared<Command>(Command(
-        "clear", "Clear everything", {"clear"}, clearCmd
+        "clear", "Clear everything", {
+            {"clear", "Clears all text to clear the screen."}
+        }, clearCmd
     )));
     commands.push_back(make_shared<Command>(Command(
         "task", "Manage background tasks", {
             Command("start", "Start a new background task.", {
                         CommandOption("job", "", "command")
-                    }, {"task start dwnld https://examples.com/largefile"}, taskStartCmd),
+                    }, {
+                        {
+                            "task start dwnld https://examples.com/largefile",
+                            "Start a new background task to 'dwnld https://examples.com/largefile'."
+                        }
+                    }, taskStartCmd),
             Command("log", "Print logs", {
                         CommandOption("taskId", "", "text")
-                    }, {"task log abcdefg12345"}, taskLogCmd),
-            Command("list", "List tasks", {"task list"}, taskListCmd),
-        }, {"task"}, do_nothing
+                    }, {
+                        {"task log abcdefg12345", "Print logs of the task 'abcdefg12345'."}
+                    }, taskLogCmd),
+            Command("list", "List tasks", {
+                        {"task list", "List tasks"}
+                    }, taskListCmd),
+        }, {}, do_nothing
     )));
 
     unloadAllApps();

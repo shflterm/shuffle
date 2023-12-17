@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
 
     cout << erase_cursor_to_end << "Start to download AI Model!" << endl;
     if (!downloadFile(
-        "https://huggingface.co/TheBloke/deepseek-coder-6.7B-instruct-GGUF/resolve/main/deepseek-coder-6.7b-instruct.Q4_K_M.gguf?download=true",
+        "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/mistral-7b-instruct-v0.2.Q4_K_M.gguf?download=true",
         (DOT_SHUFFLE / "ai" / "model.gguf").string())) {
         error("Failed to download AI Model.");
         return 1;

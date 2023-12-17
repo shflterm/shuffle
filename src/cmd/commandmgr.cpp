@@ -68,7 +68,7 @@ namespace cmd {
         return aliases;
     }
 
-    const vector<string>& Command::getExamples() const {
+    const vector<CommandExample>& Command::getExamples() const {
         return examples;
     }
 
@@ -79,7 +79,7 @@ namespace cmd {
     Command::Command(string name, string description, string usage,
                      const vector<shared_ptr<Command>>&subcommands, const vector<CommandOption>&options,
                      const vector<string>&aliases,
-                     const vector<string>&examples, cmd_t cmd): name(std::move(name)),
+                     const vector<CommandExample>&examples, cmd_t cmd): name(std::move(name)),
                                                                 description(std::move(description)),
                                                                 usage(std::move(usage)),
                                                                 subcommands(subcommands),
@@ -92,7 +92,7 @@ namespace cmd {
     Command::Command(string name, string description, string usage,
                      const vector<shared_ptr<Command>>&subcommands, const vector<CommandOption>&options,
                      const vector<string>&aliases,
-                     const vector<string>&examples): name(std::move(name)),
+                     const vector<CommandExample>&examples): name(std::move(name)),
                                                      description(std::move(description)),
                                                      usage(std::move(usage)),
                                                      subcommands(subcommands),
@@ -103,7 +103,7 @@ namespace cmd {
     }
 
     Command::Command(string name, string description, const vector<Command>&subcommands,
-                     const vector<CommandOption>&options, const vector<string>&examples, cmd_t cmd)
+                     const vector<CommandOption>&options, const vector<CommandExample>&examples, cmd_t cmd)
         : name(std::move(name)),
           description(std::move(description)),
           options(options),
@@ -113,7 +113,7 @@ namespace cmd {
         }
     }
 
-    Command::Command(string name, string description, const vector<Command>&subcommands, const vector<string>&examples,
+    Command::Command(string name, string description, const vector<Command>&subcommands, const vector<CommandExample>&examples,
                      cmd_t cmd)
         : name(std::move(name)),
           description(std::move(description)),
@@ -125,7 +125,7 @@ namespace cmd {
     }
 
     Command::Command(string name, string description, const vector<CommandOption>&options,
-                     const vector<string>&examples,
+                     const vector<CommandExample>&examples,
                      cmd_t cmd)
         : name(std::move(name)),
           description(std::move(description)),
@@ -133,7 +133,7 @@ namespace cmd {
           examples(examples), cmd(std::move(cmd)) {
     }
 
-    Command::Command(string name, string description, const vector<string>&examples, cmd_t cmd)
+    Command::Command(string name, string description, const vector<CommandExample>&examples, cmd_t cmd)
         : name(std::move(name)),
           description(std::move(description)),
           examples(examples),
@@ -156,5 +156,9 @@ namespace cmd {
           description(std::move(description)),
           type(std::move(type)),
           aliases(aliases) {
+    }
+
+    CommandExample::CommandExample(string command, string what_it_does): command(std::move(command)),
+                                                                         whatItDoes(std::move(what_it_does)) {
     }
 }
