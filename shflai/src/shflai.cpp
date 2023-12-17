@@ -35,7 +35,7 @@ namespace shflai {
     void generateResponse(const string&prompt, const string&instruction) {
         gpt_params params;
         params.prompt = instruction +
-            "[INST]" + prompt + "[/INST]";
+                        "[INST]" + prompt + "[/INST]";
         params.sparams.penalty_repeat = 1.1f;
         params.sparams.temp = 0.7f;
 
@@ -91,6 +91,8 @@ namespace shflai {
 
         const auto t_main_start = ggml_time_us();
 
+        string detectedEndSign;
+
         std::cout << "\033[33mGenerating response, this may take a few seconds. (Almost done!)\033[0m" << std::endl;
         bool codeOpened = false;
         while (true) {
@@ -118,24 +120,24 @@ namespace shflai {
                 }
 
                 string next = llama_token_to_piece(ctx, new_token_id);
+                if (next == "</") detectedEndSign = "</";
+                else if (detectedEndSign == "</" && next == "s") detectedEndSign = "</s";
+                else if (detectedEndSign == "</s" && next == ">") break;
+                else {
+                    detectedEndSign = "";
 
-                next = replaceAll(next, "}", "\033[0m");
-                next = replaceAll(next, "{", "\033[100m");
-                next = replaceAll(next, "<0x0A>", "\n");
-                next = replaceAll(next, "`shuffle", "`");
-                next = replaceAll(next, "`sh", "`");
-                next = replaceAll(next, "`bash", "`");
-                string newRes;
-                for (char ch: next) {
-                    if (ch == '`') {
-                        if (codeOpened) newRes += "\033[0m";
-                        else newRes += "\033[100m";
+                    string newRes;
+                    for (char ch: next) {
+                        if (ch == '`') {
+                            if (codeOpened) newRes += "\033[0m";
+                            else newRes += "\033[100m";
 
-                        codeOpened = !codeOpened;
+                            codeOpened = !codeOpened;
+                        }
+                        else newRes += ch;
                     }
-                    else newRes += ch;
+                    LOG_TEE("%s", newRes.c_str());
                 }
-                LOG_TEE("%s", newRes.c_str());
 
                 // prepare the next batch
                 llama_batch_clear(batch);
