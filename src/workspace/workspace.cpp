@@ -165,14 +165,14 @@ string Workspace::prompt(const bool fullPath) const {
     return ss.str();
 }
 
-string writeInstruction(const shared_ptr<Command>&command, const string&prefix = "") {
+string writeInstruction(const shared_ptr<Command>&command) {
     string instruction;
     for (const auto&example: command->getExamples()) {
         instruction += "<s>[INST]" + example.whatItDoes + "[/INST]"
                 + "Try this command: `" + example.command + "`</s>\n";
     }
     for (const auto&subcommand: command->getSubcommands()) {
-        instruction += writeInstruction(subcommand, prefix + command->getName() + " ");
+        instruction += writeInstruction(subcommand);
     }
 
     return instruction;
