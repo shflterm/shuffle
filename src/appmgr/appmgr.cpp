@@ -126,9 +126,9 @@ namespace appmgr {
         vector<string> aliases;
         for (const auto&alias: appInfo["aliases"]) aliases.push_back(alias.asString());
 
-        vector<string> examples;
-        for (const auto&example: appInfo["examples"]) examples.push_back(example.asString());
-        Command command = Command(name, description, usage, subcommands, options, aliases, examples);
+        vector<cmd::CommandExample> examples;
+        for (const auto&example: appInfo["examples"]) examples.emplace_back(example.asString(), "");
+        auto command = Command(name, description, usage, subcommands, options, aliases, examples);
 
         string libraryPath =
 #ifdef _WIN32
