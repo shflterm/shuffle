@@ -14,8 +14,7 @@
 #include "utils/console.h"
 #include "utils/shfljson.h"
 
-using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption,
-        cmd::commands;
+using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption;
 
 #ifdef _WIN32
 #define NOMINMAX 1
@@ -34,6 +33,16 @@ using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, 
 
 namespace appmgr {
     vector<shared_ptr<App>> loadedApps;
+
+    vector<shared_ptr<Command>> getCommands() {
+        vector<shared_ptr<Command>> res;
+        for (const auto&app: loadedApps) {
+            for (const auto&command: app->commands) {
+                res.push_back(command);
+            }
+        }
+        return res;
+    }
 
     // vector<string> App::makeDynamicSuggestion(Workspace&ws, const string&suggestId) const {
     //     // Create workspace table
@@ -183,7 +192,7 @@ namespace appmgr {
 
         Json::Value commandsJson = appRoot["commands"];
         for (const auto&commandInfo: commandsJson) {
-            commands.push_back(
+            app->commands.push_back(
                 make_shared<Command>(loadCommandVersion3(commandInfo, appPath + "/lib/")));
         }
     }
@@ -206,11 +215,18 @@ namespace appmgr {
             error("App '" + name + "' has an invalid API version! (" + std::to_string(apiVersion) + ")");
     }
 
-    void loadApp(const string&name) {
-        for (const auto&app: loadedApps) {
-            if (app->getName() == name) return;
+    App::App(string name, string description, string author, string version,
+             vector<shared_ptr<Command>> commands): name(std::move(name)), description(std::move(description)),
+                                                    author(std::move(author)),
+                                                    version(std::move(version)), commands(std::move(commands)) {
+    }
+
+
+    void loadApp(const shared_ptr<App>& app) {
+        for (const auto&loadedApp: loadedApps) {
+            if (loadedApp->getName() == app->name) return;
         }
-        loadedApps.push_back(make_shared<App>(App(name)));
+        loadedApps.push_back(app);
     }
 
     bool addApp(const string&name) {

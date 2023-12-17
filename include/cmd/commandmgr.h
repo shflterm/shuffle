@@ -102,8 +102,6 @@ namespace cmd {
         shared_ptr<Command> parent;
     };
 
-    extern vector<shared_ptr<Command>> commands;
-
     shared_ptr<Command> findCommand(const string&name, const vector<shared_ptr<Command>>&DICTIONARY);
 
     shared_ptr<Command> findCommand(const string&name);

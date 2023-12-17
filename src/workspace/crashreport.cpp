@@ -4,13 +4,14 @@
 #include <string>
 #include <ctime>
 #include <fstream>
+#include <appmgr/appmgr.h>
 
 #include "cmd/commandmgr.h"
 #include "utils/console.h"
 #include "utils/utils.h"
 #include "version.h"
 
-using std::cout, std::endl, std::to_string, std::ofstream, cmd::commands;
+using std::cout, std::endl, std::to_string, std::ofstream;
 
 #ifdef _WIN32
 #include "DbgHelp.h"
@@ -134,7 +135,7 @@ string CrashReport::make() const {
     ss << "Time: " << time(nullptr) << endl;
     ss << "Signal Number: " << sig << endl;
     ss << "Apps: " << endl;
-    for (const auto&item: commands) {
+    for (const auto&item: appmgr::loadedApps) {
         ss << "  " << item->getName() << endl;
     }
     ss << "========================" << endl;

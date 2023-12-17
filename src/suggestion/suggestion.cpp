@@ -1,10 +1,11 @@
 #include "suggestion/suggestion.h"
 
 #include <vector>
-#include <suggestion/proponent.h>
-#include <utils/console.h>
 
-using std::vector, std::string, cmd::Command, cmd::commands, cmd::findCommand;
+#include "suggestion/proponent.h"
+#include "appmgr/appmgr.h"
+
+using std::vector, std::string, cmd::Command, cmd::findCommand;
 
 namespace suggestion {
     vector<string> makeDictionary(const vector<shared_ptr<Command>>&cmds) {
@@ -33,7 +34,7 @@ namespace suggestion {
         if (input[input.length() - 1] == ' ') spl.emplace_back("");
 
         if (spl.size() == 1) {
-            suggestion = findSuggestion(ws, spl[0], makeDictionary(commands))[0];
+            suggestion = findSuggestion(ws, spl[0], makeDictionary(appmgr::getCommands()))[0];
         }
         else {
             shared_ptr<Command> cmd = findCommand(spl[0]);
