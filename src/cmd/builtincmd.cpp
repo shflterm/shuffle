@@ -277,7 +277,7 @@ void loadCommands() {
     //         CommandOption("value", "", TEXT_T, {"v"}),
     //     }, {"snf create sayhello echo Hi!"}, snippetCmd
     // )));
-    commands.push_back(make_shared<Command>(Command(
+    builtinCommands.push_back(make_shared<Command>(Command(
         "clear", "Clear everything", {
             {"clear", "Clears all text to clear the screen."}
         }, clearCmd
