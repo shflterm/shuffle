@@ -17,6 +17,7 @@ string replaceAll(string str, const string&from, const string&to) {
 
 namespace shflai {
     llama_model* model;
+    llama_context* ctx;
 
     bool loadAiModel(const string&modelPath) {
         llama_backend_init(false);
@@ -29,10 +30,22 @@ namespace shflai {
             fprintf(stderr, "%s: error: unable to load model\n", __func__);
             return false;
         }
+
+        llama_context_params ctx_params = llama_context_default_params();
+
+        ctx_params.n_ctx = 2048;
+        ctx_params.n_batch = 2048;
+        ctx_params.n_threads = get_num_physical_cores();
+        ctx_params.n_threads_batch = get_num_physical_cores();
+
+        ctx = llama_new_context_with_model(model, ctx_params);
+
+        if (ctx == nullptr) fprintf(stderr, "%s: error: failed to create the llama_context\n", __func__);
         return true;
     }
 
     void generateResponse(const string&prompt, const string&instruction) {
+        std::cout << "\033[33mShuffle AI(Beta) is working... (this may take a while)\033[0m\033[A" << std::endl;
         gpt_params params;
         params.prompt = instruction +
                         "[INST]" + prompt + "[/INST]";
@@ -44,24 +57,19 @@ namespace shflai {
         if (model == nullptr) {
             fprintf(stderr, "%s: AI not loaded\n", __func__);
         }
-
-        llama_context_params ctx_params = llama_context_default_params();
-
-        ctx_params.n_ctx = 2048;
-        ctx_params.n_batch = 2048;
-        ctx_params.n_threads = get_num_physical_cores();
-        ctx_params.n_threads_batch = get_num_physical_cores();
-
-        llama_context* ctx = llama_new_context_with_model(model, ctx_params);
-
-        if (ctx == nullptr) fprintf(stderr, "%s: error: failed to create the llama_context\n", __func__);
         // tokenize the prompt
 
         std::vector<llama_token> tokens_list;
         tokens_list = llama_tokenize(ctx, params.prompt, true);
 
+        const int n_ctx_train = llama_n_ctx_train(model);
         const int n_ctx = llama_n_ctx(ctx);
         const int n_kv_req = tokens_list.size() + (n_len - tokens_list.size());
+
+        if (n_ctx > n_ctx_train) {
+            fprintf(stderr, "%s: warning: model was trained on only %d context tokens (%d specified)\n",
+                    __func__, n_ctx_train, n_ctx);
+        }
 
         // make sure the KV cache is big enough to hold all the prompt and generated tokens
         if (n_kv_req > n_ctx) {
@@ -93,7 +101,7 @@ namespace shflai {
 
         string detectedEndSign;
 
-        std::cout << "\033[33mGenerating response, this may take a few seconds. (Almost done!)\033[0m" << std::endl;
+        std::cout << "\033[K";
         bool codeOpened = false;
         while (true) {
             // sample the next token
@@ -127,7 +135,7 @@ namespace shflai {
                     detectedEndSign = "";
 
                     string newRes;
-                    for (char ch: next) {
+                    for (const char ch: next) {
                         if (ch == '`') {
                             if (codeOpened) newRes += "\033[0m";
                             else newRes += "\033[100m";

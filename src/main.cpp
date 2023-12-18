@@ -77,7 +77,7 @@ void loadProponents() {
     registerProponent(Proponent(
         "boolean", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
             return findSuggestion(*ws, args[cur], {"true", "false"})[0];
-    }));
+        }));
     registerProponent(Proponent(
         "file", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
             vector<string> files;
@@ -86,7 +86,7 @@ void loadProponents() {
                 files.push_back(item.path().filename().string());
             }
             return findSuggestion(*ws, args[cur], files)[0];
-    }));
+        }));
     registerProponent(Proponent(
         "directory", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
             vector<string> files;
@@ -95,7 +95,7 @@ void loadProponents() {
                 files.push_back(item.path().filename().string());
             }
             return findSuggestion(*ws, args[cur], files)[0];
-    }));
+        }));
     registerProponent(Proponent(
         "fileordir", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
             vector<string> files;
@@ -103,15 +103,15 @@ void loadProponents() {
                 files.push_back(item.path().filename().string());
             }
             return findSuggestion(*ws, args[cur], files)[0];
-    }));
+        }));
     registerProponent(Proponent(
         "command", [](Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
             return getSuggestion(*ws, args[cur]);
-    }));
+        }));
     registerProponent(Proponent(
         "appmgr", [](Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
             vector<string> apps;
-            for (const auto loaded_app : appmgr::loadedApps) apps.push_back(loaded_app->name);
+            for (const auto loaded_app: appmgr::loadedApps) apps.push_back(loaded_app->name);
             return findSuggestion(*ws, args[cur], apps)[0];
         }));
 }
@@ -174,9 +174,9 @@ int main(const int argc, char* argv[]) {
     if (!exists(DOT_SHUFFLE)) create_directories(DOT_SHUFFLE);
     initShflJson();
 
-    cout << "Welcome to" << fg_blue << " Shuffle " << SHUFFLE_VERSION.str() << reset << "!"
-            << endl
-            << "(C) 2023 Kim Sihu. All Rights Reserved." << endl << endl;
+    cout << "Welcome to" << fg_blue << " Shuffle " << SHUFFLE_VERSION.str() << reset << "!" << endl
+            << "(C) 2023 Kim Sihu. All Rights Reserved." << endl
+            << endl;
 
     if (!isAnsiSupported()) {
         error("ANSI escape codes are not supported on this terminal.");

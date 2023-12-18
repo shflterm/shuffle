@@ -169,7 +169,7 @@ string writeInstruction(const shared_ptr<Command>&command) {
     string instruction;
     for (const auto&example: command->getExamples()) {
         instruction += "<s>[INST]" + example.whatItDoes + "[/INST]"
-                + "Try this command: `" + example.command + "`</s>\n";
+                + example.command + "`</s>\n";
     }
     for (const auto&subcommand: command->getSubcommands()) {
         instruction += writeInstruction(subcommand);
@@ -334,8 +334,6 @@ void Workspace::inputPrompt() {
                 cout << fg_yellow << "# " << reset;
                 string prompt;
                 getline(cin, prompt);
-
-                warning("Shuffle AI(Beta) is working... (this may take a while)");
 
                 string instruction;
                 for (const auto&command: appmgr::getCommands()) instruction += writeInstruction(command);
