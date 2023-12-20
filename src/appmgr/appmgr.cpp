@@ -175,7 +175,6 @@ namespace appmgr {
             }
 
             string res = entrypoint(ws, optionValues, backgroundMode);
-            closeLibrary(libraryHandle);
 
             return res;
         };
