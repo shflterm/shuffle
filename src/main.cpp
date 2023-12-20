@@ -117,21 +117,6 @@ void loadProponents() {
 }
 
 int main(const int argc, char* argv[]) {
-    info("Loading AI model...");
-    bool aiLoaded = shflai::loadAiModel((DOT_SHUFFLE / "ai" / "model.gguf").string());
-    if (!aiLoaded) {
-        error("Failed to load AI model.");
-        error("Shuffle may not work properly.");
-        error("");
-    }
-    else {
-#ifdef _WIN32
-        system("cls");
-#elif defined(__linux__) || defined(__APPLE__)
-        system("clear");
-#endif
-    }
-
 #ifdef _WIN32
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 
@@ -173,6 +158,21 @@ int main(const int argc, char* argv[]) {
 
     if (!exists(DOT_SHUFFLE)) create_directories(DOT_SHUFFLE);
     initShflJson();
+
+    info("Loading AI model...");
+    bool aiLoaded = shflai::loadAiModel((DOT_SHUFFLE / "ai" / "model.gguf").string());
+    if (!aiLoaded) {
+        error("Failed to load AI model.");
+        error("Shuffle may not work properly.");
+        error("");
+    }
+    else {
+#ifdef _WIN32
+        system("cls");
+#elif defined(__linux__) || defined(__APPLE__)
+        system("clear");
+#endif
+    }
 
     cout << "Welcome to" << fg_blue << " Shuffle " << SHUFFLE_VERSION.str() << reset << "!" << endl
             << "(C) 2023 Kim Sihu. All Rights Reserved." << endl

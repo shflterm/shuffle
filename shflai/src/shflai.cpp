@@ -127,8 +127,7 @@ namespace shflai {
                     break;
                 }
 
-                string next = llama_token_to_piece(ctx, new_token_id);
-                if (next == "</") detectedEndSign = "</";
+                if (string next = llama_token_to_piece(ctx, new_token_id); next == "</") detectedEndSign = "</";
                 else if (detectedEndSign == "</" && next == "s") detectedEndSign = "</s";
                 else if (detectedEndSign == "</s" && next == ">") break;
                 else {
