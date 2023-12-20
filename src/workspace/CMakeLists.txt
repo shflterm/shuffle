@@ -5,10 +5,10 @@ set(WORKSPACE_SRC workspace.cpp snippetmgr.cpp crashreport.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-add_library(${PROJECT_NAME} ${WORKSPACE_SRC})
+add_library(${PROJECT_NAME} STATIC ${WORKSPACE_SRC})
 
-add_dependencies(${PROJECT_NAME} utils commandmgr suggestion)
-target_link_libraries(${PROJECT_NAME} PUBLIC utils commandmgr suggestion)
+add_dependencies(${PROJECT_NAME} ai utils commandmgr suggestion)
+target_link_libraries(${PROJECT_NAME} PUBLIC ai utils commandmgr suggestion)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 
@@ -21,8 +21,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE CURL::libcurl)
 find_package(kubazip CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE kubazip::kubazip)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE shflai)
-target_include_directories(${PROJECT_NAME} PRIVATE ../../shflai/include)
+find_package(restclient-cpp CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE restclient-cpp)
 
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 

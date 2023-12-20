@@ -5,7 +5,7 @@ set(SUGGESTION_SRC suggestion.cpp proponent.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-add_library(${PROJECT_NAME} ${SUGGESTION_SRC})
+add_library(${PROJECT_NAME} STATIC ${SUGGESTION_SRC})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 

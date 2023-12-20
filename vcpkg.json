@@ -18,6 +18,10 @@
     {
       "name": "nlohmann-json",
       "version>=": "3.11.2"
+    },
+    {
+      "name": "restclient-cpp",
+        "version>=": "2022-02-09"
     }
   ]
 }

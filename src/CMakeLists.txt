@@ -7,6 +7,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_executable(${PROJECT_NAME} ${APP_SOURCES})
 
+add_subdirectory(ai)
 add_subdirectory(cmd)
 add_subdirectory(appmgr)
 add_subdirectory(suggestion)
@@ -26,9 +27,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE CURL::libcurl)
 
 find_package(kubazip CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE kubazip::kubazip)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE shflai)
-target_include_directories(${PROJECT_NAME} PRIVATE ../shflai/include)
 
 target_link_directories(${PROJECT_NAME} PRIVATE ../build/lib)
 

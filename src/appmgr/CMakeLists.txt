@@ -5,10 +5,10 @@ set(APPMGR_SRC appmgr.cpp downloader.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-add_library(${PROJECT_NAME} ${APPMGR_SRC})
+add_library(${PROJECT_NAME} STATIC ${APPMGR_SRC})
 
-add_dependencies(${PROJECT_NAME} utils commandmgr workspace)
-target_link_libraries(${PROJECT_NAME} PUBLIC utils commandmgr workspace)
+add_dependencies(${PROJECT_NAME} utils commandmgr)
+target_link_libraries(${PROJECT_NAME} PUBLIC utils commandmgr)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 

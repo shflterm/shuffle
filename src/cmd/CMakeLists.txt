@@ -5,7 +5,7 @@ set(COMMAND_SRC commandmgr.cpp job.cpp cmdparser.cpp builtincmd.cpp)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-add_library(${PROJECT_NAME} ${COMMAND_SRC})
+add_library(${PROJECT_NAME} STATIC ${COMMAND_SRC})
 
 add_dependencies(${PROJECT_NAME} utils)
 target_link_libraries(${PROJECT_NAME} PUBLIC utils)

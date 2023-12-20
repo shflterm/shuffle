@@ -11,7 +11,6 @@
 #include "snippetmgr.h"
 #include "builtincmd.h"
 #include "shfljson.h"
-#include "shflai.h"
 #include "proponent.h"
 
 using std::filesystem::create_directories, std::filesystem::exists, std::cout, std::cerr, std::endl;
@@ -158,21 +157,6 @@ int main(const int argc, char* argv[]) {
 
     if (!exists(DOT_SHUFFLE)) create_directories(DOT_SHUFFLE);
     initShflJson();
-
-    info("Loading AI model...");
-    bool aiLoaded = shflai::loadAiModel((DOT_SHUFFLE / "ai" / "model.gguf").string());
-    if (!aiLoaded) {
-        error("Failed to load AI model.");
-        error("Shuffle may not work properly.");
-        error("");
-    }
-    else {
-#ifdef _WIN32
-        system("cls");
-#elif defined(__linux__) || defined(__APPLE__)
-        system("clear");
-#endif
-    }
 
     cout << "Welcome to" << fg_blue << " Shuffle " << SHUFFLE_VERSION.str() << reset << "!" << endl
             << "(C) 2023 Kim Sihu. All Rights Reserved." << endl
