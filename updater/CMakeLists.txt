@@ -6,8 +6,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 add_executable(${PROJECT_NAME} ${SOURCES} main.cpp)
 
-add_dependencies(${PROJECT_NAME} utils appmgr)
-target_link_libraries(${PROJECT_NAME} PRIVATE utils appmgr)
+add_dependencies(${PROJECT_NAME} utils appmgr workspace)
+target_link_libraries(${PROJECT_NAME} PRIVATE utils appmgr workspace)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 
