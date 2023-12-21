@@ -18,6 +18,37 @@ using std::cout, std::endl, std::make_shared,
         appmgr::loadApp, appmgr::unloadAllApps,appmgr::getApps, appmgr::installApp, appmgr::removeApp, appmgr::addRepo,
         appmgr::removeRepo, appmgr::App;
 
+string writeHelp() {
+    stringstream ss;
+    ss << "== Shuffle Help ==" << endl
+            << "Version: " << SHUFFLE_VERSION.str() << endl
+            << endl
+            << "Actions: " << endl
+            << "When you enter the designated symbol for each Action and enter a command, "
+            "the command is executed in a specific manner for the Action." << endl
+            << "  " << fg_green << "\u2192(default) <shuffle command>" << reset << " : Execute the shuffle command" << endl
+            << "  " << fg_green << "@ <workspace name>" << reset << " : Move to the specified workspace" << endl
+            << "  " << fg_green << "# <ai prompt>" << reset << " : Interact with AI" << endl
+            << "  " << fg_green << "& <os command>" << reset << " : Execute the OS command" << endl
+            << endl
+            << "Commands: " << endl;
+    for (const auto&item: appmgr::getCommands()) {
+        if (auto command = *item; command.getDescription() != "-") {
+            ss << "  " << command.getName() << " : " << command.getDescription()
+                    << endl;
+        }
+    }
+    ss << endl << "Additional Help: " << endl
+            << "  For more information on a specific command, type 'help <command>'" << endl
+            << "  Visit the online documentation for Shuffle at "
+            "https://github.com/shflterm/shuffle/wiki." << endl
+            << endl;
+
+    ss << "Thanks to: " << bg_green << "shfl credits" << reset << endl;
+
+    return ss.str();
+}
+
 string shflReloadCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
     if (!bgMode) info("Reloading command...");
     loadCommands();
@@ -55,8 +86,9 @@ string appMgrRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, 
 string appMgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     // print all appmgr infos
     if (!bgMode) {
-        for (const auto& app: appmgr::loadedApps) {
-            cout << app->name << " v" << app->getVersion() << ": " << app->description << " (by " << app->author << ")" << endl;
+        for (const auto&app: appmgr::loadedApps) {
+            cout << app->name << " v" << app->getVersion() << ": " << app->description << " (by " << app->author << ")"
+                    << endl;
         }
     }
     return std::to_string(appmgr::loadedApps.size());
@@ -77,22 +109,7 @@ string appMgrCmd(Workspace* ws, map<string, string>&options, bool bgMode, const 
 
 string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     if (options.count("command") == 0) {
-        cout << "== Shuffle Help ==" << endl
-                << "Version: " << SHUFFLE_VERSION.str() << endl << endl
-                << "Commands: " << endl;
-        for (const auto&item: appmgr::getCommands()) {
-            if (auto command = *item; command.getDescription() != "-") {
-                cout << "  " << command.getName() << " : " << command.getDescription()
-                        << endl;
-            }
-        }
-        cout << endl << "Additional Help: " << endl
-                << "  For more information on a specific command, type 'help <command>'" << endl
-                << "  Visit the online documentation for Shuffle at "
-                "https://github.com/shflterm/shuffle/wiki." << endl << endl;
-
-        cout << "Thanks to: " << bg_green << "shfl credits" << reset << endl;
-
+        cout << writeHelp();
         return "true";
     }
     vector<string> cmdName = splitBySpace(options["command"]);
@@ -198,7 +215,7 @@ void loadCommands() {
     unloadAllApps();
 
     vector<shared_ptr<Command>> builtinCommands;
-     builtinCommands.push_back(make_shared<Command>(Command(
+    builtinCommands.push_back(make_shared<Command>(Command(
         "shfl", "Shuffle Command", {
             Command("reload", "Reload all commands.",
                     {
@@ -302,7 +319,8 @@ void loadCommands() {
                     }, taskListCmd),
         }, {}, do_nothing
     )));
-    auto builtinApp = App("shuffle", "Shuffle built-in app", "Shuffle", SHUFFLE_VERSION.str().substr(1), builtinCommands);
+    auto builtinApp = App("shuffle", "Shuffle built-in app", "Shuffle", SHUFFLE_VERSION.str().substr(1),
+                          builtinCommands);
     loadApp(make_shared<App>(builtinApp));
 
     for (const string&appName: getApps()) {

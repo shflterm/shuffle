@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cmd/builtincmd.h>
 
 #include <json/json.h>
 #include "appmgr/appmgr.h"
@@ -23,6 +24,14 @@ vector<pair<string, string>> createChats(const shared_ptr<Command>&command) {
     chats.emplace_back("model", "Try this: { res = (input)! }");
     chats.emplace_back("user", "How to use the value of a variable 'var'?");
     chats.emplace_back("model", "Try this: { $var } (Example: { echo $var })");
+    chats.emplace_back("user", "How to run basic commands on the OS?");
+    chats.emplace_back("model", "Try this: { & <os command> } (Example: { & help })");
+    chats.emplace_back("user", "How to run commands in cmd, bash, and terminal?");
+    chats.emplace_back("model", "Try this: { & <os command> } (Example: { & help })");
+    chats.emplace_back("user", "How to move to another workspace?");
+    chats.emplace_back("model", "Try this: { @ <workspace name> } (Example: { @ main }, { @ run_download })");
+    chats.emplace_back("user", "How do I ask AI a question?");
+    chats.emplace_back("model", "Try this: { # <ai prompt> } (Example: { # How to download apps from the new repository? }, { # Download 'example_app' from 'https://example.com/shflrepo.json'. })");
 
     for (const auto&example: command->getExamples()) {
         chats.emplace_back("user", example.whatItDoes);
