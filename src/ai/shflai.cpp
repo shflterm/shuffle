@@ -34,7 +34,7 @@ function_declaration createFunctionDeclarationByCommand(const shared_ptr<Command
     while (currentCommand) {
         commandHierarchy.push_back(currentCommand);
         currentCommand = currentCommand->parent;
-    }
+    } //TODO : parent 한개만 됨.
 
     std::reverse(commandHierarchy.begin(), commandHierarchy.end());
 
