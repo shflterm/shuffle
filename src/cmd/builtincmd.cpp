@@ -112,6 +112,7 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
         cout << writeHelp();
         return "true";
     }
+
     vector<string> cmdName = splitBySpace(options["command"]);
     shared_ptr<Command> cmd = findCommand(cmdName.front());
     if (cmd == nullptr) {
@@ -234,7 +235,7 @@ void loadCommands() {
     builtinCommands.push_back(make_shared<Command>(Command(
         "appmgr", "App Manager", {
             Command("add", "Get new apps from the repository.", {
-                        CommandOption("appmgr", "", "text")
+                        CommandOption("appname", "", "text")
                     }, {
                         {
                             "appmgr add textutilities",
@@ -244,7 +245,7 @@ void loadCommands() {
                         {"appmgr add /path/to/myapp", "Add the app 'myapp' from a local file."}
                     }, appMgrAddCmd),
             Command("remove", "Delete the appmgr from your device.", {
-                        CommandOption("appmgr", "", "text")
+                        CommandOption("appname", "", "text")
                     }, {
                         {"appmgr remove textutilities", "Delete the app 'textutilities'."},
                         {"appmgr remove filesystem", "Delete the app 'filesystem'."},
@@ -258,7 +259,7 @@ void loadCommands() {
             ),
             Command("repo", "Repository Management", {
                         Command("add", "Add Repository", {
-                                    CommandOption("repo", "", "text")
+                                    CommandOption("repourl", "", "text")
                                 }, {
                                     {
                                         "appmgr repo add https://example.com/shflrepo.json",
@@ -266,7 +267,7 @@ void loadCommands() {
                                     }
                                 }, appMgrRepoAddCmd),
                         Command("remove", "Remove Repository", {
-                                    CommandOption("repo", "", "text")
+                                    CommandOption("repourl", "", "text")
                                 }, {
                                     {
                                         "appmgr repo remove https://example.com/shflrepo.json",
