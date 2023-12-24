@@ -12,9 +12,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE _HAS_STD_BYTE=0)
 find_package(jsoncpp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} JsonCpp::JsonCpp)
 
-find_package(CURL CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} CURL::libcurl)
-
 find_package(kubazip CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} kubazip::kubazip)
 

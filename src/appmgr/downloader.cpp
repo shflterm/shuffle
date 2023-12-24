@@ -85,7 +85,7 @@ namespace appmgr {
         }
 
         if (!installed) {
-            error("The appmgr could not be found in the repository.");
+            error("Failed to download '" + name + "'. (App not found.)");
             return false;
         }
 
