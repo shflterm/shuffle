@@ -10,7 +10,7 @@
 #include "appmgr/appmgr.h"
 #include "restclient-cpp/restclient.h"
 
-using std::string, std::vector, std::pair, std::cout, std::endl;
+using std::string, std::vector, std::pair, std::endl;
 
 vector<pair<string, string>> chatLogs;
 
@@ -80,7 +80,11 @@ vector<pair<string, string>> createChats(const shared_ptr<Command>&command) {
     return chats;
 }
 
-string generateResponse(Workspace* workspace, const string&prompt) {
+shflai_response generateResponse(Workspace* workspace, const string&prompt) {
+    if (prompt.empty()) {
+        return {shflai_response::TEXT, "Failed to generate response. (prompt is empty)"};
+    }
+
     chatLogs.emplace_back("user", prompt);
 
     Json::Value requestBody;
@@ -96,6 +100,7 @@ string generateResponse(Workspace* workspace, const string&prompt) {
         contents.append(content);
     }
     requestBody["contents"] = contents;
+    chatLogs.pop_back();
 
     vector<function_declaration> functionsDeclarations;
     std::deque<shared_ptr<Command>> cmds;
@@ -147,7 +152,6 @@ string generateResponse(Workspace* workspace, const string&prompt) {
 
     Json::FastWriter fastWriter;
     std::string requestBodyContent = fastWriter.write(requestBody);
-    cout << requestBody.toStyledString();
 
     auto [code, body, headers] = RestClient::post(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + string(
@@ -161,20 +165,16 @@ string generateResponse(Workspace* workspace, const string&prompt) {
             string result = part["text"].asString();
             chatLogs.emplace_back("user", prompt);
             chatLogs.emplace_back("model", result);
-
-            result = replace(result, "{", "\033[100m");
-            result = replace(result, "}", "\033[0m");
-            return result;
+            return {shflai_response::TEXT, result};
         }
         if (part["functionCall"].isObject()) {
             Json::Value func = part["functionCall"];
             string funcName = func["name"].asString();
             funcName = replace(funcName, "_", " ");
             vector<string> cmdName = splitBySpace(funcName);
-            cout << func["name"];
             shared_ptr<Command> cmd = cmd::findCommand(cmdName.front());
             if (cmd == nullptr) {
-                return "Sorry, AI failed to find the command. please try again.";
+                return {shflai_response::TEXT, "Sorry, AI failed to generate response. please try again."};
             }
             for (int i = 1; i < cmdName.size(); ++i) {
                 if (cmd == nullptr) break;
@@ -188,12 +188,9 @@ string generateResponse(Workspace* workspace, const string&prompt) {
                 command << "-" << option.name << " \"" << func["args"][option.name].asString() << "\" ";
             }
 
-            chatLogs.emplace_back("model", command.str());
-            return command.str();
+            return {shflai_response::COMMAND, command.str()};
         }
-        chatLogs.emplace_back("model", part.toStyledString());
-        return part.toStyledString();
+        return {shflai_response::TEXT, "Sorry, AI failed to generate response. please try again."};
     }
-    chatLogs.emplace_back("model", "Failed to generate response. (response: " + body + ")");
-    return "Failed to generate response. (response: " + body + ")";
+    return {shflai_response::TEXT, "Failed to generate response. (response: " + body + ")"};
 }

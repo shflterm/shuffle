@@ -53,6 +53,22 @@ public:
 
 function_declaration createFunctionDeclarationByCommand(const Command&command);
 
-string generateResponse(Workspace *workspace, const string&prompt);
+class shflai_response {
+public:
+    enum response_type {
+        TEXT,
+        COMMAND
+    };
+
+    response_type type;
+    string result_str;
+
+    shflai_response(const response_type type, string  result_str)
+        : type(type),
+          result_str(std::move(result_str)) {
+    }
+};
+
+shflai_response generateResponse(Workspace* workspace, const string&prompt);
 
 #endif //SHLFAI_H

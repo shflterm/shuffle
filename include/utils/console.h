@@ -67,7 +67,7 @@ void info(const string&text, const initializer_list<string>&args);
 
 void success(const string&text, const initializer_list<string>&args);
 
-void warning(const string&text, const initializer_list<string>&args);
+void warning(const string&text, const initializer_list<string>&args, bool linebreak = true);
 
 void error(const string&text, const initializer_list<string>&args);
 
@@ -77,7 +77,7 @@ void info(const string&text);
 
 void success(const string&text);
 
-void warning(const string&text);
+void warning(const string&text, bool linebreak = true);
 
 void error(const string&text);
 

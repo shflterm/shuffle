@@ -93,8 +93,8 @@ void success(const string&text, const initializer_list<string>&args) {
     cout.flush();
 }
 
-void warning(const string&text, const initializer_list<string>&args) {
-    cout << fg_yellow << translate(text, args) << reset << "\n";
+void warning(const string&text, const initializer_list<string>&args, const bool linebreak) {
+    cout << fg_yellow << translate(text, args) << reset << (linebreak ? "\n" : "");
     cout.flush();
 }
 
@@ -115,7 +115,7 @@ void success(const string&text) {
     success(text, {});
 }
 
-void warning(const string&text) {
+void warning(const string&text, const bool linebreak) {
     warning(text, {});
 }
 
