@@ -336,8 +336,8 @@ void Workspace::inputPrompt() {
                     cout << response.result_str << endl;
                 }
                 else if (response.type == shflai_response::COMMAND) {
-                    warning("Shuffle AI(Beta) wants to run the command '$0'. Do you want to run it? [Y/n] ",
-                            {response.result_str}, false);
+                    info("Shuffle AI(Beta) wants to run the command $0 $1 $2. Do you want to run it? [Y/n] ",
+                            {"\033[100m", trim(response.result_str), "\033[0m"}, false);
                     if (int answer = readChar(); answer == 'Y' || answer == 'y') {
                         cout << endl << prompt() << trim(response.result_str) << endl;
                         cout.flush();
