@@ -134,8 +134,17 @@ std::string readTextFromWeb(const std::string&url) {
 }
 
 bool downloadFile(const string&url, const path&file) {
-    const auto [code, body, headers] = RestClient::get(url);
-    if (code != 200) {
+    RestClient::Response response = RestClient::get(url);
+    while (response.code == 302) {
+        if (!response.headers.count("Location"))
+            return false;
+
+        string redirectUrl = response.headers["Location"];
+        response = RestClient::get(redirectUrl);
+    }
+
+    if (response.code != 200) {
+        error("Failed to download file. HTTP error code: " + std::to_string(response.code));
         return false;
     }
 
@@ -146,14 +155,14 @@ bool downloadFile(const string&url, const path&file) {
     }
 
     // Get the total size of the file for progress tracking
-    const long long totalSize = body.size();
+    const long long totalSize = response.body.size();
 
     // Initialize variables for progress tracking
     long long downloadedSize = 0;
     while (downloadedSize < totalSize) {
         constexpr int bufferSize = 8192;
         char buffer[bufferSize];
-        const int bytesRead = body.copy(buffer, bufferSize, downloadedSize);
+        const int bytesRead = response.body.copy(buffer, bufferSize, downloadedSize);
         outfile.write(buffer, bytesRead);
 
         downloadedSize += bytesRead;

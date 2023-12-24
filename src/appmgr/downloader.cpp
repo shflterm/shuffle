@@ -69,6 +69,7 @@ namespace appmgr {
 #elif defined(__APPLE__)
                     downloadFrom = replace(downloadFrom, "{OS}", "macos");
 #endif
+
                     if (downloadFile(downloadFrom, downloadTo)) {
                         info("Downloading... (Done!)");
                         cout << "\n";
