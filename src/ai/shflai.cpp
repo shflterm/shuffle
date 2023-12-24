@@ -1,10 +1,8 @@
 #include "ai/shlfai.h"
 #include "gemini.h"
 
-#include <iostream>
 #include <string>
 #include <vector>
-#include <cmd/builtincmd.h>
 
 #include <json/json.h>
 #include "appmgr/appmgr.h"
