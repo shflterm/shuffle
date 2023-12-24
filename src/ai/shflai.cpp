@@ -172,21 +172,13 @@ shflai_response generateResponse(Workspace* workspace, const string&prompt) {
             string funcName = func["name"].asString();
             funcName = replace(funcName, "_", " ");
             vector<string> cmdName = splitBySpace(funcName);
-            shared_ptr<Command> cmd = cmd::findCommand(cmdName.front());
-            if (cmd == nullptr) {
-                return {shflai_response::TEXT, "Sorry, AI failed to generate response. please try again."};
-            }
-            for (int i = 1; i < cmdName.size(); ++i) {
-                if (cmd == nullptr) break;
-                cmd = findCommand(cmdName[i], cmd->getSubcommands());
-            }
 
             std::stringstream command;
             command << funcName << " ";
-            for (const auto&option: cmd->getOptions()) {
-                if (func["args"][option.name].isNull()) continue;
-                command << "-" << option.name << " \"" << func["args"][option.name].asString() << "\" ";
+            for (const auto& key : func["args"].getMemberNames()) {
+                command << "-" << key << " \"" << func["args"][key].asString() << "\" ";
             }
+
 
             return {shflai_response::COMMAND, command.str()};
         }
