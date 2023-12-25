@@ -46,7 +46,7 @@ namespace appmgr {
                 installed = true;
             }
         }
-        
+
         if (!installed) {
             const string downloadTo = temp_directory_path().append("app.shflapp").string();
 
@@ -107,6 +107,8 @@ namespace appmgr {
 
             if (const path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp"); exists(appPath)) {
                 // TODO 지우기 전 라이브러리 언로드
+                for (const auto& app: loadedApps)
+                    if (app->getName() == name) app->unload();
                 remove_all(appPath);
 
                 Json::Value json = getShflJson("apps");
@@ -128,7 +130,8 @@ namespace appmgr {
             }
             error("App not found!");
             return false;
-        } catch (std::exception exception) {
+        }
+        catch (std::exception exception) {
             error("Failed to remove app. (Exception: " + string(exception.what()) + ")");
             return false;
         }

@@ -100,21 +100,21 @@ namespace appmgr {
     }
 #endif
 
-    Command loadCommandVersion3(Json::Value appInfo, const string&libPath) {
+    Command loadCommandVersion3(Json::Value commandInfo, const string&libPath, App* app) {
         // NOLINT(*-no-recursion)
-        string name = appInfo["name"].asString();
-        string usage = appInfo["usage"].asString();
-        string description = appInfo["description"].asString();
+        string name = commandInfo["name"].asString();
+        string usage = commandInfo["usage"].asString();
+        string description = commandInfo["description"].asString();
 
         const string commandPath = libPath + name + "/";
 
         vector<shared_ptr<Command>> subcommands;
-        for (const auto&subcommandInfo: appInfo["subcommands"]) {
-            subcommands.push_back(make_shared<Command>(loadCommandVersion3(subcommandInfo, commandPath + "/")));
+        for (const auto&subcommandInfo: commandInfo["subcommands"]) {
+            subcommands.push_back(make_shared<Command>(loadCommandVersion3(subcommandInfo, commandPath + "/", app)));
         }
 
         vector<CommandOption> options;
-        for (const auto&option: appInfo["options"]) {
+        for (const auto&option: commandInfo["options"]) {
             const string optionName = option["name"].asString();
             const string optionDescription = option["description"].asString();
             const string optionType = option["type"].asString();
@@ -124,10 +124,10 @@ namespace appmgr {
         }
 
         vector<string> aliases;
-        for (const auto&alias: appInfo["aliases"]) aliases.push_back(alias.asString());
+        for (const auto&alias: commandInfo["aliases"]) aliases.push_back(alias.asString());
 
         vector<cmd::CommandExample> examples;
-        for (const auto&example: appInfo["examples"]) examples.emplace_back(example.asString(), "");
+        for (const auto&example: commandInfo["examples"]) examples.emplace_back(example.asString(), "");
         auto command = Command(name, description, usage, subcommands, options, aliases, examples);
 
         string libraryPath =
@@ -180,6 +180,12 @@ namespace appmgr {
         };
         command.setCmd(cmd);
 
+        if (app) {
+            app->onUnload.emplace_back([=] {
+                closeLibrary(libraryHandle);
+            });
+        }
+
         return command;
     }
 
@@ -192,7 +198,7 @@ namespace appmgr {
         Json::Value commandsJson = appRoot["commands"];
         for (const auto&commandInfo: commandsJson) {
             app->commands.push_back(
-                make_shared<Command>(loadCommandVersion3(commandInfo, appPath + "/lib/")));
+                make_shared<Command>(loadCommandVersion3(commandInfo, appPath + "/lib/", app)));
         }
     }
 
@@ -220,8 +226,12 @@ namespace appmgr {
                                                     version(std::move(version)), commands(std::move(commands)) {
     }
 
+    void App::unload() const {
+        for (const auto& function : onUnload) function();
+    }
 
-    void loadApp(const shared_ptr<App>& app) {
+
+    void loadApp(const shared_ptr<App>&app) {
         for (const auto&loadedApp: loadedApps) {
             if (loadedApp->getName() == app->name) return;
         }
@@ -238,6 +248,9 @@ namespace appmgr {
     }
 
     void unloadAllApps() {
+        for (const auto& app: loadedApps) {
+            app->unload();
+        }
         loadedApps.clear();
     }
 
