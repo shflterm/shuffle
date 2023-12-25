@@ -79,20 +79,23 @@ namespace cmd {
         [[nodiscard]] string createHint() const;
 
         Command(string name, string description, string usage,
-                const vector<shared_ptr<Command>>&subcommands, const vector<CommandOption>&options,
+                const vector<Command>&subcommands, const vector<CommandOption>&options,
                 const vector<string>&aliases, const vector<CommandExample>&examples, cmd_t cmd);
 
         Command(string name, string description, string usage, const vector<shared_ptr<Command>>&subcommands,
-                const vector<CommandOption>&options, const vector<string>&aliases, const vector<CommandExample>&examples);
+                const vector<CommandOption>&options, const vector<string>&aliases,
+                const vector<CommandExample>&examples);
 
         Command(string name, string description, const vector<Command>&subcommands, const vector<CommandOption>&options,
                 const vector<CommandExample>&examples,
                 cmd_t cmd);
 
-        Command(string name, string description, const vector<Command>&subcommands, const vector<CommandExample>&examples,
+        Command(string name, string description, const vector<Command>&subcommands,
+                const vector<CommandExample>&examples,
                 cmd_t cmd);
 
-        Command(string name, string description, const vector<CommandOption>&options, const vector<CommandExample>&examples,
+        Command(string name, string description, const vector<CommandOption>&options,
+                const vector<CommandExample>&examples,
                 cmd_t cmd);
 
         Command(string name, string description, const vector<CommandExample>&examples, cmd_t cmd);

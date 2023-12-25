@@ -112,6 +112,7 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
         cout << writeHelp();
         return "true";
     }
+
     vector<string> cmdName = splitBySpace(options["command"]);
     shared_ptr<Command> cmd = findCommand(cmdName.front());
     if (cmd == nullptr) {
