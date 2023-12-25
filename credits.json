@@ -5,7 +5,6 @@
   "libraries": [
     {"name": "JsonCPP", "by": "@open-source-parsers"},
     {"name": "curl", "by": "https://curl.se"},
-    {"name": "zip", "by": "@kuba--"},
-    {"name": "lamma.cpp", "by": "@ggerganov"}
+    {"name": "zip", "by": "@kuba--"}
   ]
 }
