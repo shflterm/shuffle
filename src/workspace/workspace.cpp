@@ -4,17 +4,21 @@
 #include <utility>
 #include <map>
 #include <sstream>
+#include <json/reader.h>
+#include <json/value.h>
+#include <json/writer.h>
 
-#include "../../shflai/include/shflai.h"
+#include "appmgr/appmgr.h"
 #include "cmd/cmdparser.h"
 #include "cmd/job.h"
 #include "suggestion/suggestion.h"
 #include "utils/console.h"
 #include "utils/utils.h"
 #include "workspace/snippetmgr.h"
+#include "ai/shlfai.h"
 
 using std::cout, std::endl, std::cin, std::stringstream, std::make_shared, std::map, job::Job, cmd::Command,
-        cmd::commands, suggestion::getSuggestion, suggestion::getHint;
+        suggestion::getSuggestion, suggestion::getHint;
 
 map<string, Workspace *> wsMap;
 
@@ -141,7 +145,7 @@ shared_ptr<Job> Workspace::createJob(string&input) {
     return parsed;
 }
 
-string Workspace::prompt(bool fullPath) const {
+string Workspace::prompt(const bool fullPath) const {
     stringstream ss;
     if (!name.empty())
         ss << fg_yellow << "[" << name << "] ";
@@ -162,19 +166,6 @@ string Workspace::prompt(bool fullPath) const {
 
     ss << fg_yellow << " \u2192 " << reset;
     return ss.str();
-}
-
-string writeDocs(const shared_ptr<cmd::Command>&command, const string&prefix = "") {
-    string docs;
-    string examples;
-    for (const auto&example: command->getExamples()) examples += example + ", ";
-    docs += prefix + command->getName() + " - " + command->getDescription() + " / Usage: " + command->getUsage() +
-            " / Examples: " + examples
-            + "\n";
-    for (const auto&subcommand: command->getSubcommands()) {
-        docs += writeDocs(subcommand, prefix + command->getName() + " ");
-    }
-    return docs;
 }
 
 void Workspace::inputPrompt() {
@@ -214,7 +205,7 @@ void Workspace::inputPrompt() {
                         vector<string> inSpl = splitBySpace(input);
                         error("Sorry. Command '$0' not found.", {inSpl[0]});
                         pair similarWord = {1000000000, Command("")};
-                        for (const auto&cmd: commands) {
+                        for (const auto&cmd: appmgr::getCommands()) {
                             if (int dist = levenshteinDist(inSpl[0], cmd->getName());
                                 dist < similarWord.first)
                                 similarWord = {dist, *cmd};
@@ -301,6 +292,8 @@ void Workspace::inputPrompt() {
             }
 #endif
             case '@': {
+                if (!input.empty()) continue;
+
                 cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
                 cout << erase_cursor_to_end;
                 cout << fg_yellow << "@ " << reset;
@@ -318,6 +311,8 @@ void Workspace::inputPrompt() {
                 return;
             }
             case '&': {
+                if (!input.empty()) continue;
+
                 cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
                 cout << erase_cursor_to_end;
                 cout << fg_yellow << "& " << reset;
@@ -328,32 +323,29 @@ void Workspace::inputPrompt() {
                 return;
             }
             case '#': {
+                if (!input.empty()) continue;
+
                 cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
                 cout << erase_cursor_to_end;
-                cout << fg_yellow << "# " << reset ;
-                string prompt;
-                getline(cin, prompt);
+                cout << fg_yellow << "# " << reset;
+                string aiPrompt;
+                getline(cin, aiPrompt);
 
-                warning("Shuffle AI(Beta) is working... (this may take a while)");
-
-                string docs;
-                for (const auto&command: commands) docs += writeDocs(command);
-
-                string res = shflai::generateResponse(prompt, docs);
-
-                string newRes;
-                bool codeOpened = false;
-                for (char ch: res) {
-                    if (ch == '`') {
-                        if (codeOpened) newRes += reset;
-                        else newRes += bgb_black;
-
-                        codeOpened = !codeOpened;
+                shflai_response response = generateResponse(this, aiPrompt);
+                if (response.type == shflai_response::TEXT) {
+                    cout << response.result_str << endl;
+                }
+                else if (response.type == shflai_response::COMMAND) {
+                    info("Shuffle AI(Beta) wants to run the command $0 $1 $2. Do you want to run it? [Y/n] ",
+                            {"\033[100m", trim(response.result_str), "\033[0m"}, false);
+                    if (int answer = readChar(); answer == 'Y' || answer == 'y') {
+                        cout << endl << prompt() << trim(response.result_str) << endl;
+                        cout.flush();
+                        createJob(response.result_str)->start(this);
                     }
-                    else newRes += ch;
+                    else cout << "Aborted." << endl;
                 }
 
-                info(newRes);
                 warning("* This answer was generated by Shuffle AI(Beta). It may not be correct.");
                 return;
             }

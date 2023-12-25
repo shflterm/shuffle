@@ -1,10 +1,11 @@
 #include "suggestion/suggestion.h"
 
 #include <vector>
-#include <suggestion/proponent.h>
-#include <utils/console.h>
 
-using std::vector, std::string, cmd::Command, cmd::commands, cmd::findCommand;
+#include "suggestion/proponent.h"
+#include "appmgr/appmgr.h"
+
+using std::vector, std::string, cmd::Command, cmd::findCommand;
 
 namespace suggestion {
     vector<string> makeDictionary(const vector<shared_ptr<Command>>&cmds) {
@@ -33,7 +34,7 @@ namespace suggestion {
         if (input[input.length() - 1] == ' ') spl.emplace_back("");
 
         if (spl.size() == 1) {
-            suggestion = findSuggestion(ws, spl[0], makeDictionary(commands))[0];
+            suggestion = findSuggestion(ws, spl[0], makeDictionary(appmgr::getCommands()))[0];
         }
         else {
             shared_ptr<Command> cmd = findCommand(spl[0]);
@@ -42,8 +43,7 @@ namespace suggestion {
             int loops = 1;
 
             for (int i = 1; i < spl.size() - 1; ++i) {
-                const shared_ptr<Command> sub = findCommand(spl[i], cmd->getSubcommands());
-                if (sub != nullptr) {
+                if (const shared_ptr<Command> sub = findCommand(spl[i], cmd->getSubcommands()); sub != nullptr) {
                     cmd = sub;
                     loops++;
                 }
@@ -68,7 +68,7 @@ namespace suggestion {
             if (cmd->getOptions().size() > cur - 1) {
                 cmd::CommandOption option = cmd->getOptions()[cur - 1];
 
-                if (cur - 1 > 1) {
+                if (cur - 1 > 1 && !args[cur - 1].empty() && args[cur - 1][0] == '-') {
                     string optName = args[cur - 1].substr(1);
                     for (auto opt: cmd->getOptions()) {
                         if (opt.name == optName || std::find(opt.aliases.begin(), opt.aliases.end(), optName) != opt.

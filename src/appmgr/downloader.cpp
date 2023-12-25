@@ -46,7 +46,7 @@ namespace appmgr {
                 installed = true;
             }
         }
-        
+
         if (!installed) {
             const string downloadTo = temp_directory_path().append("app.shflapp").string();
 
@@ -69,6 +69,7 @@ namespace appmgr {
 #elif defined(__APPLE__)
                     downloadFrom = replace(downloadFrom, "{OS}", "macos");
 #endif
+
                     if (downloadFile(downloadFrom, downloadTo)) {
                         info("Downloading... (Done!)");
                         cout << "\n";
@@ -85,7 +86,7 @@ namespace appmgr {
         }
 
         if (!installed) {
-            error("The appmgr could not be found in the repository.");
+            error("Failed to download '" + name + "'. (App not found.)");
             return false;
         }
 
@@ -101,30 +102,39 @@ namespace appmgr {
     }
 
     bool removeApp(const string&name) {
-        info("Deleting '" + name + "'...");
+        try {
+            info("Deleting '" + name + "'...");
 
-        if (const path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp"); exists(appPath)) {
-            remove_all(appPath);
+            if (const path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp"); exists(appPath)) {
+                // TODO 지우기 전 라이브러리 언로드
+                for (const auto& app: loadedApps)
+                    if (app->getName() == name) app->unload();
+                remove_all(appPath);
 
-            Json::Value json = getShflJson("apps");
-            bool removed = false;
-            for (int i = 0; i < json.size(); ++i) {
-                if (json[i].asString() == name) {
-                    removed = json.removeIndex(i, &json[i]);
-                    break;
+                Json::Value json = getShflJson("apps");
+                bool removed = false;
+                for (int i = 0; i < json.size(); ++i) {
+                    if (json[i].asString() == name) {
+                        removed = json.removeIndex(i, &json[i]);
+                        break;
+                    }
                 }
-            }
-            if (!removed) {
-                error("Failed to remove appmgr.");
-                return false;
-            }
-            setShflJson("apps", json);
+                if (!removed) {
+                    error("Failed to remove app.");
+                    return false;
+                }
+                setShflJson("apps", json);
 
-            success("Done!");
-            return true;
+                success("Done!");
+                return true;
+            }
+            error("App not found!");
+            return false;
         }
-        error("App not found!");
-        return false;
+        catch (std::exception exception) {
+            error("Failed to remove app. (Exception: " + string(exception.what()) + ")");
+            return false;
+        }
     }
 
 
@@ -139,7 +149,12 @@ namespace appmgr {
 
     bool removeRepo(const string&url) {
         Json::Value repos = getShflJson("repos");
-        repos.removeMember(url);
+        for (int i = 0; i < repos.size(); ++i) {
+            if (repos[i].asString() == url) {
+                repos.removeIndex(i, &repos[i]);
+                break;
+            }
+        }
         setShflJson("repos", repos);
         info("Repository " + url + " removed!");
         return true;

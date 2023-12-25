@@ -61,25 +61,25 @@ void initAnsiCodes();
 
 extern Workspace* currentWorkspace;
 
-void debug(const string&text, const initializer_list<string>&args);
+void debug(const string&text, const initializer_list<string>&args, bool linebreak = true);
 
-void info(const string&text, const initializer_list<string>&args);
+void info(const string&text, const initializer_list<string>&args, bool linebreak = true);
 
-void success(const string&text, const initializer_list<string>&args);
+void success(const string&text, const initializer_list<string>&args, bool linebreak = true);
 
-void warning(const string&text, const initializer_list<string>&args);
+void warning(const string&text, const initializer_list<string>&args, bool linebreak = true);
 
-void error(const string&text, const initializer_list<string>&args);
+void error(const string&text, const initializer_list<string>&args, bool linebreak = true);
 
-void debug(const string&text);
+void debug(const string&text, bool linebreak = true);
 
-void info(const string&text);
+void info(const string&text, bool linebreak = true);
 
-void success(const string&text);
+void success(const string&text, bool linebreak = true);
 
-void warning(const string&text);
+void warning(const string&text, bool linebreak = true);
 
-void error(const string&text);
+void error(const string&text, bool linebreak = true);
 
 int readChar();
 

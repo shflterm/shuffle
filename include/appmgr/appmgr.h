@@ -5,13 +5,13 @@
 #ifndef APPMGR_H
 #define APPMGR_H
 
-#include "utils/utils.h"
-
 #include <vector>
 #include <string>
 #include <memory>
 
-using std::vector, std::string, std::shared_ptr;
+#include "cmd/commandmgr.h"
+
+using std::vector, std::string, std::shared_ptr, cmd::Command;
 
 namespace appmgr {
     class App {
@@ -23,8 +23,12 @@ namespace appmgr {
     public:
         string name, description, author;
         string version;
+        vector<shared_ptr<Command>> commands;
+        vector<std::function<void()>> onUnload;
 
         explicit App(const string&name);
+
+        App(string name, string description, string author, string version, vector<shared_ptr<Command>> commands);
 
         [[nodiscard]] string getName() const {
             return name;
@@ -45,11 +49,15 @@ namespace appmgr {
         [[nodiscard]] int getApiVersion() const {
             return apiVersion;
         }
+
+        void unload() const;
     };
 
     extern vector<shared_ptr<App>> loadedApps;
 
-    void loadApp(const string&name);
+    vector<shared_ptr<Command>> getCommands();
+
+    void loadApp(const shared_ptr<App>& app);
 
     bool addApp(const string&name);
 

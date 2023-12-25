@@ -64,15 +64,6 @@ int main(int argc, char** argv) {
     extractZip(temp, updatePath);
     cout << teleport(0, wherey() - 1) << erase_cursor_to_end << "Extracted!" << endl;
 
-    cout << erase_cursor_to_end << "Start to download AI Model!" << endl;
-    if (!downloadFile(
-        "https://huggingface.co/TheBloke/deepseek-coder-6.7B-instruct-GGUF/resolve/main/deepseek-coder-6.7b-instruct.Q4_K_M.gguf?download=true",
-        (DOT_SHUFFLE / "ai" / "model.gguf").string())) {
-        error("Failed to download AI Model.");
-        return 1;
-    }
-    cout << teleport(0, wherey()) << erase_cursor_to_end << "Downloaded!" << endl;
-
     cout << erase_line << "Install native apps.." << endl;
     const bool appInstalled = installNativeApps();
     if (!appInstalled) {

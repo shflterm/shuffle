@@ -12,6 +12,8 @@
 #include "cmd/commandmgr.h"
 #include "cmd/job.h"
 
+#include "storage/storage.h"
+
 #include "suggestion/suggestion.h"
 #include "suggestion/proponent.h"
 

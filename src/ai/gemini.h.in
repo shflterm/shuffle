@@ -1,0 +1,10 @@
+//
+// Created by 08sih on 2023-12-20.
+//
+
+#ifndef ENV_H
+#define ENV_H
+
+#define GEMINI_API_KEY "@GEMINI_API_KEY@"
+
+#endif //ENV_H

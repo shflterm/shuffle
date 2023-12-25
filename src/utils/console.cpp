@@ -76,51 +76,51 @@ void initAnsiCodes() {
     restore_cursor_pos = "\033[u";
 }
 
-void debug(const string&text, const initializer_list<string>&args) {
+void debug(const string&text, const initializer_list<string>&args, const bool linebreak) {
     if (debugMode) {
-        cout << fgb_black << translate(text, args) << reset << "\n";
+        cout << fgb_black << translate(text, args) << reset << (linebreak ? "\n" : "");
         cout.flush();
     }
 }
 
-void info(const string&text, const initializer_list<string>&args) {
-    cout << reset << translate(text, args) << reset << "\n";
+void info(const string&text, const initializer_list<string>&args, const bool linebreak) {
+    cout << reset << translate(text, args) << reset << (linebreak ? "\n" : "");
     cout.flush();
 }
 
-void success(const string&text, const initializer_list<string>&args) {
-    cout << fg_green << translate(text, args) << reset << "\n";
+void success(const string&text, const initializer_list<string>&args, const bool linebreak) {
+    cout << fg_green << translate(text, args) << reset << (linebreak ? "\n" : "");
     cout.flush();
 }
 
-void warning(const string&text, const initializer_list<string>&args) {
-    cout << fg_yellow << translate(text, args) << reset << "\n";
+void warning(const string&text, const initializer_list<string>&args, const bool linebreak) {
+    cout << fg_yellow << translate(text, args) << reset << (linebreak ? "\n" : "");
     cout.flush();
 }
 
-void error(const string&text, const initializer_list<string>&args) {
-    cout << fg_red << translate(text, args) << reset << "\n";
+void error(const string&text, const initializer_list<string>&args, const bool linebreak) {
+    cout << fg_red << translate(text, args) << reset << (linebreak ? "\n" : "");
     cout.flush();
 }
 
-void debug(const string&text) {
-    debug(text, {});
+void debug(const string&text, const bool linebreak) {
+    debug(text, {}, linebreak);
 }
 
-void info(const string&text) {
-    info(text, {});
+void info(const string&text, const bool linebreak) {
+    info(text, {}, linebreak);
 }
 
-void success(const string&text) {
-    success(text, {});
+void success(const string&text, const bool linebreak) {
+    success(text, {}, linebreak);
 }
 
-void warning(const string&text) {
-    warning(text, {});
+void warning(const string&text, const bool linebreak) {
+    warning(text, {}, linebreak);
 }
 
-void error(const string&text) {
-    error(text, {});
+void error(const string&text, const bool linebreak) {
+    error(text, {}, linebreak);
 }
 
 #ifdef _WIN32

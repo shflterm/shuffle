@@ -13,8 +13,6 @@ string do_nothing(Workspace* ws, map<string, string>&options, const bool bgMode,
 }
 
 namespace cmd {
-    vector<shared_ptr<Command>> commands;
-
     shared_ptr<Command> findCommand(const string&name, const vector<shared_ptr<Command>>&DICTIONARY) {
         for (auto&item: DICTIONARY) {
             if (item->getName() == name) {
@@ -25,7 +23,7 @@ namespace cmd {
     }
 
     shared_ptr<Command> findCommand(const string&name) {
-        return findCommand(name, commands);
+        return findCommand(name, appmgr::getCommands());
     }
 
     const string& Command::getName() const {
@@ -38,6 +36,14 @@ namespace cmd {
 
     const string& Command::getUsage() const {
         return usage;
+    }
+
+    void Command::setSubcommands(const vector<shared_ptr<Command>>&subcommands) {
+        this->subcommands = subcommands;
+    }
+
+    void Command::setParent(const shared_ptr<Command>&parent) {
+        this->parent = parent;
     }
 
     string Command::run(Workspace* ws, map<string, string>&optionValues, const bool backgroundMode,
@@ -68,7 +74,7 @@ namespace cmd {
         return aliases;
     }
 
-    const vector<string>& Command::getExamples() const {
+    const vector<CommandExample>& Command::getExamples() const {
         return examples;
     }
 
@@ -77,55 +83,65 @@ namespace cmd {
     }
 
     Command::Command(string name, string description, string usage,
-                     const vector<shared_ptr<Command>>&subcommands, const vector<CommandOption>&options,
+                     const vector<Command>&subcommands, const vector<CommandOption>&options,
                      const vector<string>&aliases,
-                     const vector<string>&examples, cmd_t cmd): name(std::move(name)),
-                                                                description(std::move(description)),
-                                                                usage(std::move(usage)),
-                                                                subcommands(subcommands),
-                                                                options(options),
-                                                                aliases(aliases),
-                                                                examples(examples),
-                                                                cmd(std::move(cmd)) {
+                     const vector<CommandExample>&examples, cmd_t cmd): name(std::move(name)),
+                                                                        description(std::move(description)),
+                                                                        usage(std::move(usage)),
+                                                                        options(options),
+                                                                        aliases(aliases),
+                                                                        examples(examples),
+                                                                        cmd(std::move(cmd)) {
+        for (auto subcommand: subcommands) {
+            subcommand.parent = shared_from_this();
+            this->subcommands.push_back(make_shared<Command>(subcommand));
+        }
     }
 
     Command::Command(string name, string description, string usage,
                      const vector<shared_ptr<Command>>&subcommands, const vector<CommandOption>&options,
                      const vector<string>&aliases,
-                     const vector<string>&examples): name(std::move(name)),
-                                                     description(std::move(description)),
-                                                     usage(std::move(usage)),
-                                                     subcommands(subcommands),
-                                                     options(options),
-                                                     aliases(aliases),
-                                                     examples(examples),
-                                                     cmd(do_nothing) {
+                     const vector<CommandExample>&examples): name(std::move(name)),
+                                                             description(std::move(description)),
+                                                             usage(std::move(usage)),
+                                                             subcommands(subcommands),
+                                                             options(options),
+                                                             aliases(aliases),
+                                                             examples(examples),
+                                                             cmd(do_nothing) {
+        for (auto subcommand: subcommands) {
+            subcommand->parent = shared_from_this();
+            this->subcommands.push_back(subcommand);
+        }
     }
 
     Command::Command(string name, string description, const vector<Command>&subcommands,
-                     const vector<CommandOption>&options, const vector<string>&examples, cmd_t cmd)
+                     const vector<CommandOption>&options, const vector<CommandExample>&examples, cmd_t cmd)
         : name(std::move(name)),
           description(std::move(description)),
           options(options),
           examples(examples), cmd(std::move(cmd)) {
-        for (const auto&subcommand: subcommands) {
+        for (auto subcommand: subcommands) {
+            subcommand.parent = shared_from_this();
             this->subcommands.push_back(make_shared<Command>(subcommand));
         }
     }
 
-    Command::Command(string name, string description, const vector<Command>&subcommands, const vector<string>&examples,
+    Command::Command(string name, string description, const vector<Command>&subcommands,
+                     const vector<CommandExample>&examples,
                      cmd_t cmd)
         : name(std::move(name)),
           description(std::move(description)),
           examples(examples),
           cmd(std::move(cmd)) {
-        for (const auto&subcommand: subcommands) {
+        for (auto subcommand: subcommands) {
+            subcommand.parent = shared_from_this();
             this->subcommands.push_back(make_shared<Command>(subcommand));
         }
     }
 
     Command::Command(string name, string description, const vector<CommandOption>&options,
-                     const vector<string>&examples,
+                     const vector<CommandExample>&examples,
                      cmd_t cmd)
         : name(std::move(name)),
           description(std::move(description)),
@@ -133,7 +149,7 @@ namespace cmd {
           examples(examples), cmd(std::move(cmd)) {
     }
 
-    Command::Command(string name, string description, const vector<string>&examples, cmd_t cmd)
+    Command::Command(string name, string description, const vector<CommandExample>&examples, cmd_t cmd)
         : name(std::move(name)),
           description(std::move(description)),
           examples(examples),
@@ -156,5 +172,9 @@ namespace cmd {
           description(std::move(description)),
           type(std::move(type)),
           aliases(aliases) {
+    }
+
+    CommandExample::CommandExample(string command, string what_it_does): command(std::move(command)),
+                                                                         whatItDoes(std::move(what_it_does)) {
     }
 }

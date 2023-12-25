@@ -6,6 +6,7 @@
 #define SHUFFLE_INCLUDE_COMMANDMGR_H_
 
 #include <any>
+#include <utility>
 #include <vector>
 #include <string>
 #include <memory>
@@ -37,7 +38,14 @@ namespace cmd {
         CommandOption(string name, string description, string type, const vector<string>&aliases);
     };
 
-    class Command {
+    class CommandExample {
+    public:
+        string command, whatItDoes;
+
+        CommandExample(string command, string what_it_does);
+    };
+
+    class Command : std::enable_shared_from_this<Command> {
     protected:
         string name;
         string description;
@@ -45,7 +53,7 @@ namespace cmd {
         vector<shared_ptr<Command>> subcommands;
         vector<CommandOption> options;
         vector<string> aliases;
-        vector<string> examples;
+        vector<CommandExample> examples;
 
         cmd_t cmd;
 
@@ -56,13 +64,17 @@ namespace cmd {
 
         [[nodiscard]] const string& getUsage() const;
 
+        void setSubcommands(const vector<shared_ptr<Command>>&subcommands);
+
+        void setParent(const shared_ptr<Command>&parent);
+
         [[nodiscard]] const vector<shared_ptr<Command>>& getSubcommands() const;
 
         [[nodiscard]] const vector<CommandOption>& getOptions() const;
 
         [[nodiscard]] const vector<string>& getAliases() const;
 
-        [[nodiscard]] const vector<string>& getExamples() const;
+        [[nodiscard]] const vector<CommandExample>& getExamples() const;
 
         void setCmd(cmd_t cmd);
 
@@ -71,30 +83,31 @@ namespace cmd {
         [[nodiscard]] string createHint() const;
 
         Command(string name, string description, string usage,
-                const vector<shared_ptr<Command>>&subcommands, const vector<CommandOption>&options,
-                const vector<string>&aliases, const vector<string>&examples, cmd_t cmd);
+                const vector<Command>&subcommands, const vector<CommandOption>&options,
+                const vector<string>&aliases, const vector<CommandExample>&examples, cmd_t cmd);
 
         Command(string name, string description, string usage, const vector<shared_ptr<Command>>&subcommands,
-                const vector<CommandOption>&options, const vector<string>&aliases, const vector<string>&examples);
+                const vector<CommandOption>&options, const vector<string>&aliases,
+                const vector<CommandExample>&examples);
 
         Command(string name, string description, const vector<Command>&subcommands, const vector<CommandOption>&options,
-                const vector<string>&examples,
+                const vector<CommandExample>&examples,
                 cmd_t cmd);
 
-        Command(string name, string description, const vector<Command>&subcommands, const vector<string>&examples,
+        Command(string name, string description, const vector<Command>&subcommands,
+                const vector<CommandExample>&examples,
                 cmd_t cmd);
 
-        Command(string name, string description, const vector<CommandOption>&options, const vector<string>&examples,
+        Command(string name, string description, const vector<CommandOption>&options,
+                const vector<CommandExample>&examples,
                 cmd_t cmd);
 
-        Command(string name, string description, const vector<string>&examples, cmd_t cmd);
+        Command(string name, string description, const vector<CommandExample>&examples, cmd_t cmd);
 
         explicit Command(string name);
 
         shared_ptr<Command> parent;
     };
-
-    extern vector<shared_ptr<Command>> commands;
 
     shared_ptr<Command> findCommand(const string&name, const vector<shared_ptr<Command>>&DICTIONARY);
 

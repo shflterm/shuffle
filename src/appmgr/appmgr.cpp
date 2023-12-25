@@ -14,8 +14,7 @@
 #include "utils/console.h"
 #include "utils/shfljson.h"
 
-using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption,
-        cmd::commands;
+using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, cmd::CommandOption;
 
 #ifdef _WIN32
 #define NOMINMAX 1
@@ -34,6 +33,16 @@ using std::make_shared, std::cout, std::to_string, std::ofstream, cmd::Command, 
 
 namespace appmgr {
     vector<shared_ptr<App>> loadedApps;
+
+    vector<shared_ptr<Command>> getCommands() {
+        vector<shared_ptr<Command>> res;
+        for (const auto&app: loadedApps) {
+            for (const auto&command: app->commands) {
+                res.push_back(command);
+            }
+        }
+        return res;
+    }
 
     // vector<string> App::makeDynamicSuggestion(Workspace&ws, const string&suggestId) const {
     //     // Create workspace table
@@ -91,21 +100,21 @@ namespace appmgr {
     }
 #endif
 
-    Command loadCommandVersion3(Json::Value appInfo, const string&libPath) {
+    Command loadCommandVersion3(Json::Value commandInfo, const string&libPath, App* app) {
         // NOLINT(*-no-recursion)
-        string name = appInfo["name"].asString();
-        string usage = appInfo["usage"].asString();
-        string description = appInfo["description"].asString();
+        string name = commandInfo["name"].asString();
+        string usage = commandInfo["usage"].asString();
+        string description = commandInfo["description"].asString();
 
         const string commandPath = libPath + name + "/";
 
         vector<shared_ptr<Command>> subcommands;
-        for (const auto&subcommandInfo: appInfo["subcommands"]) {
-            subcommands.push_back(make_shared<Command>(loadCommandVersion3(subcommandInfo, commandPath + "/")));
+        for (const auto&subcommandInfo: commandInfo["subcommands"]) {
+            subcommands.push_back(make_shared<Command>(loadCommandVersion3(subcommandInfo, commandPath + "/", app)));
         }
 
         vector<CommandOption> options;
-        for (const auto&option: appInfo["options"]) {
+        for (const auto&option: commandInfo["options"]) {
             const string optionName = option["name"].asString();
             const string optionDescription = option["description"].asString();
             const string optionType = option["type"].asString();
@@ -115,11 +124,11 @@ namespace appmgr {
         }
 
         vector<string> aliases;
-        for (const auto&alias: appInfo["aliases"]) aliases.push_back(alias.asString());
+        for (const auto&alias: commandInfo["aliases"]) aliases.push_back(alias.asString());
 
-        vector<string> examples;
-        for (const auto&example: appInfo["examples"]) examples.push_back(example.asString());
-        Command command = Command(name, description, usage, subcommands, options, aliases, examples);
+        vector<cmd::CommandExample> examples;
+        for (const auto&example: commandInfo["examples"]) examples.emplace_back(example.asString(), "");
+        auto command = Command(name, description, usage, subcommands, options, aliases, examples);
 
         string libraryPath =
 #ifdef _WIN32
@@ -138,7 +147,7 @@ namespace appmgr {
 #endif
 
         if (!libraryHandle) {
-            error("Failed to open the library. Please check if the library exists.");
+            error("Failed to load the library. (" + libraryPath + ")");
             return command;
         }
 
@@ -166,11 +175,16 @@ namespace appmgr {
             }
 
             string res = entrypoint(ws, optionValues, backgroundMode);
-            closeLibrary(libraryHandle);
 
             return res;
         };
         command.setCmd(cmd);
+
+        if (app) {
+            app->onUnload.emplace_back([=] {
+                closeLibrary(libraryHandle);
+            });
+        }
 
         return command;
     }
@@ -183,8 +197,8 @@ namespace appmgr {
 
         Json::Value commandsJson = appRoot["commands"];
         for (const auto&commandInfo: commandsJson) {
-            commands.push_back(
-                make_shared<Command>(loadCommandVersion3(commandInfo, appPath + "/lib/")));
+            app->commands.push_back(
+                make_shared<Command>(loadCommandVersion3(commandInfo, appPath + "/lib/", app)));
         }
     }
 
@@ -206,11 +220,22 @@ namespace appmgr {
             error("App '" + name + "' has an invalid API version! (" + std::to_string(apiVersion) + ")");
     }
 
-    void loadApp(const string&name) {
-        for (const auto&app: loadedApps) {
-            if (app->getName() == name) return;
+    App::App(string name, string description, string author, string version,
+             vector<shared_ptr<Command>> commands): name(std::move(name)), description(std::move(description)),
+                                                    author(std::move(author)),
+                                                    version(std::move(version)), commands(std::move(commands)) {
+    }
+
+    void App::unload() const {
+        for (const auto& function : onUnload) function();
+    }
+
+
+    void loadApp(const shared_ptr<App>&app) {
+        for (const auto&loadedApp: loadedApps) {
+            if (loadedApp->getName() == app->name) return;
         }
-        loadedApps.push_back(make_shared<App>(App(name)));
+        loadedApps.push_back(app);
     }
 
     bool addApp(const string&name) {
@@ -223,6 +248,9 @@ namespace appmgr {
     }
 
     void unloadAllApps() {
+        for (const auto& app: loadedApps) {
+            app->unload();
+        }
         loadedApps.clear();
     }
 
