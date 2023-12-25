@@ -76,11 +76,11 @@ string shflCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
 }
 
 string appMgrAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    return installApp(options["appmgr"]) ? "true" : "false";
+    return installApp(options["appname"]) ? "true" : "false";
 }
 
 string appMgrRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    return removeApp(options["appmgr"]) ? "true" : "false";
+    return removeApp(options["appname"]) ? "true" : "false";
 }
 
 string appMgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
@@ -95,11 +95,11 @@ string appMgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, co
 }
 
 string appMgrRepoAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    return addRepo(options["repo"]) ? "true" : "false";
+    return addRepo(options["repourl"]) ? "true" : "false";
 }
 
 string appMgrRepoRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    return removeRepo(options["repo"]) ? "true" : "false";
+    return removeRepo(options["repourl"]) ? "true" : "false";
 }
 
 string appMgrCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {

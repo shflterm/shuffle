@@ -147,7 +147,7 @@ namespace appmgr {
 #endif
 
         if (!libraryHandle) {
-            error("Failed to open the library. Please check if the library exists.");
+            error("Failed to load the library. (" + libraryPath + ")");
             return command;
         }
 

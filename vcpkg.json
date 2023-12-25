@@ -21,7 +21,7 @@
     },
     {
       "name": "restclient-cpp",
-        "version>=": "2022-02-09"
+      "version>=": "2022-02-09"
     }
   ]
 }

@@ -69,6 +69,7 @@ namespace appmgr {
 #elif defined(__APPLE__)
                     downloadFrom = replace(downloadFrom, "{OS}", "macos");
 #endif
+
                     if (downloadFile(downloadFrom, downloadTo)) {
                         info("Downloading... (Done!)");
                         cout << "\n";
@@ -85,7 +86,7 @@ namespace appmgr {
         }
 
         if (!installed) {
-            error("The appmgr could not be found in the repository.");
+            error("Failed to download '" + name + "'. (App not found.)");
             return false;
         }
 

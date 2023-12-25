@@ -69,7 +69,7 @@ namespace suggestion {
             if (cmd->getOptions().size() > cur - 1) {
                 cmd::CommandOption option = cmd->getOptions()[cur - 1];
 
-                if (cur - 1 > 1) {
+                if (cur - 1 > 1 && !args[cur - 1].empty() && args[cur - 1][0] == '-') {
                     string optName = args[cur - 1].substr(1);
                     for (auto opt: cmd->getOptions()) {
                         if (opt.name == optName || std::find(opt.aliases.begin(), opt.aliases.end(), optName) != opt.
