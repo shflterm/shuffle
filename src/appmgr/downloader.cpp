@@ -102,30 +102,36 @@ namespace appmgr {
     }
 
     bool removeApp(const string&name) {
-        info("Deleting '" + name + "'...");
+        try {
+            info("Deleting '" + name + "'...");
 
-        if (const path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp"); exists(appPath)) {
-            remove_all(appPath);
+            if (const path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp"); exists(appPath)) {
+                // TODO 지우기 전 라이브러리 언로드
+                remove_all(appPath);
 
-            Json::Value json = getShflJson("apps");
-            bool removed = false;
-            for (int i = 0; i < json.size(); ++i) {
-                if (json[i].asString() == name) {
-                    removed = json.removeIndex(i, &json[i]);
-                    break;
+                Json::Value json = getShflJson("apps");
+                bool removed = false;
+                for (int i = 0; i < json.size(); ++i) {
+                    if (json[i].asString() == name) {
+                        removed = json.removeIndex(i, &json[i]);
+                        break;
+                    }
                 }
-            }
-            if (!removed) {
-                error("Failed to remove appmgr.");
-                return false;
-            }
-            setShflJson("apps", json);
+                if (!removed) {
+                    error("Failed to remove app.");
+                    return false;
+                }
+                setShflJson("apps", json);
 
-            success("Done!");
-            return true;
+                success("Done!");
+                return true;
+            }
+            error("App not found!");
+            return false;
+        } catch (std::exception exception) {
+            error("Failed to remove app. (Exception: " + string(exception.what()) + ")");
+            return false;
         }
-        error("App not found!");
-        return false;
     }
 
 
