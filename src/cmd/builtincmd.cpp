@@ -245,7 +245,7 @@ void loadCommands() {
                         {"appmgr add /path/to/myapp", "Add the app 'myapp' from a local file."}
                     }, appMgrAddCmd),
             Command("remove", "Delete the appmgr from your device.", {
-                        CommandOption("appname", "", "text")
+                        CommandOption("appname", "", "app")
                     }, {
                         {"appmgr remove textutilities", "Delete the app 'textutilities'."},
                         {"appmgr remove filesystem", "Delete the app 'filesystem'."},
