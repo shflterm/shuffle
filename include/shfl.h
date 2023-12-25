@@ -5,12 +5,14 @@
 #ifndef SHFL_H
 #define SHFL_H
 
-#include "app/appmgr.h"
-#include "app/downloader.h"
+#include "appmgr/appmgr.h"
+#include "appmgr/downloader.h"
 
 #include "cmd/cmdparser.h"
 #include "cmd/commandmgr.h"
 #include "cmd/job.h"
+
+#include "storage/storage.h"
 
 #include "suggestion/suggestion.h"
 #include "suggestion/proponent.h"

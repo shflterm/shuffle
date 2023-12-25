@@ -136,6 +136,7 @@ int main(const int argc, char* argv[]) {
     if (getShflJson("repos").empty()) {
         Json::Value repos;
         repos.append("https://raw.githubusercontent.com/shflterm/shfl-official-repository/master/repo.json");
+        repos.append("https://shfl.cc/repository/repo.json");
         setShflJson("repos", repos);
     }
 

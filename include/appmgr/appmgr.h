@@ -24,6 +24,7 @@ namespace appmgr {
         string name, description, author;
         string version;
         vector<shared_ptr<Command>> commands;
+        vector<std::function<void()>> onUnload;
 
         explicit App(const string&name);
 
@@ -48,6 +49,8 @@ namespace appmgr {
         [[nodiscard]] int getApiVersion() const {
             return apiVersion;
         }
+
+        void unload() const;
     };
 
     extern vector<shared_ptr<App>> loadedApps;
