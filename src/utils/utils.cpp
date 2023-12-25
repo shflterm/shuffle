@@ -144,7 +144,6 @@ bool downloadFile(const string&url, const path&file) {
     }
 
     if (response.code != 200) {
-        error("Failed to download file. HTTP error code: " + std::to_string(response.code));
         return false;
     }
 
