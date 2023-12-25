@@ -21,8 +21,8 @@ jobs:
             configure: .\vcpkg\bootstrap-vcpkg.bat
           - os: ubuntu
             configure: ./vcpkg/bootstrap-vcpkg.sh
-#          - os: macos
-#            configure: ./vcpkg/bootstrap-vcpkg.sh
+          - os: macos
+            configure: ./vcpkg/bootstrap-vcpkg.sh
 
     steps:
       - name: Checkout Repository
