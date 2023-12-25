@@ -149,7 +149,12 @@ namespace appmgr {
 
     bool removeRepo(const string&url) {
         Json::Value repos = getShflJson("repos");
-        repos.removeMember(url);
+        for (int i = 0; i < repos.size(); ++i) {
+            if (repos[i].asString() == url) {
+                repos.removeIndex(i, &repos[i]);
+                break;
+            }
+        }
         setShflJson("repos", repos);
         info("Repository " + url + " removed!");
         return true;
