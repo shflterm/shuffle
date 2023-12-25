@@ -43,8 +43,7 @@ namespace suggestion {
             int loops = 1;
 
             for (int i = 1; i < spl.size() - 1; ++i) {
-                const shared_ptr<Command> sub = findCommand(spl[i], cmd->getSubcommands());
-                if (sub != nullptr) {
+                if (const shared_ptr<Command> sub = findCommand(spl[i], cmd->getSubcommands()); sub != nullptr) {
                     cmd = sub;
                     loops++;
                 }

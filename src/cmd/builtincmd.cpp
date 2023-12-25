@@ -26,7 +26,8 @@ string writeHelp() {
             << "Actions: " << endl
             << "When you enter the designated symbol for each Action and enter a command, "
             "the command is executed in a specific manner for the Action." << endl
-            << "  " << fg_green << "\u2192(default) <shuffle command>" << reset << " : Execute the shuffle command" << endl
+            << "  " << fg_green << "\u2192(default) <shuffle command>" << reset << " : Execute the shuffle command" <<
+            endl
             << "  " << fg_green << "@ <workspace name>" << reset << " : Move to the specified workspace" << endl
             << "  " << fg_green << "# <ai prompt>" << reset << " : Interact with AI" << endl
             << "  " << fg_green << "& <os command>" << reset << " : Execute the OS command" << endl
@@ -75,15 +76,15 @@ string shflCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
     return "true";
 }
 
-string appMgrAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+string appmgrAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     return installApp(options["appname"]) ? "true" : "false";
 }
 
-string appMgrRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+string appmgrRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     return removeApp(options["appname"]) ? "true" : "false";
 }
 
-string appMgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+string appmgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     // print all appmgr infos
     if (!bgMode) {
         for (const auto&app: appmgr::loadedApps) {
@@ -94,15 +95,15 @@ string appMgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, co
     return std::to_string(appmgr::loadedApps.size());
 }
 
-string appMgrRepoAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+string appmgrRepoAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     return addRepo(options["repourl"]) ? "true" : "false";
 }
 
-string appMgrRepoRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+string appmgrRepoRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     return removeRepo(options["repourl"]) ? "true" : "false";
 }
 
-string appMgrCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+string appmgrCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     // TODO: Print How to use
     return "true";
 }
@@ -216,110 +217,148 @@ void loadCommands() {
     unloadAllApps();
 
     vector<shared_ptr<Command>> builtinCommands;
-    builtinCommands.push_back(make_shared<Command>(Command(
-        "shfl", "Shuffle Command", {
-            Command("reload", "Reload all commands.",
-                    {
-                        {"shfl reload", "Reload all commands."}
-                    }, shflReloadCmd),
-            Command("upgrade", "Upgrade Shuffle to a new version.",
-                    {
-                        {"shfl upgrade", "Upgrade Shuffle to a new version."}
-                    }, shflUpgradeCmd),
-            Command("credits", "Shuffle Credits",
-                    {
-                        {"shfl credits", "Shuffle Credits"}
-                    }, shflCreditsCmd),
-        }, {}, shflCmd
-    )));
-    builtinCommands.push_back(make_shared<Command>(Command(
-        "appmgr", "App Manager", {
-            Command("add", "Get new apps from the repository.", {
-                        CommandOption("appname", "", "text")
-                    }, {
-                        {
-                            "appmgr add textutilities",
-                            "Download and add the app 'textutilities' from a known repository."
-                        },
-                        {"appmgr add filesystem", "Download and add the app 'filesystem' from a known repository."},
-                        {"appmgr add /path/to/myapp", "Add the app 'myapp' from a local file."}
-                    }, appMgrAddCmd),
-            Command("remove", "Delete the appmgr from your device.", {
-                        CommandOption("appname", "", "app")
-                    }, {
-                        {"appmgr remove textutilities", "Delete the app 'textutilities'."},
-                        {"appmgr remove filesystem", "Delete the app 'filesystem'."},
-                        {"appmgr remove myapp", "Delete the app 'myapp'."}
-                    },
-                    appMgrRemoveCmd),
-            Command("list", "List all apps.", {
-                        {"appmgr list", "List all apps."}
-                    },
-                    appMgrListCmd
-            ),
-            Command("repo", "Repository Management", {
-                        Command("add", "Add Repository", {
-                                    CommandOption("repourl", "", "text")
-                                }, {
-                                    {
-                                        "appmgr repo add https://example.com/shflrepo.json",
-                                        "Add 'https://example.com/shflrepo.json' to known repositories."
-                                    }
-                                }, appMgrRepoAddCmd),
-                        Command("remove", "Remove Repository", {
-                                    CommandOption("repourl", "", "text")
-                                }, {
-                                    {
-                                        "appmgr repo remove https://example.com/shflrepo.json",
-                                        "Remove 'https://example.com/shflrepo.json' from known repositories."
-                                    }
-                                }, appMgrRepoRemoveCmd)
-                    }, {}, do_nothing),
-        }, {}, appMgrCmd
-    )));
-    builtinCommands.push_back(make_shared<Command>(Command(
+
+    auto shflReload = make_shared<Command>(Command("reload", "Reload all commands.",
+                                                   {
+                                                       {"shfl reload", "Reload all commands."}
+                                                   }, shflReloadCmd));
+    auto shflUpgrade = make_shared<Command>(Command("upgrade", "Upgrade Shuffle.",
+                                                    {
+                                                        {"shfl upgrade", "Upgrade Shuffle."}
+                                                    }, shflUpgradeCmd));
+    auto shflCredits = make_shared<Command>(Command("credits", "Show credits.",
+                                                    {
+                                                        {"shfl credits", "Show credits."}
+                                                    }, shflCreditsCmd));
+    shared_ptr<Command> shfl = make_shared<Command>(Command(
+        "shfl", "Shuffle Command", {}, shflCmd
+    ));
+    shfl->setSubcommands({
+        shflReload, shflUpgrade, shflCredits
+    });
+    shflReload->setParent(shfl);
+    shflUpgrade->setParent(shfl);
+    shflCredits->setParent(shfl);
+
+    builtinCommands.push_back(shfl);
+
+    auto appmgrAdd = make_shared<Command>(Command("add", "Get new apps from the repository.", {
+                                                      CommandOption("appname", "", "text")
+                                                  }, {
+                                                      {
+                                                          "appmgr add textutilities",
+                                                          "Download and add the app 'textutilities' from a known repository."
+                                                      },
+                                                      {
+                                                          "appmgr add filesystem",
+                                                          "Download and add the app 'filesystem' from a known repository."
+                                                      },
+                                                      {
+                                                          "appmgr add /path/to/myapp",
+                                                          "Add the app 'myapp' from a local file."
+                                                      }
+                                                  }, appmgrAddCmd));
+
+    auto appmgrRemove = make_shared<Command>(Command("remove", "Delete the appmgr from your device.", {
+                                                         CommandOption("appname", "", "app")
+                                                     }, {
+                                                         {
+                                                             "appmgr remove textutilities",
+                                                             "Delete the app 'textutilities'."
+                                                         },
+                                                         {"appmgr remove filesystem", "Delete the app 'filesystem'."},
+                                                         {"appmgr remove myapp", "Delete the app 'myapp'."}
+                                                     }, appmgrRemoveCmd));
+
+    auto appmgrList = make_shared<Command>(Command("list", "List all apps.", {
+                                                       {"appmgr list", "List all apps."}
+                                                   }, appmgrListCmd));
+
+    auto appmgrRepoAdd = make_shared<Command>(Command("add", "Add Repository", {
+                                                          CommandOption("repourl", "", "text")
+                                                      }, {
+                                                          {
+                                                              "appmgr repo add https://example.com/shflrepo.json",
+                                                              "Add 'https://example.com/shflrepo.json' to known repositories."
+                                                          }
+                                                      }, appmgrRepoAddCmd));
+
+    auto appmgrRepoRemove = make_shared<Command>(Command("remove", "Remove Repository", {
+                                                             CommandOption("repourl", "", "text")
+                                                         }, {
+                                                             {
+                                                                 "appmgr repo remove https://example.com/shflrepo.json",
+                                                                 "Remove 'https://example.com/shflrepo.json' from known repositories."
+                                                             }
+                                                         }, appmgrRepoRemoveCmd));
+
+    auto appmgrRepo = make_shared<Command>(Command(
+        "repo", "Repository Management", {}, do_nothing
+    ));
+    appmgrRepo->setSubcommands({appmgrRepoAdd, appmgrRepoRemove});
+    appmgrRepoAdd->setParent(appmgrRepo);
+    appmgrRepoRemove->setParent(appmgrRepo);
+
+    auto appmgr = make_shared<Command>(Command(
+        "appmgr", "App Manager", {}, appmgrCmd
+    ));
+    appmgr->setSubcommands({appmgrAdd, appmgrRemove, appmgrList, appmgrRepo});
+    appmgrAdd->setParent(appmgr);
+    appmgrRemove->setParent(appmgr);
+    appmgrList->setParent(appmgr);
+    appmgrRepo->setParent(appmgr);
+
+    builtinCommands.push_back(appmgr);
+
+    auto help = make_shared<Command>(Command(
         "help", "Show help", {
-            CommandOption("command", "", "command", {"cmd", "help"})
-        }, {
-            {
-                {"help", "Show help"},
-                {"help shfl", "Show help for 'shfl'"},
-                {"help shfl upgrade", "Show help for 'shfl upgrade'"},
-                {"help appmgr", "Show help for 'appmgr'"},
-            }
+            {"help", "Show help"},
+            {"help shfl", "Show help for 'shfl'"},
+            {"help shfl upgrade", "Show help for 'shfl upgrade'"},
+            {"help appmgr", "Show help for 'appmgr'"}
         }, helpCmd
-    )));
-    // commands.push_back(make_shared<Command>(Command(
-    //     "snf", "Manage Snippets", {
-    //         CommandOption("create", "", TEXT_T, {"mk", "c", "new"}),
-    //         CommandOption("value", "", TEXT_T, {"v"}),
-    //     }, {"snf create sayhello echo Hi!"}, snippetCmd
-    // )));
-    builtinCommands.push_back(make_shared<Command>(Command(
+    ));
+
+    builtinCommands.push_back(help);
+
+    auto clear = make_shared<Command>(Command(
         "clear", "Clear everything", {
             {"clear", "Clears all text to clear the screen."}
         }, clearCmd
-    )));
-    builtinCommands.push_back(make_shared<Command>(Command(
-        "task", "Manage background tasks", {
-            Command("start", "Start a new background task.", {
-                        CommandOption("job", "", "command")
-                    }, {
-                        {
-                            "task start dwnld https://examples.com/largefile",
-                            "Start a new background task to 'dwnld https://examples.com/largefile'."
-                        }
-                    }, taskStartCmd),
-            Command("log", "Print logs", {
-                        CommandOption("taskId", "", "text")
-                    }, {
-                        {"task log abcdefg12345", "Print logs of the task 'abcdefg12345'."}
-                    }, taskLogCmd),
-            Command("list", "List tasks", {
-                        {"task list", "List tasks"}
-                    }, taskListCmd),
-        }, {}, do_nothing
-    )));
+    ));
+
+    builtinCommands.push_back(clear);
+
+    auto taskStart = make_shared<Command>(Command("start", "Start a new background task.", {
+                                                      CommandOption("job", "", "command")
+                                                  }, {
+                                                      {
+                                                          "task start dwnld https://examples.com/largefile",
+                                                          "Start a new background task to 'dwnld https://examples.com/largefile'."
+                                                      }
+                                                  }, taskStartCmd));
+
+    auto taskLog = make_shared<Command>(Command("log", "Print logs", {
+                                                    CommandOption("taskId", "", "text")
+                                                }, {
+                                                    {"task log abcdefg12345", "Print logs of the task 'abcdefg12345'."}
+                                                }, taskLogCmd));
+
+    auto taskList = make_shared<Command>(Command("list", "List tasks", {
+                                                     {"task list", "List tasks"}
+                                                 }, taskListCmd));
+
+    auto task = make_shared<Command>(Command(
+        "task", "Manage background tasks", {}, do_nothing
+    ));
+    task->setSubcommands({taskStart, taskLog, taskList});
+    taskStart->setParent(task);
+    taskLog->setParent(task);
+    taskList->setParent(task);
+
+    builtinCommands.push_back(task);
+
+
     auto builtinApp = App("shuffle", "Shuffle built-in app", "Shuffle", SHUFFLE_VERSION.str().substr(1),
                           builtinCommands);
     loadApp(make_shared<App>(builtinApp));

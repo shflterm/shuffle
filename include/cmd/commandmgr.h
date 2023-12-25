@@ -45,7 +45,7 @@ namespace cmd {
         CommandExample(string command, string what_it_does);
     };
 
-    class Command {
+    class Command : std::enable_shared_from_this<Command> {
     protected:
         string name;
         string description;
@@ -63,6 +63,10 @@ namespace cmd {
         [[nodiscard]] const string& getDescription() const;
 
         [[nodiscard]] const string& getUsage() const;
+
+        void setSubcommands(const vector<shared_ptr<Command>>&subcommands);
+
+        void setParent(const shared_ptr<Command>&parent);
 
         [[nodiscard]] const vector<shared_ptr<Command>>& getSubcommands() const;
 
