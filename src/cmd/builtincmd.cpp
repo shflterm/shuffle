@@ -126,6 +126,11 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
         cmd = findCommand(cmdName[i], cmd->getSubcommands());
     }
 
+    string cmdOptions;
+    for (const auto&item: cmd->getOptions()) {
+        cmdOptions += "\n " + item.name + (item.isRequired ? "*" : "") + " : " + item.description;
+    }
+
     string subcommands;
     for (const auto&item: cmd->getSubcommands()) {
         subcommands += item->getName() + ", ";
@@ -142,6 +147,8 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
         cout << "Description: " << cmd->getDescription() << endl;
     if (!cmd->getUsage().empty())
         cout << "Usage: " << cmd->getUsage() << endl;
+    if (!cmdOptions.empty())
+        cout << "Options: " << cmdOptions << endl;
     if (!subcommands.empty())
         cout << "Subcommands: " << subcommands.substr(0, subcommands.size() - 2) << endl;
     cout << "Examples: " << examples << endl;
