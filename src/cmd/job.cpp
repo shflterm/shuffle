@@ -51,8 +51,9 @@ namespace job {
 #ifdef _WIN32
         const HANDLE threadHandle = jobThread.native_handle();
         if (TerminateThread(threadHandle, 0)) {
+            jobThread.detach();
+
             resultPromise.set_value("cancelled");
-            CloseHandle(threadHandle);
             return true;
         }
         CloseHandle(threadHandle);
@@ -60,6 +61,8 @@ namespace job {
 #elif defined(__linux__) || defined(__APPLE__)
         if (const pthread_t threadHandle = jobThread.native_handle();
             pthread_cancel(threadHandle) == 0) {
+            jobThread.detach();
+
             resultPromise.set_value("cancelled");
             return true;
         }
