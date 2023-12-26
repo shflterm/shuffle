@@ -32,10 +32,11 @@ namespace cmd {
         string name, description;
         string type;
         vector<string> aliases;
+        bool isRequired;
 
-        CommandOption(string name, string description, string type);
+        CommandOption(string name, string description, string type, bool isRequired);
 
-        CommandOption(string name, string description, string type, const vector<string>&aliases);
+        CommandOption(string name, string description, string type, const vector<string>&aliases, bool isRequired);
     };
 
     class CommandExample {
@@ -71,6 +72,8 @@ namespace cmd {
         [[nodiscard]] const vector<shared_ptr<Command>>& getSubcommands() const;
 
         [[nodiscard]] const vector<CommandOption>& getOptions() const;
+
+        vector<CommandOption> getRequiredOptions() const;
 
         [[nodiscard]] const vector<string>& getAliases() const;
 

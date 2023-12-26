@@ -70,6 +70,13 @@ namespace cmd {
         return options;
     }
 
+    vector<CommandOption> Command::getRequiredOptions() const {
+        vector<CommandOption> requiredOptions;
+        for (const auto&option: options)
+            if (option.isRequired) requiredOptions.push_back(option);
+        return requiredOptions;
+    }
+
     const vector<string>& Command::getAliases() const {
         return aliases;
     }
@@ -160,18 +167,21 @@ namespace cmd {
         : name(std::move(name)), cmd(do_nothing) {
     }
 
-    CommandOption::CommandOption(string name, string description, string type)
+    CommandOption::CommandOption(string name, string description, string type, const bool isRequired)
         : name(std::move(name)),
           description(std::move(description)),
           type(std::move(type)),
-          aliases({}) {
+          aliases({}),
+          isRequired(isRequired) {
     }
 
-    CommandOption::CommandOption(string name, string description, string type, const vector<string>&aliases)
+    CommandOption::CommandOption(string name, string description, string type, const vector<string>&aliases,
+                                 const bool isRequired)
         : name(std::move(name)),
           description(std::move(description)),
           type(std::move(type)),
-          aliases(aliases) {
+          aliases(aliases),
+          isRequired(isRequired) {
     }
 
     CommandExample::CommandExample(string command, string what_it_does): command(std::move(command)),

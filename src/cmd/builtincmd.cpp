@@ -258,7 +258,7 @@ void loadCommands() {
     builtinCommands.push_back(shfl);
 
     auto appmgrAdd = make_shared<Command>(Command("add", "Get new apps from the repository.", {
-                                                      CommandOption("appname", "", "text")
+                                                      CommandOption("appname", "", "text", true)
                                                   }, {
                                                       {
                                                           "appmgr add textutilities",
@@ -275,7 +275,7 @@ void loadCommands() {
                                                   }, appmgrAddCmd));
 
     auto appmgrRemove = make_shared<Command>(Command("remove", "Delete the appmgr from your device.", {
-                                                         CommandOption("appname", "", "app")
+                                                         CommandOption("appname", "", "app", true)
                                                      }, {
                                                          {
                                                              "appmgr remove textutilities",
@@ -290,7 +290,7 @@ void loadCommands() {
                                                    }, appmgrListCmd));
 
     auto appmgrRepoAdd = make_shared<Command>(Command("add", "Add Repository", {
-                                                          CommandOption("repourl", "", "text")
+                                                          CommandOption("repourl", "", "text", true)
                                                       }, {
                                                           {
                                                               "appmgr repo add https://example.com/shflrepo.json",
@@ -299,7 +299,7 @@ void loadCommands() {
                                                       }, appmgrRepoAddCmd));
 
     auto appmgrRepoRemove = make_shared<Command>(Command("remove", "Remove Repository", {
-                                                             CommandOption("repourl", "", "text")
+                                                             CommandOption("repourl", "", "text", true)
                                                          }, {
                                                              {
                                                                  "appmgr repo remove https://example.com/shflrepo.json",
@@ -327,12 +327,12 @@ void loadCommands() {
 
     auto help = make_shared<Command>(Command(
         "help", "Show help", {
-            CommandOption("command", "If given, a detailed description of the command is provided.", "command")
+            CommandOption("command", "If given, a detailed description of the command is provided.", "command", false)
         }, {
             {"help", "Show help"},
-            {"help shfl", "Show help for 'shfl'"},
-            {"help shfl upgrade", "Show help for 'shfl upgrade'"},
-            {"help appmgr", "Show help for 'appmgr'"}
+            {"help -command shfl", "Show help for 'shfl'"},
+            {"help -command \"shfl upgrade\"", "Show help for 'shfl upgrade'"},
+            {"help -command \"appmgr\"", "Show help for 'appmgr'"}
         }, helpCmd
     ));
 
@@ -347,7 +347,7 @@ void loadCommands() {
     builtinCommands.push_back(clear);
 
     auto taskStart = make_shared<Command>(Command("start", "Start a new background task.", {
-                                                      CommandOption("job", "", "command")
+                                                      CommandOption("job", "", "command", true)
                                                   }, {
                                                       {
                                                           "task start dwnld https://examples.com/largefile",
@@ -356,13 +356,13 @@ void loadCommands() {
                                                   }, taskStartCmd));
 
     auto taskStop = make_shared<Command>(Command("stop", "Stop a background task.", {
-                                                     CommandOption("taskId", "", "text")
+                                                     CommandOption("taskId", "", "text", true)
                                                  }, {
                                                      {"task stop abcdefg12345", "Stop the task 'abcdefg12345'."}
                                                  }, taskStopCmd));
 
     auto taskLog = make_shared<Command>(Command("log", "Print logs", {
-                                                    CommandOption("taskId", "", "text")
+                                                    CommandOption("taskId", "", "text", true)
                                                 }, {
                                                     {"task log abcdefg12345", "Print logs of the task 'abcdefg12345'."}
                                                 }, taskLogCmd));

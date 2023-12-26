@@ -46,13 +46,10 @@ namespace cmd {
             }
         }
 
-        vector<string> optionNames, optionNamesWithAbbr;
+        vector<string> requiredOptionNames;
         for (const auto&option: options) {
-            optionNames.push_back(option.name);
-            optionNamesWithAbbr.push_back(option.name);
-            for (const auto&item: option.aliases) {
-                optionNamesWithAbbr.push_back(item);
-            }
+            if (option.isRequired)
+                requiredOptionNames.push_back(option.name);
         }
 
         size_t optionIndex = 0;
@@ -85,8 +82,8 @@ namespace cmd {
                 }
             }
             else {
-                if (optionIndex + 1 == optionNames.size()) {
-                    key = optionNames[optionIndex];
+                if (optionIndex + 1 == requiredOptionNames.size()) {
+                    key = requiredOptionNames[optionIndex];
                     stringstream ss;
                     for (int j = static_cast<int>(i); j < args.size(); j++)
                         ss << args[j] << " ";
@@ -94,10 +91,11 @@ namespace cmd {
                     value = ss.str().substr(0, ss.str().size() - 1);
                     finished = true;
                 }
-                else if (optionIndex + 1 < optionNames.size()) {
-                    key = optionNames[optionIndex++];
+                else if (optionIndex + 1 < requiredOptionNames.size()) {
+                    key = requiredOptionNames[optionIndex++];
                     value = arg;
-                } else {
+                }
+                else {
                     error("Unexpected argument '" + arg + "'.");
                     delete parsedOptions;
                     return nullptr;
@@ -136,6 +134,14 @@ namespace cmd {
 
             (*parsedOptions)[key] = value;
             if (finished) break;
+        }
+
+        for (const auto& name : requiredOptionNames) {
+            if (parsedOptions->count(name) == 0) {
+                error("Missing required option '" + name + "'.");
+                delete parsedOptions;
+                return nullptr;
+            }
         }
 
         return parsedOptions;

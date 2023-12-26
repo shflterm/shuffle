@@ -1,6 +1,7 @@
 #include "suggestion/suggestion.h"
 
 #include <vector>
+#include <utils/console.h>
 
 #include "suggestion/proponent.h"
 #include "appmgr/appmgr.h"
@@ -65,23 +66,24 @@ namespace suggestion {
                 }
             }
 
-            if (cmd->getOptions().size() > cur - 1) {
-                cmd::CommandOption option = cmd->getOptions()[cur - 1];
-
-                if (cur - 1 > 1 && !args[cur - 1].empty() && args[cur - 1][0] == '-') {
-                    string optName = args[cur - 1].substr(1);
-                    for (auto opt: cmd->getOptions()) {
-                        if (opt.name == optName || std::find(opt.aliases.begin(), opt.aliases.end(), optName) != opt.
-                            aliases.end()) {
-                            option = opt;
-                            break;
-                        }
-                    }
-                }
+            if (cmd->getRequiredOptions().size() > cur - 1) {
+                cmd::CommandOption option = cmd->getRequiredOptions()[cur - 1];
 
                 Proponent proponent = findProponent(option.type);
                 suggestion = proponent.makeProp(&ws, option, args, cur - 1);
             }
+            if (cur > 1 && !args[cur - 2].empty() && args[cur - 2][0] == '-') {
+                string optName = args[cur - 2].substr(1);
+                for (auto option: cmd->getOptions()) {
+                    if (option.name == optName ||
+                        std::find(option.aliases.begin(), option.aliases.end(), optName) != option.aliases.end()) {
+                        Proponent proponent = findProponent(option.type);
+                        suggestion = proponent.makeProp(&ws, option, args, cur - 1);
+                        break;
+                    }
+                }
+            }
+
             if (!suggestion.empty()) return suggestion;
 
             if (spl[cur][0] == '-') {

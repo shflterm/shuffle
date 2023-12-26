@@ -120,7 +120,8 @@ namespace appmgr {
             const string optionType = option["type"].asString();
             vector<string> aliases;
             for (const auto&alias: option["aliases"]) aliases.push_back(alias.asString());
-            options.emplace_back(optionName, optionDescription, optionType, aliases);
+            const bool isRequired = option["required"].asBool();
+            options.emplace_back(optionName, optionDescription, optionType, aliases, isRequired);
         }
 
         vector<string> aliases;
