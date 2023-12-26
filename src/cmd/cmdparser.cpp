@@ -1,10 +1,12 @@
 #include "cmd/cmdparser.h"
 
-#include <algorithm>
+#include <sstream>
 
 #include "utils/console.h"
 #include "utils/utils.h"
 #include "cmd/job.h"
+
+using std::stringstream;
 
 namespace cmd {
     Job parseCommand(shared_ptr<Command> app, const vector<string>&args) {
@@ -55,6 +57,7 @@ namespace cmd {
 
         size_t optionIndex = 0;
 
+        bool finished = false;
         for (size_t i = 0; i < args.size(); ++i) {
             const string&arg = args[i];
             string key, value;
@@ -81,15 +84,26 @@ namespace cmd {
                     return nullptr;
                 }
             }
-            else if (optionIndex < optionNames.size()) {
-                key = optionNames[optionIndex++];
-                value = arg;
-            }
             else {
-                error("Unexpected argument '" + arg + "'.");
-                delete parsedOptions;
-                return nullptr;
+                if (optionIndex + 1 == optionNames.size()) {
+                    key = optionNames[optionIndex];
+                    stringstream ss;
+                    for (int j = static_cast<int>(i); j < args.size(); j++)
+                        ss << args[j] << " ";
+
+                    value = ss.str().substr(0, ss.str().size() - 1);
+                    finished = true;
+                }
+                else {
+                    key = optionNames[optionIndex++];
+                    value = arg;
+                }
             }
+            // else {
+            //     error("Unexpected argument '" + arg + "'.");
+            //     delete parsedOptions;
+            //     return nullptr;
+            // }
 
 
             bool foundAbbreviation = false;
@@ -117,6 +131,7 @@ namespace cmd {
             }
 
             (*parsedOptions)[key] = value;
+            if (finished) break;
         }
 
         return parsedOptions;
