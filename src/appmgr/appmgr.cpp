@@ -174,9 +174,16 @@ namespace appmgr {
                 return "ERROR_LOADING_FUNCTION";
             }
 
-            string res = entrypoint(ws, optionValues, backgroundMode);
-
-            return res;
+            try {
+                string res = entrypoint(ws, optionValues, backgroundMode);
+                return res;
+            }
+            catch (const std::exception&ex) {
+                error("Sorry. An error occurred while executing the command. ($0)", {string(ex.what())});
+                error("");
+                warning("This is not Shuffle's error. Please do not report this issue to the Shuffle team.");
+                return "error";
+            }
         };
         command.setCmd(cmd);
 
@@ -227,7 +234,7 @@ namespace appmgr {
     }
 
     void App::unload() const {
-        for (const auto& function : onUnload) function();
+        for (const auto&function: onUnload) function();
     }
 
 
@@ -248,7 +255,7 @@ namespace appmgr {
     }
 
     void unloadAllApps() {
-        for (const auto& app: loadedApps) {
+        for (const auto&app: loadedApps) {
             app->unload();
         }
         loadedApps.clear();
