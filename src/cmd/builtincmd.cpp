@@ -181,6 +181,21 @@ string taskStartCmd(Workspace* ws, map<string, string>&options, const bool bgMod
     return taskId;
 }
 
+string taskStopCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    const string taskId = options["taskId"];
+    for (auto&task: tasks) {
+        if (task.getId() == taskId) {
+            if (task.job == nullptr) {
+                error("Job is null.");
+                return "job is null";
+            }
+            return task.job->stop() ? "true" : "false";
+        }
+    }
+
+    return "task not found";
+}
+
 string taskLogCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
     const string taskId = options["taskId"];
     for (auto&task: tasks) {
@@ -338,6 +353,12 @@ void loadCommands() {
                                                       }
                                                   }, taskStartCmd));
 
+    auto taskStop = make_shared<Command>(Command("stop", "Stop a background task.", {
+                                                     CommandOption("taskId", "", "text")
+                                                 }, {
+                                                     {"task stop abcdefg12345", "Stop the task 'abcdefg12345'."}
+                                                 }, taskStopCmd));
+
     auto taskLog = make_shared<Command>(Command("log", "Print logs", {
                                                     CommandOption("taskId", "", "text")
                                                 }, {
@@ -351,8 +372,9 @@ void loadCommands() {
     auto task = make_shared<Command>(Command(
         "task", "Manage background tasks", {}, do_nothing
     ));
-    task->setSubcommands({taskStart, taskLog, taskList});
+    task->setSubcommands({taskStart, taskStop, taskLog, taskList});
     taskStart->setParent(task);
+    taskStop->setParent(task);
     taskLog->setParent(task);
     taskList->setParent(task);
 
