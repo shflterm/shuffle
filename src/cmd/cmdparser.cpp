@@ -81,31 +81,33 @@ namespace cmd {
                     return nullptr;
                 }
             }
-            else {
-                if (optionIndex + 1 == requiredOptionNames.size()) {
-                    key = requiredOptionNames[optionIndex];
-                    stringstream ss;
-                    for (int j = static_cast<int>(i); j < args.size(); j++)
-                        ss << args[j] << " ";
+            else if (app->getOptions().size() == 1 && app->getRequiredOptions().empty()) {
+                key = app->getOptions()[0].name;
+                stringstream ss;
+                for (int j = static_cast<int>(i); j < args.size(); j++)
+                    ss << args[j] << " ";
 
-                    value = ss.str().substr(0, ss.str().size() - 1);
-                    finished = true;
-                }
-                else if (optionIndex + 1 < requiredOptionNames.size()) {
-                    key = requiredOptionNames[optionIndex++];
-                    value = arg;
-                }
-                else {
-                    error("Unexpected argument '" + arg + "'.");
-                    delete parsedOptions;
-                    return nullptr;
-                }
+                value = ss.str().substr(0, ss.str().size() - 1);
+                finished = true;
             }
-            // else {
-            //     error("Unexpected argument '" + arg + "'.");
-            //     delete parsedOptions;
-            //     return nullptr;
-            // }
+            else if (optionIndex + 1 == requiredOptionNames.size()) {
+                key = requiredOptionNames[optionIndex];
+                stringstream ss;
+                for (int j = static_cast<int>(i); j < args.size(); j++)
+                    ss << args[j] << " ";
+
+                value = ss.str().substr(0, ss.str().size() - 1);
+                finished = true;
+            }
+            else if (optionIndex + 1 < requiredOptionNames.size()) {
+                key = requiredOptionNames[optionIndex++];
+                value = arg;
+            }
+            else {
+                error("Unexpected argument '" + arg + "'.");
+                delete parsedOptions;
+                return nullptr;
+            }
 
 
             bool foundAbbreviation = false;
@@ -136,7 +138,7 @@ namespace cmd {
             if (finished) break;
         }
 
-        for (const auto& name : requiredOptionNames) {
+        for (const auto&name: requiredOptionNames) {
             if (parsedOptions->count(name) == 0) {
                 error("Missing required option '" + name + "'.");
                 delete parsedOptions;

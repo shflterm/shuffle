@@ -72,7 +72,13 @@ namespace suggestion {
                 Proponent proponent = findProponent(option.type);
                 suggestion = proponent.makeProp(&ws, option, args, cur - 1);
             }
-            if (cur > 1 && !args[cur - 2].empty() && args[cur - 2][0] == '-') {
+            else if (cmd->getOptions().size() == 1 && cmd->getRequiredOptions().empty()) {
+                cmd::CommandOption option = cmd->getOptions()[0];
+
+                Proponent proponent = findProponent(option.type);
+                suggestion = proponent.makeProp(&ws, option, args, cur - 1);
+            }
+            else if (cur > 1 && !args[cur - 2].empty() && args[cur - 2][0] == '-') {
                 string optName = args[cur - 2].substr(1);
                 for (auto option: cmd->getOptions()) {
                     if (option.name == optName ||

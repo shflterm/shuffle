@@ -330,9 +330,9 @@ void loadCommands() {
             CommandOption("command", "If given, a detailed description of the command is provided.", "command", false)
         }, {
             {"help", "Show help"},
-            {"help -command shfl", "Show help for 'shfl'"},
-            {"help -command \"shfl upgrade\"", "Show help for 'shfl upgrade'"},
-            {"help -command \"appmgr\"", "Show help for 'appmgr'"}
+            {"help shfl", "Show help for 'shfl'"},
+            {"help shfl upgrade", "Show help for 'shfl upgrade'"},
+            {"help appmgr", "Show help for 'appmgr'"}
         }, helpCmd
     ));
 
