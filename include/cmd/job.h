@@ -51,9 +51,9 @@ namespace job {
 
         [[nodiscard]] bool isSuccessed() const;
 
-        [[nodiscard]] bool isCausedByArguments() const;
+        [[nodiscard]] bool isEmptyCausedByArguments() const;
 
-        [[nodiscard]] bool isCausedByNoSuchCommand() const;
+        [[nodiscard]] bool isEmptyCausedByNoSuchCommand() const;
 
         explicit Job(const shared_ptr<cmd::Command>&app);
 

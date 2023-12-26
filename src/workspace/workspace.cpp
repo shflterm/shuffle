@@ -206,7 +206,7 @@ void Workspace::inputPrompt() {
                     cout << erase_line;
                     addHistory(input);
                     shared_ptr<Job> job = createJob(input);
-                    if (job->isCausedByNoSuchCommand()) {
+                    if (job->isEmptyCausedByNoSuchCommand()) {
                         vector<string> inSpl = splitBySpace(input);
                         error("Sorry. Command '$0' not found.", {inSpl[0]});
                         pair similarWord = {1000000000, Command("")};

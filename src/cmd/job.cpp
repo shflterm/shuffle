@@ -78,11 +78,11 @@ namespace job {
         return jobType != EMPTY;
     }
 
-    bool Job::isCausedByArguments() const {
+    bool Job::isEmptyCausedByArguments() const {
         return jobType == EMPTY_CAUSED_BY_ARGUMENTS;
     }
 
-    bool Job::isCausedByNoSuchCommand() const {
+    bool Job::isEmptyCausedByNoSuchCommand() const {
         return jobType == EMPTY_CAUSED_BY_NO_SUCH_COMMAND;
     }
 }
