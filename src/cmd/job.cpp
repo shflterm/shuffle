@@ -77,4 +77,12 @@ namespace job {
     bool Job::isSuccessed() const {
         return jobType != EMPTY;
     }
+
+    bool Job::isCausedByArguments() const {
+        return jobType == EMPTY_CAUSED_BY_ARGUMENTS;
+    }
+
+    bool Job::isCausedByNoSuchCommand() const {
+        return jobType == EMPTY_CAUSED_BY_NO_SUCH_COMMAND;
+    }
 }

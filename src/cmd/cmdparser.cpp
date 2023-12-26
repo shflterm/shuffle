@@ -10,7 +10,7 @@ using std::stringstream;
 
 namespace cmd {
     Job parseCommand(shared_ptr<Command> app, const vector<string>&args) {
-        if (app == nullptr) return Job(job::EMPTY);
+        if (app == nullptr) return Job(job::EMPTY_CAUSED_BY_NO_SUCH_COMMAND);
 
         vector<string> newArgs = args;
         for (int i = 0; i < args.size(); ++i) {
@@ -27,7 +27,7 @@ namespace cmd {
 
         Job parsed = Job(app);
         const map<string, string>* parsedOptions = parseOptions(app, newArgs);
-        if (parsedOptions == nullptr) return Job(job::EMPTY);
+        if (parsedOptions == nullptr) return Job(job::EMPTY_CAUSED_BY_ARGUMENTS);
 
         parsed.options = *parsedOptions;
         return parsed;
@@ -94,9 +94,13 @@ namespace cmd {
                     value = ss.str().substr(0, ss.str().size() - 1);
                     finished = true;
                 }
-                else {
+                else if (optionIndex + 1 < optionNames.size()) {
                     key = optionNames[optionIndex++];
                     value = arg;
+                } else {
+                    error("Unexpected argument '" + arg + "'.");
+                    delete parsedOptions;
+                    return nullptr;
                 }
             }
             // else {

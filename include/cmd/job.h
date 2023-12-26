@@ -28,7 +28,9 @@ namespace job {
         COMMAND,
         SNIPPET,
         VARIABLE,
-        EMPTY
+        EMPTY,
+        EMPTY_CAUSED_BY_ARGUMENTS,
+        EMPTY_CAUSED_BY_NO_SUCH_COMMAND,
     };
 
     class Job {
@@ -48,6 +50,10 @@ namespace job {
         [[nodiscard]] bool isCommand() const;
 
         [[nodiscard]] bool isSuccessed() const;
+
+        [[nodiscard]] bool isCausedByArguments() const;
+
+        [[nodiscard]] bool isCausedByNoSuchCommand() const;
 
         explicit Job(const shared_ptr<cmd::Command>&app);
 
