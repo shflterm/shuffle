@@ -116,7 +116,6 @@ namespace appmgr {
                 for (int i = 0; i < json.size(); ++i) {
                     if (json[i].asString() == name) {
                         removed = json.removeIndex(i, &json[i]);
-                        break;
                     }
                 }
                 if (!removed) {
@@ -152,7 +151,6 @@ namespace appmgr {
         for (int i = 0; i < repos.size(); ++i) {
             if (repos[i].asString() == url) {
                 repos.removeIndex(i, &repos[i]);
-                break;
             }
         }
         setShflJson("repos", repos);

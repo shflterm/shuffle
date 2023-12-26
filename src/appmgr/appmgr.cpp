@@ -249,9 +249,16 @@ namespace appmgr {
     bool addApp(const string&name) {
         vector<string> res;
 
-        Json::Value commandList = getShflJson("apps");
-        commandList.append(name);
-        setShflJson("apps", commandList);
+        Json::Value apps = getShflJson("apps");
+        bool alreadyExists = false;
+        for (const auto& app: apps) {
+            if (app.asString() == name) {
+                alreadyExists = true;
+                break;
+            }
+        }
+        if (!alreadyExists) apps.append(name);
+        setShflJson("apps", apps);
         return true;
     }
 
