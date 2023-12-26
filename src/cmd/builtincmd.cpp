@@ -327,6 +327,8 @@ void loadCommands() {
 
     auto help = make_shared<Command>(Command(
         "help", "Show help", {
+            CommandOption("command", "If given, a detailed description of the command is provided.", "command")
+        }, {
             {"help", "Show help"},
             {"help shfl", "Show help for 'shfl'"},
             {"help shfl upgrade", "Show help for 'shfl upgrade'"},
