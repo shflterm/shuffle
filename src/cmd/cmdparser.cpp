@@ -25,7 +25,7 @@ namespace cmd {
             }
         }
 
-        Job parsed = Job(app);
+        auto parsed = Job(app);
         const map<string, string>* parsedOptions = parseOptions(app, newArgs);
         if (parsedOptions == nullptr) return Job(job::EMPTY_CAUSED_BY_ARGUMENTS);
 

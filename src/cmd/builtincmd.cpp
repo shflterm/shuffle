@@ -245,7 +245,7 @@ void loadCommands() {
                                                     {
                                                         {"shfl credits", "Show credits."}
                                                     }, shflCreditsCmd));
-    shared_ptr<Command> shfl = make_shared<Command>(Command(
+    auto shfl = make_shared<Command>(Command(
         "shfl", "Shuffle Command", {}, shflCmd
     ));
     shfl->setSubcommands({

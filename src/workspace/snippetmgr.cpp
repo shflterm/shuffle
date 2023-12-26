@@ -24,7 +24,7 @@ vector<Snippet> getSnippets() {
 
     Json::Value commandList = getShflJson("snippets");
     for (auto command: commandList) {
-        Snippet data = Snippet(command["name"].asString(), command["target"].asString());
+        auto data = Snippet(command["name"].asString(), command["target"].asString());
         res.push_back(data);
     }
 
