@@ -15,7 +15,7 @@ class Workspace;
 
 #include "cmd/job.h"
 
-using std::string, std::vector, std::map, std::filesystem::path, std::filesystem::current_path, std::shared_ptr;
+using std::string, std::vector, std::map, std::filesystem::path, std::filesystem::current_path, std::shared_ptr, job::Job;
 
 class Workspace {
     string name;
@@ -23,6 +23,7 @@ class Workspace {
     vector<string> history;
     int historyIndex = 0;
     map<string, string> variables;
+    shared_ptr<Job> currentJob;
 
     [[nodiscard]] string prompt(bool fullPath = false) const;
 
@@ -37,13 +38,15 @@ public:
 
     map<string, string> getVariables();
 
+    shared_ptr<Job> getCurrentJob();
+
     string historyUp();
 
     string historyDown();
 
     string processArgument(string argument);
 
-    shared_ptr<job::Job> createJob(string &input);
+    shared_ptr<Job> createJob(string &input);
 
     void inputPrompt();
 

@@ -8,6 +8,10 @@
 #include <map>
 #include <string>
 #include <memory>
+#include <future>
+#include <atomic>
+#include <thread>
+#include <chrono>
 
 namespace job {
     class Job;
@@ -17,7 +21,7 @@ namespace job {
 #include "workspace/workspace.h"
 #include "commandmgr.h"
 
-using std::shared_ptr, std::map, std::string;
+using std::shared_ptr, std::map, std::string, std::future, std::atomic;
 
 namespace job {
     enum JobType {
@@ -29,6 +33,8 @@ namespace job {
 
     class Job {
         JobType jobType = EMPTY;
+        std::promise<string> resultPromise;
+        std::thread jobThread;
 
     public:
         shared_ptr<cmd::Command> command;
@@ -36,6 +42,8 @@ namespace job {
         string id = generateRandomString(16);
 
         string start(Workspace* ws, bool backgroundMode = false);
+
+        bool stop();
 
         [[nodiscard]] bool isCommand() const;
 

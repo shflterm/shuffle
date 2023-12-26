@@ -51,6 +51,10 @@ map<string, string> Workspace::getVariables() {
     return variables;
 }
 
+shared_ptr<Job> Workspace::getCurrentJob() {
+    return currentJob;
+}
+
 string Workspace::historyUp() {
     if (history.empty()) return "";
 
@@ -71,8 +75,8 @@ string Workspace::processArgument(string argument) {
     if (argument[0] == '$') argument = variables[argument.substr(1)];
     else if (argument[argument.size() - 1] == '!') {
         string cmd = argument.substr(0, argument.size() - 1);
-        if (const shared_ptr<Job> job = createJob(cmd);
-            job != nullptr && job->isSuccessed())
+        const shared_ptr<Job> job = createJob(cmd);
+        if (job != nullptr && job->isSuccessed())
             argument = job->start(this, true);
     }
 
@@ -141,7 +145,8 @@ shared_ptr<Job> Workspace::createJob(string&input) {
         }
     }
 
-    shared_ptr<Job> parsed = make_shared<Job>(parseCommand(app, args));
+    auto parsed = make_shared<Job>(parseCommand(app, args));
+    currentJob = parsed;
     return parsed;
 }
 
@@ -337,7 +342,7 @@ void Workspace::inputPrompt() {
                 }
                 else if (response.type == shflai_response::COMMAND) {
                     info("Shuffle AI(Beta) wants to run the command $0 $1 $2. Do you want to run it? [Y/n] ",
-                            {"\033[100m", trim(response.result_str), "\033[0m"}, false);
+                         {"\033[100m", trim(response.result_str), "\033[0m"}, false);
                     if (int answer = readChar(); answer == 'Y' || answer == 'y') {
                         cout << endl << prompt() << trim(response.result_str) << endl;
                         cout.flush();
