@@ -27,7 +27,53 @@ namespace suggestion {
         return dictionary;
     }
 
+    string getVariableSuggestion(Workspace&ws, std::smatch::const_reference key, std::smatch::const_reference value) {
+        if (!value.matched) return "";
+
+        const vector<string> spl = splitBySpace(value);
+        if (spl.empty()) return "";
+
+        const int cur = spl.size() - 1;
+        if (spl[cur][0] == '(') {
+            string cmdName = spl[cur].substr(1);
+            if (cmdName.empty()) return "";
+
+            if (cmdName.length() > 1 && cmdName[cmdName.length() - 1] == ')')
+                cmdName = cmdName.substr(0, cmdName.length() - 1);
+            if (cmdName.length() > 2 && cmdName[cmdName.length() - 2] == ')'
+                && spl[cur][spl[cur].length() - 1] == '!')
+                cmdName = cmdName.substr(0, cmdName.length() - 2);
+
+            const vector<string> cmdNameSpl = splitBySpace(cmdName);
+
+            shared_ptr<Command> cmd = findCommand(cmdNameSpl.front());
+            if (cmd == nullptr) return getSuggestion(ws, cmdName);
+            for (int i = 1; i < cmdNameSpl.size(); ++i) {
+                if (cmd == nullptr) break;
+                cmd = findCommand(cmdNameSpl[i], cmd->getSubcommands());
+            }
+
+            if (cmd == nullptr) return getSuggestion(ws, cmdName);
+
+            cmdName = spl[cur].substr(1);
+            if (cmdName.length() > 1 && cmdName[cmdName.length() - 1] == ')')
+                return "!";
+            if (cmdName.length() > 2 && cmdName[cmdName.length() - 2] == ')'
+                && spl[cur][spl[cur].length() - 1] == '!')
+                return "";
+            return ")!";
+        }
+        if (spl[cur][0] == '$')
+            return findSuggestion(ws, spl[cur].substr(1), makeDictionary(ws.getVariables()))[0];
+        return "";
+    }
+
     string getSuggestion(Workspace&ws, const string&input) {
+        if (std::smatch matches; regex_match(input, matches, regex("(\\w*)\\s*=\\s*(\"([^\"]*)\"|([\\s\\S]+)*)"))) {
+            // when input is a variable
+            return getVariableSuggestion(ws, matches[1], matches[2]);
+        }
+
         vector<string> spl = splitBySpace(input);
         if (spl.empty()) return "";
 
