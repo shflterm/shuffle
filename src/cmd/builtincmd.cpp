@@ -16,7 +16,7 @@
 using std::cout, std::endl, std::make_shared,
         cmd::Command, cmd::CommandOption, cmd::findCommand,
         appmgr::loadApp, appmgr::unloadAllApps,appmgr::getApps, appmgr::installApp, appmgr::removeApp, appmgr::addRepo,
-        appmgr::removeRepo, appmgr::App;
+        appmgr::removeRepo, appmgr::App, appmgr::loadedApps;
 
 string writeHelp() {
     stringstream ss;
@@ -31,14 +31,19 @@ string writeHelp() {
             << "  " << fg_green << "@ <workspace name>" << reset << " : Move to the specified workspace" << endl
             << "  " << fg_green << "# <ai prompt>" << reset << " : Interact with AI" << endl
             << "  " << fg_green << "& <os command>" << reset << " : Execute the OS command" << endl
-            << endl
-            << "Commands: " << endl;
-    for (const auto&item: appmgr::getCommands()) {
-        if (auto command = *item; command.getDescription() != "-") {
-            ss << "  " << command.getName() << " : " << command.getDescription()
-                    << endl;
-        }
+            << endl;
+
+    const auto shuffleApp = loadedApps[0];
+    ss << "Commands in '" << shuffleApp->name << "': " << endl;
+    for (const auto&command: shuffleApp->commands) {
+        ss << "  " << command->getName() << " : " << command->getDescription()
+                << endl;
     }
+
+    ss << endl
+            << "If you want to see all apps, type 'appmgr list'." << endl
+            << "If you want to know commands in other apps, type 'help <app>'." << endl;
+
     ss << endl << "Additional Help: " << endl
             << "  For more information on a specific command, type 'help <command>'" << endl
             << "  Visit the online documentation for Shuffle at "
@@ -114,7 +119,26 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
         return "true";
     }
 
-    vector<string> cmdName = splitBySpace(options["command"]);
+    const string command = options["command"];
+    shared_ptr<App> app;
+    for (auto loaded_app : loadedApps) {
+        if (loaded_app->name == command) {
+            app = loaded_app;
+            break;
+        }
+    }
+    if (app != nullptr) {
+        stringstream ss;
+        ss << "Commands in '" << app->name << "': " << endl;
+        for (const auto&cmd: app->commands) {
+            ss << "  " << cmd->getName() << " : " << cmd->getDescription()
+                    << endl;
+        }
+        cout << ss.str();
+        return "true";
+    }
+
+    const vector<string> cmdName = splitBySpace(command);
     shared_ptr<Command> cmd = findCommand(cmdName.front());
     if (cmd == nullptr) {
         cout << "Command '" << cmdName.front() << "' not found." << endl;
@@ -334,7 +358,7 @@ void loadCommands() {
 
     auto help = make_shared<Command>(Command(
         "help", "Show help", {
-            CommandOption("command", "If given, a detailed description of the command is provided.", "command", false)
+            CommandOption("command", "If given, a detailed description of the command is provided.", "cmdorapp", false)
         }, {
             {"help", "Show help"},
             {"help shfl", "Show help for 'shfl'"},

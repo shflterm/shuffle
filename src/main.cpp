@@ -121,6 +121,19 @@ void loadProponents() {
                     apps.push_back(loaded_app->name);
             return findSuggestion(*ws, args[cur], apps)[0];
         }));
+    registerProponent(Proponent(
+        "cmdorapp", [](Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            if (string suggestion = getSuggestion(*ws, args[cur]);
+                !suggestion.empty())
+                return suggestion;
+
+            vector<string> apps;
+            apps.reserve(appmgr::loadedApps.size());
+            for (const auto&loaded_app: appmgr::loadedApps)
+                if (loaded_app->name != "shuffle")
+                    apps.push_back(loaded_app->name);
+            return findSuggestion(*ws, args[cur], apps)[0];
+        }));
 }
 
 int main(const int argc, char* argv[]) {
