@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <random>
 #include <curl/curl.h>
+#include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>
 #include <zip/zip.h>
 
@@ -133,55 +134,81 @@ std::string readTextFromWeb(const std::string&url) {
     return "";
 }
 
-bool downloadFile(const string&url, const path&file) {
-    RestClient::Response response = RestClient::get(url);
-    while (response.code == 302) {
-        if (!response.headers.count("Location"))
-            return false;
+struct ProgressData {
+    double lastPercentage;
+};
 
-        string redirectUrl = response.headers["Location"];
-        response = RestClient::get(redirectUrl);
-    }
+size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+    FILE* fp = static_cast<FILE *>(userp);
+    return fwrite(contents, size, nmemb, fp);
+}
 
-    if (response.code != 200) {
-        return false;
-    }
+int ProgressCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
+    auto* progressData = static_cast<ProgressData *>(clientp);
 
-    // Open the file for writing
-    ofstream outfile(file, std::ios::binary);
-    if (!outfile.is_open()) {
-        return false;
-    }
+    if (dltotal > 0) {
+        int progress = static_cast<int>(static_cast<float>(dlnow) / static_cast<float>(dltotal) * 100);
 
-    // Get the total size of the file for progress tracking
-    const long long totalSize = response.body.size();
-
-    // Initialize variables for progress tracking
-    constexpr int barWidth = 20;
-    long long downloadedSize = 0;
-    while (downloadedSize < totalSize) {
-        constexpr int bufferSize = 8192;
-        char buffer[bufferSize];
-        const int bytesRead = response.body.copy(buffer, bufferSize, downloadedSize);
-        outfile.write(buffer, bytesRead);
-
-        downloadedSize += bytesRead;
-
-        const double progress = static_cast<double>(downloadedSize) / static_cast<double>(totalSize);
-
-        cout << "[";
-        const int pos = barWidth * progress;
-        for (int i = 0; i < barWidth; ++i) {
-            if (i < pos) cout << "=";
-            else if (i == pos) cout << ">";
-            else cout << " ";
+        if (progress - progressData->lastPercentage >= 1.0) {
+            std::cout << "[";
+            const int pos = progress * 20;
+            for (int i = 0; i < 20; ++i) {
+                if (i < pos) std::cout << "=";
+                else if (i == pos) std::cout << ">";
+                else std::cout << " ";
+            }
+            std::cout << "] " << static_cast<int>(progress * 100.0) << " %\r";
+            progressData->lastPercentage = progress;
         }
-        cout << "] " << static_cast<int>(progress * 100.0) << " %\r";
-        cout.flush();
     }
 
-    cout << "[" << string(barWidth, '=') << "] DONE!" << endl;
-    return true;
+    return 0;
+}
+
+bool downloadFile(const string&url, const path&file) {
+    ProgressData progress = {0.0};
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
+    if (CURL* curl = curl_easy_init()) {
+        CURLcode res;
+
+        if (FILE* fp = fopen(file.string().c_str(), "wb")) {
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
+            curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &progress);
+            curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
+
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+
+            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+
+            res = curl_easy_perform(curl);
+
+            fclose(fp);
+        }
+        else {
+            std::cerr << "Failed to open local file for writing." << std::endl;
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            return false;
+        }
+
+        if (res != CURLE_OK) {
+            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            return false;
+        }
+
+        curl_easy_cleanup(curl);
+        curl_global_cleanup();
+        cout << "[" << string(20, '=') << "] DONE!" << endl;
+        return true;
+    }
+
+    return false;
 }
 
 int onExtractEntry(const char* filename, void* arg) {

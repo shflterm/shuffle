@@ -192,8 +192,6 @@ int main(const int argc, char* argv[]) {
 
     cout << "Type 'help' to get help!" << endl;
 
-    downloadFile("https://huggingface.co/TheBloke/Sakura-SOLAR-Instruct-GGUF/resolve/main/sakura-solar-instruct.Q2_K.gguf?download=true", "tset.gguf");
-
     currentWorkspace = new Workspace("main");
     // ReSharper disable once CppDFAEndlessLoop
     while (true) {
