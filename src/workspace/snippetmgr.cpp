@@ -33,14 +33,13 @@ vector<Snippet> getSnippets() {
 }
 
 bool addSnippet(const string&name, const string&target) {
-    snippets.push_back(make_shared<Snippet>(Snippet(name, target)));
-
     Json::Value snippetsJson = getShflJson("snippets");
 
     for (auto snippet: snippetsJson) {
         if (snippet["name"].asString() == name) return false;
     }
 
+    snippets.push_back(make_shared<Snippet>(Snippet(name, target)));
     Json::Value newSnippet;
     newSnippet["name"] = name;
     newSnippet["target"] = target;

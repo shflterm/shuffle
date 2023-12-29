@@ -66,17 +66,11 @@ void loadProponents() {
     using namespace suggestion;
     registerProponent(Proponent(
         "text", [](Workspace* ws, const cmd::CommandOption&option, const vector<string>&args, const size_t cur) {
-            string suggestion;
-            if (args[cur].empty())
-                suggestion = "<" + option.name + ">";
-            return suggestion;
+            return "";
         }));
     registerProponent(Proponent(
         "number", [](Workspace* ws, const cmd::CommandOption&option, const vector<string>&args, const size_t cur) {
-            string suggestion;
-            if (args[cur].empty())
-                suggestion = "<" + option.name + ">";
-            return suggestion;
+            return "";
         }));
     registerProponent(Proponent(
         "boolean", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
