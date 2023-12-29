@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <utils/console.h>
+#include <workspace/snippetmgr.h>
 
 #include "suggestion/proponent.h"
 #include "appmgr/appmgr.h"
@@ -81,7 +82,15 @@ namespace suggestion {
         if (input[input.length() - 1] == ' ') spl.emplace_back("");
 
         if (spl.size() == 1) {
-            suggestion = findSuggestion(ws, spl[0], makeDictionary(appmgr::getCommands()))[0];
+            vector<string> dict = makeDictionary(appmgr::getCommands());
+            for (const auto&snippet: snippets) dict.push_back(snippet->getName());
+
+            vector<string> suggestions = findSuggestion(ws, spl[0], dict);
+            std::sort(suggestions.begin(), suggestions.end(), [](const string&a, const string&b) {
+                return a.length() < b.length();
+            });
+
+            suggestion = suggestions[0];
         }
         else {
             shared_ptr<Command> cmd = findCommand(spl[0]);
