@@ -166,10 +166,20 @@ bool downloadFile(const string&url, const path&file) {
 
         downloadedSize += bytesRead;
 
-        const int progress = static_cast<int>((downloadedSize * 100) / totalSize);
-        std::cout << "Downloading... (" + std::to_string(progress) + "%)" << std::endl;
-        cout.flush();
+        const double progress = static_cast<double>(downloadedSize) / static_cast<double>(totalSize);
+        constexpr int barWidth = 20;
+
+        std::cout << "[";
+        const int pos = barWidth * progress;
+        for (int i = 0; i < barWidth; ++i) {
+            if (i < pos) std::cout << "=";
+            else if (i == pos) std::cout << ">";
+            else std::cout << " ";
+        }
+        std::cout << "] " << static_cast<int>(progress * 100.0) << " %\r";
+        std::cout.flush();
     }
+    std::cout << std::endl;
     return true;
 }
 

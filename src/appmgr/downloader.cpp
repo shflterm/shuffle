@@ -72,7 +72,6 @@ namespace appmgr {
 
                     if (downloadFile(downloadFrom, downloadTo)) {
                         info("Downloading... (Done!)");
-                        cout << "\n";
 
                         extractZip(downloadTo, appPath);
                         installed = true;
