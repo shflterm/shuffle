@@ -1,6 +1,7 @@
 #include "workspace/snippetmgr.h"
 
 #include <utility>
+#include <algorithm>
 #include "json/json.h"
 
 #include "utils/shfljson.h"
