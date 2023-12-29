@@ -121,7 +121,7 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
 
     const string command = options["command"];
     shared_ptr<App> app;
-    for (auto loaded_app : loadedApps) {
+    for (auto loaded_app: loadedApps) {
         if (loaded_app->name == command) {
             app = loaded_app;
             break;
@@ -180,15 +180,42 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
     return cmd->getName();
 }
 
-string snippetCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
-    //snf create aa help cd
-    const string snippetName = options["create"];
-    const string cmd = options["value"];
+string snfCreateCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    const string snippetName = options["name"];
 
-    addSnippet(snippetName, cmd);
-    if (!bgMode) cout << "Snippet Created: " << snippetName << " => " << cmd << endl;
+    if (const string cmd = options["value"];
+        addSnippet(snippetName, cmd)) {
+        if (!bgMode) cout << "Snippet Created: " << snippetName << " => " << cmd << endl;
+        return snippetName;
+    }
+    error("Snippet '" + snippetName + "' already exists.");
+    return "false";
+}
 
-    return snippetName;
+string snfRemoveCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    const string snippetName = options["name"];
+
+    if (removeSnippet(snippetName)) {
+        if (!bgMode) cout << "Snippet Removed: " << snippetName << endl;
+        return snippetName;
+    }
+
+    error("Snippet '" + snippetName + "' not found.");
+    return "false";
+}
+
+string snfListCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    if (!bgMode) {
+        if (snippets.empty()) {
+            info("No snippets.");
+            return "0";
+        }
+
+        for (const auto&snippet: snippets) {
+            cout << snippet->getName() << " => " << snippet->getTarget() << endl;
+        }
+    }
+    return std::to_string(snippets.size());
 }
 
 string clearCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
@@ -355,6 +382,39 @@ void loadCommands() {
     appmgrRepo->setParent(appmgr);
 
     builtinCommands.push_back(appmgr);
+
+    auto snfCreate = make_shared<Command>(Command("create", "Create a new snippet.", {
+                                                      CommandOption("name", "", "text", true),
+                                                      CommandOption("value", "", "command", true)
+                                                  }, {
+                                                      {
+                                                          "snf create aa help cd",
+                                                          "Create a new snippet 'aa' with value 'help cd'."
+                                                      }
+                                                  }, snfCreateCmd));
+
+    auto snfRemove = make_shared<Command>(Command("remove", "Remove a snippet.", {
+                                                      CommandOption("name", "", "text", true)
+                                                  }, {
+                                                      {
+                                                          "snf remove aa",
+                                                          "Remove the snippet 'aa'."
+                                                      }
+                                                  }, snfRemoveCmd));
+
+    auto snfList = make_shared<Command>(Command("list", "List all snippets.", {
+                                                    {"snf list", "List all snippets."}
+                                                }, snfListCmd));
+
+    auto snf = make_shared<Command>(Command(
+        "snf", "Snippet Management", {}, do_nothing
+    ));
+    snf->setSubcommands({snfCreate, snfRemove, snfList});
+    snfCreate->setParent(snf);
+    snfRemove->setParent(snf);
+    snfList->setParent(snf);
+
+    builtinCommands.push_back(snf);
 
     auto help = make_shared<Command>(Command(
         "help", "Show help", {

@@ -30,6 +30,8 @@ vector <Snippet> getSnippets();
 
 bool addSnippet(const string &name, const string &target);
 
+bool removeSnippet(const string &name);
+
 void loadSnippets();
 
 #endif //SHFL_SNIPPETMGR_H
