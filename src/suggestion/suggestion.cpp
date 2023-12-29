@@ -121,19 +121,22 @@ namespace suggestion {
                 }
             }
 
-            if (cmd->getRequiredOptions().size() > cur - 1) {
+            bool isEnoughOptions = cmd->getRequiredOptions().size() <= cur - 1;
+            bool hasOnlyOneOptionalOption = cmd->getOptions().size() == 1 && cmd->getRequiredOptions().empty();
+            bool hasSpecifiedOption = cur > 1 && !args[cur - 2].empty() && args[cur - 2][0] == '-';
+            if (!isEnoughOptions) {
                 cmd::CommandOption option = cmd->getRequiredOptions()[cur - 1];
 
                 Proponent proponent = findProponent(option.type);
                 suggestion = proponent.makeProp(&ws, option, args, cur - 1);
             }
-            else if (cmd->getOptions().size() == 1 && cmd->getRequiredOptions().empty()) {
+            else if (hasOnlyOneOptionalOption) {
                 cmd::CommandOption option = cmd->getOptions()[0];
 
                 Proponent proponent = findProponent(option.type);
                 suggestion = proponent.makeProp(&ws, option, args, cur - 1);
             }
-            else if (cur > 1 && !args[cur - 2].empty() && args[cur - 2][0] == '-') {
+            else if (hasSpecifiedOption) {
                 string optName = args[cur - 2].substr(1);
                 for (auto option: cmd->getOptions()) {
                     if (option.name == optName ||
