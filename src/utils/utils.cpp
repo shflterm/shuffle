@@ -157,6 +157,7 @@ bool downloadFile(const string&url, const path&file) {
     const long long totalSize = response.body.size();
 
     // Initialize variables for progress tracking
+    constexpr int barWidth = 20;
     long long downloadedSize = 0;
     while (downloadedSize < totalSize) {
         constexpr int bufferSize = 8192;
@@ -167,19 +168,19 @@ bool downloadFile(const string&url, const path&file) {
         downloadedSize += bytesRead;
 
         const double progress = static_cast<double>(downloadedSize) / static_cast<double>(totalSize);
-        constexpr int barWidth = 20;
 
-        std::cout << "[";
+        cout << "[";
         const int pos = barWidth * progress;
         for (int i = 0; i < barWidth; ++i) {
-            if (i < pos) std::cout << "=";
-            else if (i == pos) std::cout << ">";
-            else std::cout << " ";
+            if (i < pos) cout << "=";
+            else if (i == pos) cout << ">";
+            else cout << " ";
         }
-        std::cout << "] " << static_cast<int>(progress * 100.0) << " %\r";
-        std::cout.flush();
+        cout << "] " << static_cast<int>(progress * 100.0) << " %\r";
+        cout.flush();
     }
-    std::cout << std::endl;
+
+    cout << "[" << string(barWidth, '=') << "] DONE!" << endl;
     return true;
 }
 

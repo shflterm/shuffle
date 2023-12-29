@@ -71,8 +71,6 @@ namespace appmgr {
 #endif
 
                     if (downloadFile(downloadFrom, downloadTo)) {
-                        info("Downloading... (Done!)");
-
                         extractZip(downloadTo, appPath);
                         installed = true;
                         break;
