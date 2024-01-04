@@ -128,6 +128,14 @@ void loadProponents() {
                     apps.push_back(loaded_app->name);
             return findSuggestion(*ws, args[cur], apps)[0];
         }));
+    registerProponent(Proponent(
+        "snippet", [](Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            vector<string> snfs;
+            snfs.reserve(snfs.size());
+            for (const auto&snf: snippets)
+                snfs.push_back(snf->getName());
+            return findSuggestion(*ws, args[cur], snfs)[0];
+        }));
 }
 
 int main(const int argc, char* argv[]) {

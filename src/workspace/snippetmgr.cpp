@@ -59,9 +59,12 @@ bool removeSnippet(const string&name) {
     for (int i = 0; i < snippetsJson.size(); ++i) {
         if (auto snippet = snippetsJson[i];
             snippet["name"].asString() == name) {
-            return snippetsJson.removeIndex(i, &snippet);
+            const bool res = snippetsJson.removeIndex(i, &snippet);
+            setShflJson("snippets", snippetsJson);
+            return res;
         }
     }
+
 
     return false;
 }

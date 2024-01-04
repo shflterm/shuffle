@@ -394,7 +394,7 @@ void loadCommands() {
                                                   }, snfCreateCmd));
 
     auto snfRemove = make_shared<Command>(Command("remove", "Remove a snippet.", {
-                                                      CommandOption("name", "", "text", true)
+                                                      CommandOption("name", "", "snippet", true)
                                                   }, {
                                                       {
                                                           "snf remove aa",
