@@ -26,6 +26,8 @@ typedef std::function<string(Workspace* ws, map<string, string>&options, bool bg
 
 string do_nothing(Workspace* ws, map<string, string>&options, bool bgMode, const string&id);
 
+string incorrect_usage(Workspace* ws, map<string, string>&options, bool bgMode, const string&id);
+
 namespace cmd {
     class CommandOption {
     public:
@@ -84,6 +86,8 @@ namespace cmd {
         string run(Workspace* ws, map<string, string>&optionValues, bool backgroundMode, const string&taskId) const;
 
         [[nodiscard]] string createHint() const;
+
+        string createHelpMessage() const;
 
         Command(string name, string description, string usage,
                 const vector<Command>&subcommands, const vector<CommandOption>&options,

@@ -2,14 +2,26 @@
 
 #include <memory>
 #include <utility>
+#include <sstream>
+#include <utils/console.h>
 
 #include "appmgr/appmgr.h"
 #include "workspace/workspace.h"
 
-using std::make_shared;
+using std::make_shared, std::stringstream, std::endl;
 
 string do_nothing(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
     return "do_nothing";
+}
+
+string incorrect_usage(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    if (!bgMode) {
+        const shared_ptr<Job> job = ws->getCurrentJob();
+        error("Command '$0' was used incorrectly.", {job->command->getName()});
+        error("");
+        error(job->command->createHelpMessage(), false);
+    }
+    return "incorrect_usage";
 }
 
 namespace cmd {
@@ -60,6 +72,37 @@ namespace cmd {
         if (!usage.empty())
             hint += " / " + usage;
         return hint;
+    }
+
+    string Command::createHelpMessage() const {
+        string cmdOptions;
+        for (const auto&item: options) {
+            cmdOptions += "\n " + item.name + (item.isRequired ? "*" : "") + " : " + item.description;
+        }
+
+        string subcommandsStr;
+        for (const auto&item: subcommands) {
+            subcommandsStr += item->getName() + ", ";
+        }
+
+        string examplesStr;
+        for (const auto&item: examples) {
+            examplesStr += "\n  - `" + item.command + "` : " + item.whatItDoes;
+        }
+
+        stringstream ss;
+        ss << "Name: " << name << endl;
+        if (!description.empty())
+            ss << "Description: " << description << endl;
+        if (!usage.empty())
+            ss << "Usage: " << usage << endl;
+        if (!cmdOptions.empty())
+            ss << "Options: " << cmdOptions << endl;
+        if (!subcommands.empty())
+            ss << "Subcommands: " << subcommandsStr.substr(0, subcommandsStr.size() - 2) << endl;
+        if (!examples.empty())
+            ss << "Examples: " << examplesStr << endl;
+        return ss.str();
     }
 
     const vector<shared_ptr<Command>>& Command::getSubcommands() const {

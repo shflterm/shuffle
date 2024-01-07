@@ -76,11 +76,6 @@ string shflCreditsCmd(Workspace* ws, map<string, string>&options, const bool bgM
     return "thanks";
 }
 
-string shflCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    // TODO: Print How to use
-    return "true";
-}
-
 string appmgrAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     return installApp(options["appname"]) ? "true" : "false";
 }
@@ -90,14 +85,13 @@ string appmgrRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, 
 }
 
 string appmgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    // print all appmgr infos
     if (!bgMode) {
-        for (const auto&app: appmgr::loadedApps) {
+        for (const auto&app: loadedApps) {
             cout << app->name << " v" << app->getVersion() << ": " << app->description << " (by " << app->author << ")"
                     << endl;
         }
     }
-    return std::to_string(appmgr::loadedApps.size());
+    return std::to_string(loadedApps.size());
 }
 
 string appmgrRepoAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
@@ -106,11 +100,6 @@ string appmgrRepoAddCmd(Workspace* ws, map<string, string>&options, bool bgMode,
 
 string appmgrRepoRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     return removeRepo(options["repourl"]) ? "true" : "false";
-}
-
-string appmgrCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    // TODO: Print How to use
-    return "true";
 }
 
 string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
@@ -150,32 +139,8 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
         cmd = findCommand(cmdName[i], cmd->getSubcommands());
     }
 
-    string cmdOptions;
-    for (const auto&item: cmd->getOptions()) {
-        cmdOptions += "\n " + item.name + (item.isRequired ? "*" : "") + " : " + item.description;
-    }
-
-    string subcommands;
-    for (const auto&item: cmd->getSubcommands()) {
-        subcommands += item->getName() + ", ";
-    }
-
-    string examples;
-    for (const auto&item: cmd->getExamples()) {
-        examples += "\n  - `" + item.command + "` : " + item.whatItDoes;
-    }
-
     cout << "== About '" << cmd->getName() << "' ==" << endl;
-    cout << "Name: " << cmd->getName() << endl;
-    if (!cmd->getDescription().empty())
-        cout << "Description: " << cmd->getDescription() << endl;
-    if (!cmd->getUsage().empty())
-        cout << "Usage: " << cmd->getUsage() << endl;
-    if (!cmdOptions.empty())
-        cout << "Options: " << cmdOptions << endl;
-    if (!subcommands.empty())
-        cout << "Subcommands: " << subcommands.substr(0, subcommands.size() - 2) << endl;
-    cout << "Examples: " << examples << endl;
+    cout << cmd->createHelpMessage();
 
     return cmd->getName();
 }
@@ -304,7 +269,7 @@ void loadCommands() {
                                                         {"shfl credits", "Show credits."}
                                                     }, shflCreditsCmd));
     auto shfl = make_shared<Command>(Command(
-        "shfl", "Shuffle Command", {}, shflCmd
+        "shfl", "Shuffle Command", {}, incorrect_usage
     ));
     shfl->setSubcommands({
         shflReload, shflUpgrade, shflCredits
@@ -366,14 +331,14 @@ void loadCommands() {
                                                          }, appmgrRepoRemoveCmd));
 
     auto appmgrRepo = make_shared<Command>(Command(
-        "repo", "Repository Management", {}, do_nothing
+        "repo", "Repository Management", {}, incorrect_usage
     ));
     appmgrRepo->setSubcommands({appmgrRepoAdd, appmgrRepoRemove});
     appmgrRepoAdd->setParent(appmgrRepo);
     appmgrRepoRemove->setParent(appmgrRepo);
 
     auto appmgr = make_shared<Command>(Command(
-        "appmgr", "App Manager", {}, appmgrCmd
+        "appmgr", "App Manager", {}, incorrect_usage
     ));
     appmgr->setSubcommands({appmgrAdd, appmgrRemove, appmgrList, appmgrRepo});
     appmgrAdd->setParent(appmgr);
@@ -407,7 +372,7 @@ void loadCommands() {
                                                 }, snfListCmd));
 
     auto snf = make_shared<Command>(Command(
-        "snf", "Snippet Management", {}, do_nothing
+        "snf", "Snippet Management", {}, incorrect_usage
     ));
     snf->setSubcommands({snfCreate, snfRemove, snfList});
     snfCreate->setParent(snf);
@@ -463,7 +428,7 @@ void loadCommands() {
                                                  }, taskListCmd));
 
     auto task = make_shared<Command>(Command(
-        "task", "Manage background tasks", {}, do_nothing
+        "task", "Manage background tasks", {}, incorrect_usage
     ));
     task->setSubcommands({taskStart, taskStop, taskLog, taskList});
     taskStart->setParent(task);
