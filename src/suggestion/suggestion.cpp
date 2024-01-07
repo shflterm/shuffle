@@ -54,7 +54,11 @@ namespace suggestion {
                 cmd = findCommand(cmdNameSpl[i], cmd->getSubcommands());
             }
 
-            if (cmd == nullptr) return getSuggestion(ws, cmdName);
+            if (cmd == nullptr || cmdName[cmdName.size() - 1] == ' ') {
+                if (string suggestion = getSuggestion(ws, cmdName);
+                    !suggestion.empty())
+                    return suggestion;
+            }
 
             cmdName = spl[cur].substr(1);
             if (cmdName.length() > 1 && cmdName[cmdName.length() - 1] == ')')
