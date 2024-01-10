@@ -315,18 +315,6 @@ void Workspace::inputPrompt() {
                 }
                 return;
             }
-            case '&': {
-                if (!input.empty()) continue;
-
-                cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
-                cout << erase_cursor_to_end;
-                cout << fg_yellow << "& " << reset;
-                string command;
-                getline(cin, command);
-
-                system(command.c_str());
-                return;
-            }
             case '#': {
                 if (!input.empty()) continue;
 
