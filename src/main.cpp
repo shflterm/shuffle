@@ -54,8 +54,7 @@ extern "C" void handleCrash(int sig) {
 
 extern "C" void handleQuit(const int sig) {
     if (currentWorkspace == nullptr || currentWorkspace->getCurrentJob() == nullptr) {
-        info("Bye!");
-        exit(0);
+        return;
     }
     if (!currentWorkspace->getCurrentJob()->stop()) {
         warning("Cannot stop the current job!");

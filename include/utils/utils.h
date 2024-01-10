@@ -49,4 +49,8 @@ bool checkUpdate(bool checkBackground = true);
 
 std::string generateRandomString(int length);
 
+bool isExecutableInPath(const string& executableName);
+
+bool endsWith(const std::string& str, const std::string& suffix);
+
 #endif //SHUFFLE_INCLUDE_UTILS_H_

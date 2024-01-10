@@ -26,6 +26,7 @@ using std::shared_ptr, std::map, std::string, std::future, std::atomic;
 namespace job {
     enum JobType {
         COMMAND,
+        EXECUTABLE_COMMAND,
         SNIPPET,
         VARIABLE,
         EMPTY,
@@ -37,6 +38,7 @@ namespace job {
         JobType jobType = EMPTY;
         std::promise<string> resultPromise;
         std::thread jobThread;
+        string content;
 
     public:
         shared_ptr<cmd::Command> command;
@@ -51,6 +53,8 @@ namespace job {
 
         [[nodiscard]] bool isSuccessed() const;
 
+        [[nodiscard]] bool isEmpty() const;
+
         [[nodiscard]] bool isEmptyCausedByArguments() const;
 
         [[nodiscard]] bool isEmptyCausedByNoSuchCommand() const;
@@ -58,6 +62,8 @@ namespace job {
         explicit Job(const shared_ptr<cmd::Command>&app);
 
         explicit Job(JobType commandType);
+
+        Job::Job(JobType commandType, string content);
 
         Job();
     };

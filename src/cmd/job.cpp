@@ -16,22 +16,18 @@ namespace job {
     Job::Job(const JobType commandType) : jobType(commandType) {
     }
 
+    Job::Job(const JobType commandType, string content) : jobType(commandType), content(std::move(content)) {
+    }
+
     Job::Job() = default;
 
     string Job::start(Workspace* ws, const bool backgroundMode) {
-        if (jobType == SNIPPET) {
-            error("Cannot run snippet directly!");
-            return "IT_IS_SNIPPET";
+        if (!isCommand()) {
+            error("Cannot run non-command job!");
+            return "IT_IS_NOT_COMMAND";
         }
-        if (jobType == VARIABLE) {
-            error("Cannot run variable directly!");
-            return "IT_IS_VARIABLE";
-        }
-        if (jobType == EMPTY) {
-            error("Cannot run empty job!");
-            return "IT_IS_EMPTY";
-        }
-        if (command == nullptr) {
+
+        if (jobType == COMMAND && command == nullptr) {
             error("Invalid command!");
             return "INVALID_COMMAND";
         }
@@ -39,7 +35,13 @@ namespace job {
         const std::shared_future resultFuture = resultPromise.get_future();
 
         jobThread = std::thread([&](std::promise<string>&p) {
-            p.set_value(command->run(ws, options, backgroundMode, id));
+            if (jobType == EXECUTABLE_COMMAND) {
+                system(content.c_str());
+                p.set_value("success");
+            }
+            else if (jobType == COMMAND) {
+                p.set_value(command->run(ws, options, backgroundMode, id));
+            }
         }, std::ref(resultPromise));
 
         auto result = resultFuture.get();
@@ -71,11 +73,15 @@ namespace job {
     }
 
     bool Job::isCommand() const {
-        return jobType == COMMAND;
+        return jobType == COMMAND || jobType == EXECUTABLE_COMMAND;
     }
 
     bool Job::isSuccessed() const {
         return jobType != EMPTY;
+    }
+
+    bool Job::isEmpty() const {
+        return jobType == EMPTY || jobType == EMPTY_CAUSED_BY_ARGUMENTS || jobType == EMPTY_CAUSED_BY_NO_SUCH_COMMAND;
     }
 
     bool Job::isEmptyCausedByArguments() const {
