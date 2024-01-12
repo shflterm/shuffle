@@ -63,7 +63,7 @@ namespace job {
 
         explicit Job(JobType commandType);
 
-        Job::Job(JobType commandType, string content);
+        Job(JobType commandType, string content);
 
         Job();
     };
