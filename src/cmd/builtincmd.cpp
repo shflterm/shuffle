@@ -109,6 +109,11 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
     }
 
     const string command = options["command"];
+    if (command.empty()) {
+        cout << writeHelp();
+        return "true";
+    }
+
     shared_ptr<App> app;
     for (auto loaded_app: loadedApps) {
         if (loaded_app->name == command) {
@@ -209,7 +214,7 @@ string taskStopCmd(Workspace* ws, map<string, string>&options, const bool bgMode
     for (auto&task: tasks) {
         if (task.getId() == taskId) {
             if (task.job == nullptr) {
-                error("Job is null.");
+                error("Cannot stop job. Job is already stopped.");
                 return "job is null";
             }
             return task.job->stop() ? "true" : "false";
@@ -224,7 +229,7 @@ string taskLogCmd(Workspace* ws, map<string, string>&options, const bool bgMode,
     for (auto&task: tasks) {
         if (task.getId() == taskId) {
             if (task.job == nullptr) {
-                error("Job is null.");
+                error("Cannot print log. Job is null.");
                 return "job is null";
             }
             string jobId = task.job->id;
