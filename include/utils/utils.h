@@ -49,7 +49,7 @@ std::string generateRandomString(int length);
 
 vector<path> getPathDirectories();
 
-bool isExecutableInPath(const path&currentDirectory, string executableName);
+bool isExecutableInPath(const path&currentDirectory, const string&executableName);
 
 vector<string> getExecutableFilesInPath(const vector<path>&directories);
 

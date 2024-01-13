@@ -322,7 +322,7 @@ vector<path> getPathDirectories() {
     return directories;
 }
 
-bool isExecutableInPath(const path&currentDirectory, string executableName) {
+bool isExecutableInPath(const path&currentDirectory, const string&executableName) {
     vector<path> directories = getPathDirectories();
     directories.emplace_back(currentDirectory);
 
