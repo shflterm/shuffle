@@ -39,12 +39,23 @@ namespace job {
         const std::shared_future resultFuture = resultPromise.get_future();
 
         jobThread = std::thread([&](std::promise<string>&p) {
-            p.set_value(command->run(ws, options, backgroundMode, id));
+            try {
+                p.set_value(command->run(ws, options, backgroundMode, id));
+            }
+            catch (...) {
+                p.set_exception(std::current_exception());
+            }
         }, std::ref(resultPromise));
 
-        auto result = resultFuture.get();
-        if (result != "cancelled") jobThread.detach();
-        return result;
+        try {
+            auto result = resultFuture.get();
+            if (result != "cancelled") jobThread.detach();
+            return result;
+        }
+        catch (const std::exception&e) {
+            error("Exception occurred while running command '$0': $1", {command->getName(), e.what()});
+            return "EXCEPTION";
+        }
     }
 
     bool Job::stop() {
