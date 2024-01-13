@@ -189,15 +189,16 @@ void Workspace::inputPrompt() {
 
     while (true) {
         int c = readChar();
+
         switch (c) {
             case '\b':
             case 127: {
                 if (input.empty() || cursor - 1 < inputStartX) break;
-                cout << "\b";
                 cursor--;
                 input.erase(cursor - inputStartX, 1);
-                int x = wherex();
-                cout << teleport(0, wherey()) << erase_line << prompt() << input << teleport(x, wherey());
+                cout << save_cursor_pos
+                        << teleport(0, wherey()) << erase_line << prompt() << input
+                        << restore_cursor_pos << teleport(wherex() - 1, wherey());
                 break;
             }
             case '\n':
@@ -265,53 +266,96 @@ void Workspace::inputPrompt() {
                     }
                     case 75: {
                         // 왼쪽 화살표
-                        if (wherex() > inputStartX)
+                        if (wherex() > inputStartX) {
                             cout << teleport(wherex() - 1, wherey());
-                        cursor--;
+                            cursor--;
+                        }
                         break;
                     }
-                    case 77: // 오른쪽 화살표
-                        if (wherex() < inputStartX + static_cast<int>(input.size()))
+                    case 77: {
+                        // 오른쪽 화살표
+                        if (wherex() < inputStartX + static_cast<int>(input.size())) {
                             cout << teleport(wherex() + 1, wherey());
-                        cursor++;
+                            cursor++;
+                        }
                         break;
+                    }
+                    case 83: { // Delete
+                        if (input.empty()) break;
+                        input.erase(cursor - inputStartX, 1);
+                        cout << save_cursor_pos
+                                << teleport(0, wherey()) << erase_line << prompt() << input
+                                << restore_cursor_pos;
+                        break;
+                    }
                     default:
                         break;
                 }
                 break;
             }
 #elif defined(__linux__) || defined(__APPLE__)
-            case 27: {
+            case 0x1B: {
+                int i = readChar();
+                if (i != '[') break;
+                i = readChar();
                 const int mv = static_cast<int>(input.size());
-                switch (readChar()) {
-                    case 91: {
-                        switch (readChar()) {
-                            case 65: {
-                                cout << teleport(wherex() - mv, wherey());
-                                cout << erase_cursor_to_end;
-                                input = historyUp();
-                                cout << input;
-                                break;
-                            }
-                            case 66: {
-                                cout << teleport(wherex() - mv, wherey());
-                                cout << erase_cursor_to_end;
-                                input = historyDown();
-                                cout << input;
-                                break;
-                            }
-                            default:
-                                break;
+                switch (i) {
+                    case 65: {
+                        // 위쪽 화살표
+                        cout << teleport(wherex() - mv, wherey());
+                        cout << erase_cursor_to_end;
+                        input = historyUp();
+                        cout << input;
+                        break;
+                    }
+                    case 66: {
+                        // 아래쪽 화살표
+                        cout << teleport(wherex() - mv, wherey());
+                        cout << erase_cursor_to_end;
+                        input = historyDown();
+                        cout << input;
+                        break;
+                    }
+                    case 68: {
+                        // 왼쪽 화살표
+                        if (wherex() > inputStartX) {
+                            cout << teleport(wherex() - 1, wherey());
+                            cursor--;
                         }
+                        break;
+                    }
+                    case 67: {
+                        // 오른쪽 화살표
+                        if (wherex() < inputStartX + static_cast<int>(input.size())) {
+                            cout << teleport(wherex() + 1, wherey());
+                            cursor++;
+                        }
+                        break;
+                    }
+                    case 83: {
+                        // Delete
+                        if (input.empty()) break;
+                        input.erase(cursor - inputStartX, 1);
+                        cout << save_cursor_pos
+                                << teleport(0, wherey()) << erase_line << prompt() << input
+                                << restore_cursor_pos;
+                        break;
+                    }
+                    case 51: {
+                        i = readChar();
+                        if (i != 126) break;
+
+                        // Delete
+                        if (input.empty()) break;
+                        input.erase(cursor - inputStartX, 1);
+                        cout << save_cursor_pos
+                                << teleport(0, wherey()) << erase_line << prompt() << input
+                                << restore_cursor_pos;
                         break;
                     }
                     default:
                         break;
                 }
-                break;
-            }
-            case 94: {
-                cout << "C";
                 break;
             }
 #endif
@@ -371,24 +415,25 @@ void Workspace::inputPrompt() {
                 cursor++;
                 int x = wherex();
                 cout << teleport(0, wherey()) << erase_line << prompt() << input << teleport(x + 1, wherey());
+                // cout << cursor << "(" << inputStartX << ")";
             }
         }
 
-        if (isAnsiSupported()) {
-            int suggestionStartX = inputStartX + input.size();
-            string suggestion = getSuggestion(*this, input);
-            cout << save_cursor_pos
-                    << teleport(suggestionStartX, wherey()) << fgb_black << suggestion << reset
-                    << restore_cursor_pos;
-
-            string hint = getHint(*this, input + suggestion);
-            const int xPos = wherex() - static_cast<int>(hint.size()) / 2;
-            cout << save_cursor_pos
-                    << teleport(xPos < 0 ? 0 : xPos, wherey() + 1)
-                    << erase_line
-                    << fgb_black << hint
-                    << restore_cursor_pos;
-        }
+        // if (isAnsiSupported()) {
+        //     int suggestionStartX = inputStartX + input.size();
+        //     string suggestion = getSuggestion(*this, input);
+        //     cout << save_cursor_pos
+        //             << teleport(suggestionStartX, wherey()) << fgb_black << suggestion << reset
+        //             << restore_cursor_pos;
+        //
+        //     string hint = getHint(*this, input + suggestion);
+        //     const int xPos = wherex() - static_cast<int>(hint.size()) / 2;
+        //     cout << save_cursor_pos
+        //             << teleport(xPos < 0 ? 0 : xPos, wherey() + 1)
+        //             << erase_line
+        //             << fgb_black << hint
+        //             << restore_cursor_pos;
+        // }
     }
 }
 
