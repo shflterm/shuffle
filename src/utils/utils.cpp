@@ -326,14 +326,19 @@ bool isExecutableInPath(const path&currentDirectory, string executableName) {
     vector<path> directories = getPathDirectories();
     directories.emplace_back(currentDirectory);
 
-#ifdef _WIN32
-    executableName += ".exe";
-#endif
-
     return std::any_of(directories.begin(), directories.end(), [&](const path&directory) {
-        const path fullPath = directory / executableName;
+        path fullPath = directory / executableName;
+        bool result = exists(fullPath) && is_regular_file(fullPath) &&
+                      (status(fullPath).permissions() & perms::owner_exec) != perms::none;
+        if (result) return true;
+
+#ifdef _WIN32
+        fullPath = fullPath.string() + ".exe";
         return exists(fullPath) && is_regular_file(fullPath) &&
                (status(fullPath).permissions() & perms::owner_exec) != perms::none;
+#else
+        return false;
+#endif
     });
 }
 
@@ -346,7 +351,8 @@ vector<string> getExecutableFilesInPath(const vector<path>&directories) {
                     executables.push_back(entry.path().filename().string());
                 }
             }
-        } catch (const std::exception ignored) {
+        }
+        catch (const std::exception ignored) {
         }
     }
     return executables;
