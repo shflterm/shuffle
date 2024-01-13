@@ -177,6 +177,8 @@ string Workspace::prompt(const bool fullPath) const {
 
 void Workspace::inputPrompt() {
     cout << prompt();
+    int inputStartX = wherex();
+    int cursor = inputStartX;
 
     string input;
     if (isAnsiSupported()) {
@@ -187,17 +189,15 @@ void Workspace::inputPrompt() {
 
     while (true) {
         int c = readChar();
-        cout << erase_cursor_to_end;
-
         switch (c) {
             case '\b':
             case 127: {
-                if (input.empty()) break;
-
-                if (isAnsiSupported()) cout << teleport(wherex() - 1, wherey()) << erase_cursor_to_end;
-                else cout << "\b";
-
-                input = input.substr(0, input.length() - 1);
+                if (input.empty() || cursor - 1 < inputStartX) break;
+                cout << "\b";
+                cursor--;
+                input.erase(cursor - inputStartX, 1);
+                int x = wherex();
+                cout << teleport(0, wherey()) << erase_line << prompt() << input << teleport(x, wherey());
                 break;
             }
             case '\n':
@@ -229,22 +229,26 @@ void Workspace::inputPrompt() {
             case '\t': {
                 if (input.empty()) {
                     cout << teleport(0, wherey()) << erase_line << prompt(true);
+                    inputStartX = wherex();
                 }
                 else {
                     string suggestion = getSuggestion(*this, input);
                     if (suggestion[0] == '<' && suggestion.back() == '>') break;
 
+                    cout << teleport(inputStartX + input.size(), wherey());
                     input += suggestion;
                     cout << "\033[0m" << suggestion;
+                    cursor += static_cast<int>(suggestion.size());
                 }
                 break;
             }
 #ifdef _WIN32
-            case 224: {
+            case 0xE0: {
                 const int i = readChar();
                 const int mv = static_cast<int>(input.size());
                 switch (i) {
                     case 72: {
+                        // 위쪽 화살표
                         cout << teleport(wherex() - mv, wherey());
                         cout << erase_cursor_to_end;
                         input = historyUp();
@@ -252,12 +256,25 @@ void Workspace::inputPrompt() {
                         break;
                     }
                     case 80: {
+                        // 아래쪽 화살표
                         cout << teleport(wherex() - mv, wherey());
                         cout << erase_cursor_to_end;
                         input = historyDown();
                         cout << input;
                         break;
                     }
+                    case 75: {
+                        // 왼쪽 화살표
+                        if (wherex() > inputStartX)
+                            cout << teleport(wherex() - 1, wherey());
+                        cursor--;
+                        break;
+                    }
+                    case 77: // 오른쪽 화살표
+                        if (wherex() < inputStartX + static_cast<int>(input.size()))
+                            cout << teleport(wherex() + 1, wherey());
+                        cursor++;
+                        break;
                     default:
                         break;
                 }
@@ -299,6 +316,8 @@ void Workspace::inputPrompt() {
             }
 #endif
             case '@': {
+                cursor = 0;
+
                 if (!input.empty()) continue;
 
                 cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
@@ -318,6 +337,8 @@ void Workspace::inputPrompt() {
                 return;
             }
             case '#': {
+                cursor = 0;
+
                 if (!input.empty()) continue;
 
                 cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
@@ -345,16 +366,20 @@ void Workspace::inputPrompt() {
                 return;
             }
             default: {
-                string character(1, static_cast<char>(c));
-                cout << reset << character;
-                input += character;
+                cout << erase_line;
+                input.insert(cursor - inputStartX, 1, static_cast<char>(c));
+                cursor++;
+                int x = wherex();
+                cout << teleport(0, wherey()) << erase_line << prompt() << input << teleport(x + 1, wherey());
             }
         }
 
         if (isAnsiSupported()) {
+            int suggestionStartX = inputStartX + input.size();
             string suggestion = getSuggestion(*this, input);
-            cout << fgb_black << suggestion << reset;
-            cout << teleport(wherex() - static_cast<int>(suggestion.size()), wherey());
+            cout << save_cursor_pos
+                    << teleport(suggestionStartX, wherey()) << fgb_black << suggestion << reset
+                    << restore_cursor_pos;
 
             string hint = getHint(*this, input + suggestion);
             const int xPos = wherex() - static_cast<int>(hint.size()) / 2;
