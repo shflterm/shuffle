@@ -11,19 +11,23 @@
 #include <cstdlib>
 #include <random>
 #include <curl/curl.h>
-#include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>
 #include <zip/zip.h>
+
+#if defined(__linux__) || defined(__APPLE__)
+#include <unistd.h>
+#endif
 
 #include "utils/console.h"
 #include "version.h"
 
 using std::cout, std::endl;
 
-using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, std::smatch, std::to_string,
-        std::filesystem::temp_directory_path;
-
-string pythonPlatform;
+using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, std::smatch, std::to_string, std::string,
+        std::filesystem::temp_directory_path, std::filesystem::path, std::filesystem::exists, std::filesystem::copy,
+        std::filesystem::is_regular_file,
+        std::filesystem::status, std::filesystem::perms, std::filesystem::absolute,
+        std::filesystem::is_directory, std::filesystem::directory_iterator, std::filesystem::create_directories;
 
 vector<string> splitBySpace(const string&input) {
     std::regex regex_pattern(R"((\S|^)\"[^"]*"|\([^)]*(\)*)|"[^"]*"|\S+)");
@@ -259,8 +263,21 @@ void updateShuffle() {
                   &pi);
 #elif defined(__linux__) || defined(__APPLE__)
     const string command = extractPath.append("updater").string();
-    system(("chmod +x " + command).c_str());
-    system(command.c_str());
+
+    const pid_t pid = fork();
+
+    if (pid == -1) {
+        error("Failed to update Shuffle. (fork() failed.)");
+        return;
+    }
+    if (pid == 0) {
+        const vector<const char *> args{command.c_str(), nullptr};
+        execvp(command.c_str(), const_cast<char * const*>(args.data()));
+
+        // If execvp() returns, an error occurred.
+        error("Failed to update Shuffle. (execvp() failed.)");
+        exit(EXIT_FAILURE);
+    }
 #endif
     exit(0);
 }
@@ -290,4 +307,86 @@ std::string generateRandomString(const int length) {
     }
 
     return randomString;
+}
+
+vector<path> getPathDirectories() {
+    vector<path> directories;
+#ifdef _WIN32
+    string pathEnv = "Path", delimiter = ";";
+#elif defined(__linux__) || defined(__APPLE__)
+    string pathEnv = "PATH", delimiter = ":";
+#endif
+    if (const char* pathVariable = std::getenv(pathEnv.c_str()); pathVariable != nullptr) {
+        for (const auto&directory: split(pathVariable, regex(delimiter))) directories.emplace_back(directory);
+    }
+    return directories;
+}
+
+bool isExecutableInPath(const path&currentDirectory, const string&executableName) {
+    vector<path> directories = getPathDirectories();
+    directories.emplace_back(currentDirectory);
+
+    return std::any_of(directories.begin(), directories.end(), [&](const path&directory) {
+        path fullPath = directory / executableName;
+        bool result = exists(fullPath) && is_regular_file(fullPath) &&
+                      (status(fullPath).permissions() & perms::owner_exec) != perms::none;
+        if (result) return true;
+
+#ifdef _WIN32
+        fullPath = fullPath.string() + ".exe";
+        return exists(fullPath) && is_regular_file(fullPath) &&
+               (status(fullPath).permissions() & perms::owner_exec) != perms::none;
+#else
+        return false;
+#endif
+    });
+}
+
+vector<string> getExecutableFilesInPath(const vector<path>&directories) {
+    vector<string> executables;
+    for (const auto&directory: directories) {
+        try {
+            for (const auto&entry: directory_iterator(directory)) {
+                if (is_regular_file(entry) && (status(entry).permissions() & perms::owner_exec) != perms::none) {
+                    executables.push_back(entry.path().filename().string());
+                }
+            }
+        }
+        catch (const std::exception ignored) {
+        }
+    }
+    return executables;
+}
+
+bool endsWith(const std::string&str, const std::string&suffix) {
+    if (str.length() < suffix.length()) {
+        return false;
+    }
+    return str.substr(str.length() - suffix.length()) == suffix;
+}
+
+#ifdef _WIN32
+FILE* popen(const char* command, const char* modes) {
+    return _popen(command, modes);
+}
+
+int pclose(FILE* pipe) {
+    return _pclose(pipe);
+}
+#endif
+
+bool execute_program(const string&command) {
+    if (FILE* pipe = popen(command.c_str(), "r");
+        pipe != nullptr) {
+        char buffer[128];
+
+        while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+            cout << buffer;
+        }
+
+        if (const int status = pclose(pipe); status == 0) {
+            return true;
+        }
+    }
+    return false;
 }

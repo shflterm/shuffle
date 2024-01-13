@@ -21,8 +21,6 @@
 
 using std::regex, std::vector, std::string, std::filesystem::path;
 
-extern string pythonPlatform;
-
 std::vector<std::string> splitBySpace(const std::string&input);
 
 vector<string> split(const string&s, const regex&regex);
@@ -48,5 +46,15 @@ void updateShuffle();
 bool checkUpdate(bool checkBackground = true);
 
 std::string generateRandomString(int length);
+
+vector<path> getPathDirectories();
+
+bool isExecutableInPath(const path&currentDirectory, const string&executableName);
+
+vector<string> getExecutableFilesInPath(const vector<path>&directories);
+
+bool endsWith(const std::string& str, const std::string& suffix);
+
+bool execute_program(const string&command);
 
 #endif //SHUFFLE_INCLUDE_UTILS_H_

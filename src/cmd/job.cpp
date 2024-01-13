@@ -1,5 +1,7 @@
 #include "cmd/job.h"
 
+#include <iostream>
+
 #ifdef _WIN32
 #include <windows.h>
 #elif defined(__linux__) || defined(__APPLE__)
@@ -9,6 +11,8 @@
 #include "shfl.h"
 #include "utils/console.h"
 
+using std::cout;
+
 namespace job {
     Job::Job(const shared_ptr<Command>&app) : jobType(COMMAND), command(app) {
     }
@@ -16,22 +20,18 @@ namespace job {
     Job::Job(const JobType commandType) : jobType(commandType) {
     }
 
+    Job::Job(const JobType commandType, string content) : jobType(commandType), content(std::move(content)) {
+    }
+
     Job::Job() = default;
 
     string Job::start(Workspace* ws, const bool backgroundMode) {
-        if (jobType == SNIPPET) {
-            error("Cannot run snippet directly!");
-            return "IT_IS_SNIPPET";
+        if (!isCommand()) {
+            error("Cannot run non-command job!");
+            return "IT_IS_NOT_COMMAND";
         }
-        if (jobType == VARIABLE) {
-            error("Cannot run variable directly!");
-            return "IT_IS_VARIABLE";
-        }
-        if (jobType == EMPTY) {
-            error("Cannot run empty job!");
-            return "IT_IS_EMPTY";
-        }
-        if (command == nullptr) {
+
+        if (jobType == COMMAND && command == nullptr) {
             error("Invalid command!");
             return "INVALID_COMMAND";
         }
@@ -40,7 +40,12 @@ namespace job {
 
         jobThread = std::thread([&](std::promise<string>&p) {
             try {
-                p.set_value(command->run(ws, options, backgroundMode, id));
+              if (jobType == EXECUTABLE_COMMAND) {
+                  p.set_value(execute_program(content) ? "success" : "failed");
+              }
+              else if (jobType == COMMAND) {
+                  p.set_value(command->run(ws, options, backgroundMode, id));
+              }
             }
             catch (...) {
                 p.set_exception(std::current_exception());
@@ -82,11 +87,15 @@ namespace job {
     }
 
     bool Job::isCommand() const {
-        return jobType == COMMAND;
+        return jobType == COMMAND || jobType == EXECUTABLE_COMMAND;
     }
 
     bool Job::isSuccessed() const {
         return jobType != EMPTY;
+    }
+
+    bool Job::isEmpty() const {
+        return jobType == EMPTY || jobType == EMPTY_CAUSED_BY_ARGUMENTS || jobType == EMPTY_CAUSED_BY_NO_SUCH_COMMAND;
     }
 
     bool Job::isEmptyCausedByArguments() const {

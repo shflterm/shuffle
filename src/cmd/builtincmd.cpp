@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 
+#include "shfl.h"
 #include "appmgr/appmgr.h"
 #include "appmgr/downloader.h"
 #include "cmd/job.h"
@@ -100,6 +101,13 @@ string appmgrRepoAddCmd(Workspace* ws, map<string, string>&options, bool bgMode,
 
 string appmgrRepoRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     return removeRepo(options["repourl"]) ? "true" : "false";
+}
+
+string appmgrAddlinkCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+    Json::Value links = getShflJson("links");
+    links.append(options["program"]);
+    setShflJson("links", links);
+    return "true";
 }
 
 string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
@@ -342,14 +350,28 @@ void loadCommands() {
     appmgrRepoAdd->setParent(appmgrRepo);
     appmgrRepoRemove->setParent(appmgrRepo);
 
+    auto appmgrAddlink = make_shared<Command>(Command("addlink", "Link OS command to shuffle command", {
+                                                          CommandOption("program", "program to link to", "text", true),
+                                                      }, {
+                                                          {
+                                                              "appmgr addlink ipconfig",
+                                                              "(In Windows) Link so that the 'ipconfig' command can be used in shuffle as well."
+                                                          },
+                                                          {
+                                                              "appmgr addlink ifconfig",
+                                                              "(In Unix) Link so that the 'ifconfig' command can be used in shuffle as well."
+                                                          }
+                                                      }, appmgrAddlinkCmd));
+
     auto appmgr = make_shared<Command>(Command(
         "appmgr", "App Manager", {}, incorrect_usage
     ));
-    appmgr->setSubcommands({appmgrAdd, appmgrRemove, appmgrList, appmgrRepo});
+    appmgr->setSubcommands({appmgrAdd, appmgrRemove, appmgrList, appmgrRepo, appmgrAddlink});
     appmgrAdd->setParent(appmgr);
     appmgrRemove->setParent(appmgr);
     appmgrList->setParent(appmgr);
     appmgrRepo->setParent(appmgr);
+    appmgrAddlink->setParent(appmgr);
 
     builtinCommands.push_back(appmgr);
 

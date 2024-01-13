@@ -8,6 +8,7 @@
 #include <json/value.h>
 #include <json/writer.h>
 
+#include "shfl.h"
 #include "appmgr/appmgr.h"
 #include "cmd/cmdparser.h"
 #include "cmd/job.h"
@@ -33,6 +34,8 @@ void Workspace::moveDirectory(const path&newDir) {
         return;
     }
     dir = path.string();
+
+    executableFilesInCurrentDirectory = getExecutableFilesInPath({dir});
 
     if (dir[dir.length() - 1] == '\\' || dir[dir.length() - 1] == '/')
         dir = currentDirectory().parent_path().string();
@@ -104,17 +107,14 @@ shared_ptr<Job> Workspace::createJob(string&input) {
     vector<string> inSpl = splitBySpace(input);
     if (inSpl.empty()) return {};
 
-    bool isSnippetFound = false;
     for (const auto&item: snippets) {
         if (item->getName() != inSpl[0]) continue;
-        isSnippetFound = true;
         string target = item->getTarget();
 
         cout << "[*] " << target << endl << endl;
         createJob(target)->start(this);
+        return make_shared<Job>(Job(job::SNIPPET));
     }
-
-    if (isSnippetFound) return make_shared<Job>(Job(job::SNIPPET));
 
     shared_ptr<Command> app = cmd::findCommand(inSpl[0]);
 
@@ -124,7 +124,7 @@ shared_ptr<Job> Workspace::createJob(string&input) {
     }
 
     if (app == nullptr) {
-        if (const path script = currentDirectory() / inSpl[0]; exists(script)) {
+        if (const path script = currentDirectory() / inSpl[0]; !is_directory(script) && endsWith(inSpl[0], ".ss")) {
             args.push_back("script=" + absolute(script).string());
             app = make_shared<Command>(Command(
                 "SCRIPT", "A SCRIPT COMMAND",
@@ -137,11 +137,13 @@ shared_ptr<Job> Workspace::createJob(string&input) {
                     }
 
                     for (auto cmd: scriptCommands) {
-                        const shared_ptr<Job> job = createJob(cmd);
-                        job->start(this);
+                        if (const shared_ptr<Job> job = createJob(cmd); job != nullptr)job->start(this);
                     }
                     return "true";
                 }));
+        }
+        if (isExecutableInPath(currentDirectory(), inSpl[0])) {
+            return make_shared<Job>(Job(job::EXECUTABLE_COMMAND, input));
         }
     }
 
@@ -315,18 +317,6 @@ void Workspace::inputPrompt() {
                 }
                 return;
             }
-            case '&': {
-                if (!input.empty()) continue;
-
-                cout << teleport(wherex() - static_cast<int>(input.size()) - 2, wherey());
-                cout << erase_cursor_to_end;
-                cout << fg_yellow << "& " << reset;
-                string command;
-                getline(cin, command);
-
-                system(command.c_str());
-                return;
-            }
             case '#': {
                 if (!input.empty()) continue;
 
@@ -384,7 +374,9 @@ string Workspace::getName() {
 Workspace::Workspace(
     const string&name) : name(name) {
     wsMap[name] = this;
+    executableFilesInPath = getExecutableFilesInPath(getPathDirectories());
 }
 
 Workspace::Workspace() {
+    executableFilesInPath = getExecutableFilesInPath(getPathDirectories());
 }
