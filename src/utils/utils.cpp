@@ -27,9 +27,7 @@ using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, st
         std::filesystem::temp_directory_path, std::filesystem::path, std::filesystem::exists, std::filesystem::copy,
         std::filesystem::is_regular_file,
         std::filesystem::status, std::filesystem::perms, std::filesystem::absolute,
-        std::filesystem::is_directory;
-
-string pythonPlatform;
+        std::filesystem::is_directory, std::filesystem::directory_iterator, std::filesystem::create_directories;
 
 vector<string> splitBySpace(const string&input) {
     std::regex regex_pattern(R"((\S|^)\"[^"]*"|\([^)]*(\)*)|"[^"]*"|\S+)");
@@ -311,46 +309,47 @@ std::string generateRandomString(const int length) {
     return randomString;
 }
 
-bool isExecutableInPath(const path&currentDirectory, const string&executableName) {
+vector<path> getPathDirectories() {
+    vector<path> directories;
 #ifdef _WIN32
-    if (const char* pathVariable = std::getenv("Path"); pathVariable != nullptr) {
-        // PATH를 ';' 기준으로 분리
-        std::string pathEnv = pathVariable;
-        vector<string> directories = split(pathVariable, regex(";"));
-        directories.push_back(absolute(currentDirectory).string());
-
-        for (const auto&directory: directories) {
-            path fullPath = path(directory) / (executableName + ".exe");
-
-            const DWORD attributes = GetFileAttributes(fullPath.string().c_str());
-
-            if (attributes != INVALID_FILE_ATTRIBUTES && !(attributes & FILE_ATTRIBUTE_DIRECTORY)) {
-                return true;
-            }
-        }
-    }
-
-    // PATH의 모든 디렉터리에서 찾지 못하면 false 반환
-    return false;
+    string pathEnv = "Path", delimiter = ";";
 #elif defined(__linux__) || defined(__APPLE__)
-    if (const char* pathVariable = std::getenv("PATH"); pathVariable != nullptr) {
-        std::string pathEnv = pathVariable;
-        vector<string> directories = split(pathVariable, regex(":"));
-        directories.push_back(currentDirectory);
+    string pathEnv = "PATH", delimiter = ":";
+#endif
+    if (const char* pathVariable = std::getenv(pathEnv.c_str()); pathVariable != nullptr) {
+        for (const auto&directory: split(pathVariable, regex(delimiter))) directories.emplace_back(directory);
+    }
+    return directories;
+}
 
-        for (const auto&directory: directories) {
-            path fullPath = path(directory) / executableName;
+bool isExecutableInPath(const path&currentDirectory, string executableName) {
+    vector<path> directories = getPathDirectories();
+    directories.emplace_back(currentDirectory);
 
-            if (exists(fullPath) && is_regular_file(fullPath) && (status(fullPath).permissions() & perms::owner_exec) !=
-                perms::none) {
-                return true;
+#ifdef _WIN32
+    executableName += ".exe";
+#endif
+
+    return std::any_of(directories.begin(), directories.end(), [&](const path&directory) {
+        const path fullPath = directory / executableName;
+        return exists(fullPath) && is_regular_file(fullPath) &&
+               (status(fullPath).permissions() & perms::owner_exec) != perms::none;
+    });
+}
+
+vector<string> getExecutableFilesInPath(const vector<path>&directories) {
+    vector<string> executables;
+    for (const auto&directory: directories) {
+        try {
+            for (const auto&entry: directory_iterator(directory)) {
+                if (is_regular_file(entry) && (status(entry).permissions() & perms::owner_exec) != perms::none) {
+                    executables.push_back(entry.path().filename().string());
+                }
             }
+        } catch (const std::exception ignored) {
         }
     }
-
-    // PATH의 모든 디렉터리에서 찾지 못하면 false 반환
-    return false;
-#endif
+    return executables;
 }
 
 bool endsWith(const std::string&str, const std::string&suffix) {

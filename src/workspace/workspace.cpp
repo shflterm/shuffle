@@ -35,6 +35,8 @@ void Workspace::moveDirectory(const path&newDir) {
     }
     dir = path.string();
 
+    executableFilesInCurrentDirectory = getExecutableFilesInPath({dir});
+
     if (dir[dir.length() - 1] == '\\' || dir[dir.length() - 1] == '/')
         dir = currentDirectory().parent_path().string();
 }
@@ -372,7 +374,9 @@ string Workspace::getName() {
 Workspace::Workspace(
     const string&name) : name(name) {
     wsMap[name] = this;
+    executableFilesInPath = getExecutableFilesInPath(getPathDirectories());
 }
 
 Workspace::Workspace() {
+    executableFilesInPath = getExecutableFilesInPath(getPathDirectories());
 }

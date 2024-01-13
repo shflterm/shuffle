@@ -21,8 +21,6 @@
 
 using std::regex, std::vector, std::string, std::filesystem::path;
 
-extern string pythonPlatform;
-
 std::vector<std::string> splitBySpace(const std::string&input);
 
 vector<string> split(const string&s, const regex&regex);
@@ -49,7 +47,11 @@ bool checkUpdate(bool checkBackground = true);
 
 std::string generateRandomString(int length);
 
-bool isExecutableInPath(const path&currentDirectory, const string& executableName);
+vector<path> getPathDirectories();
+
+bool isExecutableInPath(const path&currentDirectory, string executableName);
+
+vector<string> getExecutableFilesInPath(const vector<path>&directories);
 
 bool endsWith(const std::string& str, const std::string& suffix);
 

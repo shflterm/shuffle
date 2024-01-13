@@ -88,6 +88,8 @@ namespace suggestion {
         if (spl.size() == 1) {
             vector<string> dict = makeDictionary(appmgr::getCommands());
             for (const auto&snippet: snippets) dict.push_back(snippet->getName());
+            for (const auto& executable : ws.executableFilesInPath) dict.push_back(executable);
+            for (const auto& executable : ws.executableFilesInCurrentDirectory) dict.push_back(executable);
 
             vector<string> suggestions = findSuggestion(ws, spl[0], dict);
             std::sort(suggestions.begin(), suggestions.end(), [](const string&a, const string&b) {
