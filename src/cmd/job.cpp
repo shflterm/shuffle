@@ -1,5 +1,7 @@
 #include "cmd/job.h"
 
+#include <iostream>
+
 #ifdef _WIN32
 #include <windows.h>
 #elif defined(__linux__) || defined(__APPLE__)
@@ -8,6 +10,8 @@
 
 #include "shfl.h"
 #include "utils/console.h"
+
+using std::cout;
 
 namespace job {
     Job::Job(const shared_ptr<Command>&app) : jobType(COMMAND), command(app) {
@@ -36,8 +40,7 @@ namespace job {
 
         jobThread = std::thread([&](std::promise<string>&p) {
             if (jobType == EXECUTABLE_COMMAND) {
-                system(content.c_str());
-                p.set_value("success");
+                p.set_value(execute_program(content) ? "success" : "failed");
             }
             else if (jobType == COMMAND) {
                 p.set_value(command->run(ws, options, backgroundMode, id));

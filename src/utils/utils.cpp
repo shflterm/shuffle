@@ -11,17 +11,23 @@
 #include <cstdlib>
 #include <random>
 #include <curl/curl.h>
-#include <restclient-cpp/connection.h>
 #include <restclient-cpp/restclient.h>
 #include <zip/zip.h>
+
+#if defined(__linux__) || defined(__APPLE__)
+#include <unistd.h>
+#endif
 
 #include "utils/console.h"
 #include "version.h"
 
 using std::cout, std::endl;
 
-using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, std::smatch, std::to_string,
-        std::filesystem::temp_directory_path;
+using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, std::smatch, std::to_string, std::string,
+        std::filesystem::temp_directory_path, std::filesystem::path, std::filesystem::exists, std::filesystem::copy,
+        std::filesystem::is_regular_file,
+        std::filesystem::status, std::filesystem::perms, std::filesystem::absolute,
+        std::filesystem::is_directory;
 
 string pythonPlatform;
 
@@ -259,8 +265,21 @@ void updateShuffle() {
                   &pi);
 #elif defined(__linux__) || defined(__APPLE__)
     const string command = extractPath.append("updater").string();
-    system(("chmod +x " + command).c_str());
-    system(command.c_str());
+
+    const pid_t pid = fork();
+
+    if (pid == -1) {
+        error("Failed to update Shuffle. (fork() failed.)");
+        return;
+    }
+    if (pid == 0) {
+        const vector<const char *> args{command.c_str(), nullptr};
+        execvp(command.c_str(), const_cast<char * const*>(args.data()));
+
+        // If execvp() returns, an error occurred.
+        error("Failed to update Shuffle. (execvp() failed.)");
+        exit(EXIT_FAILURE);
+    }
 #endif
     exit(0);
 }
@@ -292,58 +311,77 @@ std::string generateRandomString(const int length) {
     return randomString;
 }
 
-bool isExecutableInPath(const string& executableName) {
+bool isExecutableInPath(const path&currentDirectory, const string&executableName) {
 #ifdef _WIN32
     if (const char* pathVariable = std::getenv("Path"); pathVariable != nullptr) {
         // PATH를 ';' 기준으로 분리
         std::string pathEnv = pathVariable;
-        size_t start = 0;
-        size_t end = pathEnv.find(';');
+        vector<string> directories = split(pathVariable, regex(";"));
+        directories.push_back(absolute(currentDirectory).string());
 
-        while (end != std::string::npos) {
-            // 각 디렉터리에 실행 파일이 존재하는지 확인
-            path directory = pathEnv.substr(start, end - start);
-            path fullPath = directory / (executableName + ".exe");
+        for (const auto&directory: directories) {
+            path fullPath = path(directory) / (executableName + ".exe");
 
             const DWORD attributes = GetFileAttributes(fullPath.string().c_str());
 
             if (attributes != INVALID_FILE_ATTRIBUTES && !(attributes & FILE_ATTRIBUTE_DIRECTORY)) {
                 return true;
             }
-
-            start = end + 1;
-            end = pathEnv.find(';', start);
         }
     }
 
     // PATH의 모든 디렉터리에서 찾지 못하면 false 반환
     return false;
 #elif defined(__linux__) || defined(__APPLE__)
-    std::string command = "which " + executableName;
-    FILE* pipe = popen(command.c_str(), "r");
+    if (const char* pathVariable = std::getenv("PATH"); pathVariable != nullptr) {
+        std::string pathEnv = pathVariable;
+        vector<string> directories = split(pathVariable, regex(":"));
+        directories.push_back(currentDirectory);
 
-    if (pipe != nullptr) {
-        char buffer[128];
-        std::string result = "";
+        for (const auto&directory: directories) {
+            path fullPath = path(directory) / executableName;
 
-        while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
-            result += buffer;
-        }
-
-        int status = pclose(pipe);
-
-        if (status == 0 && !result.empty()) {
-            return true;
+            if (exists(fullPath) && is_regular_file(fullPath) && (status(fullPath).permissions() & perms::owner_exec) !=
+                perms::none) {
+                return true;
+            }
         }
     }
 
+    // PATH의 모든 디렉터리에서 찾지 못하면 false 반환
     return false;
 #endif
 }
 
-bool endsWith(const std::string& str, const std::string& suffix) {
+bool endsWith(const std::string&str, const std::string&suffix) {
     if (str.length() < suffix.length()) {
         return false;
     }
     return str.substr(str.length() - suffix.length()) == suffix;
+}
+
+#ifdef _WIN32
+FILE* popen(const char* command, const char* modes) {
+    return _popen(command, modes);
+}
+
+int pclose(FILE* pipe) {
+    return _pclose(pipe);
+}
+#endif
+
+bool execute_program(const string&command) {
+    if (FILE* pipe = popen(command.c_str(), "r");
+        pipe != nullptr) {
+        char buffer[128];
+
+        while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+            cout << buffer;
+        }
+
+        if (const int status = pclose(pipe); status == 0) {
+            return true;
+        }
+    }
+    return false;
 }

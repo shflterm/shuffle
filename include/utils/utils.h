@@ -49,8 +49,10 @@ bool checkUpdate(bool checkBackground = true);
 
 std::string generateRandomString(int length);
 
-bool isExecutableInPath(const string& executableName);
+bool isExecutableInPath(const path&currentDirectory, const string& executableName);
 
 bool endsWith(const std::string& str, const std::string& suffix);
+
+bool execute_program(const string&command);
 
 #endif //SHUFFLE_INCLUDE_UTILS_H_

@@ -140,7 +140,7 @@ shared_ptr<Job> Workspace::createJob(string&input) {
                     return "true";
                 }));
         }
-        if (isExecutableInPath(inSpl[0])) {
+        if (isExecutableInPath(currentDirectory(), inSpl[0])) {
             return make_shared<Job>(Job(job::EXECUTABLE_COMMAND, input));
         }
     }
