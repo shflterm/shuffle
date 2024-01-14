@@ -314,7 +314,7 @@ bool handleAi(Workspace* ws, const string&input) {
     return true;
 }
 
-auto handleInput(const Workspace* ws, string&input, int&cursor, const int&inputStartX, const int&c) -> void {
+void handleInput(const Workspace* ws, string&input, int&cursor, const int&inputStartX, const int&c) -> void {
     cout << erase_line;
     input.insert(cursor - inputStartX, 1, static_cast<char>(c));
     cursor++;
