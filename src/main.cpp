@@ -54,6 +54,14 @@ extern "C" void handleCrash(int sig) {
 
 extern "C" void handleQuit(const int sig) {
     if (currentWorkspace == nullptr || currentWorkspace->getCurrentJob() == nullptr) {
+        warning("");
+        warning("Are you sure you want to quit Shuffle? (Y/N) ", false);
+        if (const int i = readChar();
+            i == 'Y' || i == 'y') {
+            cout << endl;
+            exit(0);
+        }
+        info("Aborted.");
         return;
     }
     if (!currentWorkspace->getCurrentJob()->stop()) {

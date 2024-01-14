@@ -187,6 +187,7 @@ void handleBackspace(const Workspace* ws, string&input, int&cursor, const int in
 void handleEnter(Workspace* ws, string&input) {
     cout << endl;
 
+    input = trim(input);
     if (!input.empty()) {
         cout << erase_line;
         ws->addHistory(input);
@@ -322,6 +323,19 @@ void handleInput(const Workspace* ws, string&input, int&cursor, const int&inputS
     cout << teleport(0, wherey()) << erase_line << ws->prompt() << input << teleport(x + 1, wherey());
 }
 
+void handleQuit() {
+    warning("");
+    warning("Are you sure you want to quit Shuffle? (Y/N) ", false);
+    if (const int i = readChar();
+        i == 'Y' || i == 'y') {
+        info("Yes.");
+        info("");
+        info("Bye!");
+        exit(0);
+    }
+    info("Aborted.");
+}
+
 void Workspace::inputPrompt() {
     cout << prompt();
     int inputStartX = wherex();
@@ -405,6 +419,9 @@ void Workspace::inputPrompt() {
             }
             case '#':
                 if (handleAi(this, input)) return;
+            case 3:
+                handleQuit();
+                return;
             default: {
                 handleInput(this, input, cursor, inputStartX, c);
             }
