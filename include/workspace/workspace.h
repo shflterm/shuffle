@@ -25,13 +25,13 @@ class Workspace {
     map<string, string> variables;
     shared_ptr<Job> currentJob;
 
-    [[nodiscard]] string prompt(bool fullPath = false) const;
-
 public:
     vector<string> executableFilesInPath;
     vector<string> executableFilesInCurrentDirectory;
 
-    path currentDirectory() const;
+    [[nodiscard]] string prompt(bool fullPath = false) const;
+
+    [[nodiscard]] path currentDirectory() const;
 
     void moveDirectory(const path& newDir);
 
