@@ -223,10 +223,17 @@ int onExtractEntry(const char* filename, void* arg) {
 }
 
 path extractZip(const path&zipFile, path extractPath) {
+    if (!exists(zipFile)) {
+        error("Zip file does not exist!");
+        return "";
+    }
     int arg = 0;
-    zip_extract(zipFile.string().c_str(), extractPath.string().c_str(), onExtractEntry, &arg);
-    cout << erase_cursor_to_end << "Extracting... (Done!)" << endl;
-    return extractPath;
+    if (zip_extract(zipFile.string().c_str(), extractPath.string().c_str(), onExtractEntry, &arg) == 0) {
+        cout << erase_cursor_to_end << "Extracting... (Done!)" << endl;
+        return extractPath;
+    }
+    error("Failed to extract zip file ($0)!", {absolute(zipFile).string()});
+    return "";
 }
 
 void updateShuffle() {

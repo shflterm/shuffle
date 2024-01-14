@@ -70,11 +70,10 @@ namespace appmgr {
                     downloadFrom = replace(downloadFrom, "{OS}", "macos");
 #endif
 
-                    if (downloadFile(downloadFrom, downloadTo)) {
-                        extractZip(downloadTo, appPath);
-                        installed = true;
-                        break;
-                    }
+                    if (!downloadFile(downloadFrom, downloadTo)) continue;
+                    if (extractZip(downloadTo, appPath) == "") continue;
+                    installed = true;
+                    break;
                 }
                 else {
                     warning("Unknown repository version: " + to_string(ver));
@@ -104,7 +103,7 @@ namespace appmgr {
 
             if (const path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp"); exists(appPath)) {
                 // TODO 지우기 전 라이브러리 언로드
-                for (const auto& app: loadedApps)
+                for (const auto&app: loadedApps)
                     if (app->getName() == name) app->unload();
                 remove_all(appPath);
 

@@ -61,7 +61,10 @@ int main(int argc, char** argv) {
     }
     cout << teleport(0, wherey() - 1) << erase_line << "Installed!" << endl;
 
-    extractZip(temp, updatePath);
+    if (extractZip(temp, updatePath) == "") {
+        error("Failed to extract Shuffle.");
+        return 1;
+    }
     cout << teleport(0, wherey() - 1) << erase_cursor_to_end << "Extracted!" << endl;
 
     cout << erase_line << "Install native apps.." << endl;
