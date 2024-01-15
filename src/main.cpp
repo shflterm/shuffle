@@ -190,13 +190,12 @@ int main(const int argc, char* argv[]) {
     initShflJson();
 
     cout << "Welcome to" << fg_blue << " Shuffle " << SHUFFLE_VERSION.str() << reset << "!" << endl
-            << "(C) 2023 Kim Sihu. All Rights Reserved." << endl
-            << endl;
+            << "(C) 2023 Kim Sihu. All Rights Reserved." << endl;
 
     if (!isAnsiSupported()) {
+        error("");
         error("ANSI escape codes are not supported on this terminal.");
         error("Shuffle may not work properly.");
-        error("");
     }
 
     if (checkUpdate()) cout << endl;
@@ -204,10 +203,9 @@ int main(const int argc, char* argv[]) {
     loadCommands();
     loadSnippets();
     loadProponents();
-
-    cout << "Type 'help' to get help!" << endl;
-
     currentWorkspace = new Workspace("main");
+
+    cout << endl << "Type 'help' to get help!" << endl;
     // ReSharper disable once CppDFAEndlessLoop
     while (true) {
         currentWorkspace->inputPrompt();
