@@ -70,14 +70,10 @@ namespace appmgr {
                     downloadFrom = replace(downloadFrom, "{OS}", "macos");
 #endif
 
-                    if (downloadFile(downloadFrom, downloadTo)) {
-                        info("Downloading... (Done!)");
-                        cout << "\n";
-
-                        extractZip(downloadTo, appPath);
-                        installed = true;
-                        break;
-                    }
+                    if (!downloadFile(downloadFrom, downloadTo)) continue;
+                    if (extractZip(downloadTo, appPath) == "") continue;
+                    installed = true;
+                    break;
                 }
                 else {
                     warning("Unknown repository version: " + to_string(ver));
@@ -107,7 +103,7 @@ namespace appmgr {
 
             if (const path appPath = DOT_SHUFFLE / "apps" / (name + ".shflapp"); exists(appPath)) {
                 // TODO 지우기 전 라이브러리 언로드
-                for (const auto& app: loadedApps)
+                for (const auto&app: loadedApps)
                     if (app->getName() == name) app->unload();
                 remove_all(appPath);
 
@@ -116,7 +112,6 @@ namespace appmgr {
                 for (int i = 0; i < json.size(); ++i) {
                     if (json[i].asString() == name) {
                         removed = json.removeIndex(i, &json[i]);
-                        break;
                     }
                 }
                 if (!removed) {
@@ -152,7 +147,6 @@ namespace appmgr {
         for (int i = 0; i < repos.size(); ++i) {
             if (repos[i].asString() == url) {
                 repos.removeIndex(i, &repos[i]);
-                break;
             }
         }
         setShflJson("repos", repos);

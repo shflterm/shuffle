@@ -26,16 +26,19 @@ typedef std::function<string(Workspace* ws, map<string, string>&options, bool bg
 
 string do_nothing(Workspace* ws, map<string, string>&options, bool bgMode, const string&id);
 
+string incorrect_usage(Workspace* ws, map<string, string>&options, bool bgMode, const string&id);
+
 namespace cmd {
     class CommandOption {
     public:
         string name, description;
         string type;
         vector<string> aliases;
+        bool isRequired;
 
-        CommandOption(string name, string description, string type);
+        CommandOption(string name, string description, string type, bool isRequired);
 
-        CommandOption(string name, string description, string type, const vector<string>&aliases);
+        CommandOption(string name, string description, string type, const vector<string>&aliases, bool isRequired);
     };
 
     class CommandExample {
@@ -72,6 +75,8 @@ namespace cmd {
 
         [[nodiscard]] const vector<CommandOption>& getOptions() const;
 
+        vector<CommandOption> getRequiredOptions() const;
+
         [[nodiscard]] const vector<string>& getAliases() const;
 
         [[nodiscard]] const vector<CommandExample>& getExamples() const;
@@ -81,6 +86,8 @@ namespace cmd {
         string run(Workspace* ws, map<string, string>&optionValues, bool backgroundMode, const string&taskId) const;
 
         [[nodiscard]] string createHint() const;
+
+        string createHelpMessage() const;
 
         Command(string name, string description, string usage,
                 const vector<Command>&subcommands, const vector<CommandOption>&options,

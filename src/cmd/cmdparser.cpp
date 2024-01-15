@@ -1,14 +1,16 @@
 #include "cmd/cmdparser.h"
 
-#include <algorithm>
+#include <sstream>
 
 #include "utils/console.h"
 #include "utils/utils.h"
 #include "cmd/job.h"
 
+using std::stringstream;
+
 namespace cmd {
     Job parseCommand(shared_ptr<Command> app, const vector<string>&args) {
-        if (app == nullptr) return Job(job::EMPTY);
+        if (app == nullptr) return Job(job::EMPTY_CAUSED_BY_NO_SUCH_COMMAND);
 
         vector<string> newArgs = args;
         for (int i = 0; i < args.size(); ++i) {
@@ -23,9 +25,9 @@ namespace cmd {
             }
         }
 
-        Job parsed = Job(app);
+        auto parsed = Job(app);
         const map<string, string>* parsedOptions = parseOptions(app, newArgs);
-        if (parsedOptions == nullptr) return Job(job::EMPTY);
+        if (parsedOptions == nullptr) return Job(job::EMPTY_CAUSED_BY_ARGUMENTS);
 
         parsed.options = *parsedOptions;
         return parsed;
@@ -44,17 +46,15 @@ namespace cmd {
             }
         }
 
-        vector<string> optionNames, optionNamesWithAbbr;
+        vector<string> requiredOptionNames;
         for (const auto&option: options) {
-            optionNames.push_back(option.name);
-            optionNamesWithAbbr.push_back(option.name);
-            for (const auto&item: option.aliases) {
-                optionNamesWithAbbr.push_back(item);
-            }
+            if (option.isRequired)
+                requiredOptionNames.push_back(option.name);
         }
 
         size_t optionIndex = 0;
 
+        bool finished = false;
         for (size_t i = 0; i < args.size(); ++i) {
             const string&arg = args[i];
             string key, value;
@@ -81,8 +81,26 @@ namespace cmd {
                     return nullptr;
                 }
             }
-            else if (optionIndex < optionNames.size()) {
-                key = optionNames[optionIndex++];
+            else if (app->getOptions().size() == 1 && app->getRequiredOptions().empty()) {
+                key = app->getOptions()[0].name;
+                stringstream ss;
+                for (int j = static_cast<int>(i); j < args.size(); j++)
+                    ss << args[j] << " ";
+
+                value = ss.str().substr(0, ss.str().size() - 1);
+                finished = true;
+            }
+            else if (optionIndex + 1 == requiredOptionNames.size()) {
+                key = requiredOptionNames[optionIndex];
+                stringstream ss;
+                for (int j = static_cast<int>(i); j < args.size(); j++)
+                    ss << args[j] << " ";
+
+                value = ss.str().substr(0, ss.str().size() - 1);
+                finished = true;
+            }
+            else if (optionIndex + 1 < requiredOptionNames.size()) {
+                key = requiredOptionNames[optionIndex++];
                 value = arg;
             }
             else {
@@ -117,6 +135,15 @@ namespace cmd {
             }
 
             (*parsedOptions)[key] = value;
+            if (finished) break;
+        }
+
+        for (const auto&name: requiredOptionNames) {
+            if (parsedOptions->count(name) == 0) {
+                error("Missing required option '" + name + "'.");
+                delete parsedOptions;
+                return nullptr;
+            }
         }
 
         return parsedOptions;

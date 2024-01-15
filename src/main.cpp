@@ -53,25 +53,31 @@ extern "C" void handleCrash(int sig) {
 #endif
 
 extern "C" void handleQuit(const int sig) {
-    cout << endl << "Bye." << endl;
-    exit(sig);
+    if (currentWorkspace == nullptr || currentWorkspace->getCurrentJob() == nullptr) {
+        warning("");
+        warning("Are you sure you want to quit Shuffle? (Y/N) ", false);
+        if (const int i = readChar();
+            i == 'Y' || i == 'y') {
+            cout << endl;
+            exit(0);
+        }
+        info("Aborted.");
+        return;
+    }
+    if (!currentWorkspace->getCurrentJob()->stop()) {
+        warning("Cannot stop the current job!");
+    }
 }
 
 void loadProponents() {
     using namespace suggestion;
     registerProponent(Proponent(
         "text", [](Workspace* ws, const cmd::CommandOption&option, const vector<string>&args, const size_t cur) {
-            string suggestion;
-            if (args[cur].empty())
-                suggestion = "<" + option.name + ">";
-            return suggestion;
+            return "";
         }));
     registerProponent(Proponent(
         "number", [](Workspace* ws, const cmd::CommandOption&option, const vector<string>&args, const size_t cur) {
-            string suggestion;
-            if (args[cur].empty())
-                suggestion = "<" + option.name + ">";
-            return suggestion;
+            return "";
         }));
     registerProponent(Proponent(
         "boolean", [](const Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
@@ -115,6 +121,27 @@ void loadProponents() {
                 if (loaded_app->name != "shuffle")
                     apps.push_back(loaded_app->name);
             return findSuggestion(*ws, args[cur], apps)[0];
+        }));
+    registerProponent(Proponent(
+        "cmdorapp", [](Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            if (string suggestion = getSuggestion(*ws, args[cur]);
+                !suggestion.empty())
+                return suggestion;
+
+            vector<string> apps;
+            apps.reserve(appmgr::loadedApps.size());
+            for (const auto&loaded_app: appmgr::loadedApps)
+                if (loaded_app->name != "shuffle")
+                    apps.push_back(loaded_app->name);
+            return findSuggestion(*ws, args[cur], apps)[0];
+        }));
+    registerProponent(Proponent(
+        "snippet", [](Workspace* ws, cmd::CommandOption option, const vector<string>&args, const size_t cur) {
+            vector<string> snfs;
+            snfs.reserve(snfs.size());
+            for (const auto&snf: snippets)
+                snfs.push_back(snf->getName());
+            return findSuggestion(*ws, args[cur], snfs)[0];
         }));
 }
 
@@ -163,13 +190,12 @@ int main(const int argc, char* argv[]) {
     initShflJson();
 
     cout << "Welcome to" << fg_blue << " Shuffle " << SHUFFLE_VERSION.str() << reset << "!" << endl
-            << "(C) 2023 Kim Sihu. All Rights Reserved." << endl
-            << endl;
+            << "(C) 2023 Kim Sihu. All Rights Reserved." << endl;
 
     if (!isAnsiSupported()) {
+        error("");
         error("ANSI escape codes are not supported on this terminal.");
         error("Shuffle may not work properly.");
-        error("");
     }
 
     if (checkUpdate()) cout << endl;
@@ -177,10 +203,9 @@ int main(const int argc, char* argv[]) {
     loadCommands();
     loadSnippets();
     loadProponents();
-
-    cout << "Type 'help' to get help!" << endl;
-
     currentWorkspace = new Workspace("main");
+
+    cout << endl << "Type 'help' to get help!" << endl;
     // ReSharper disable once CppDFAEndlessLoop
     while (true) {
         currentWorkspace->inputPrompt();

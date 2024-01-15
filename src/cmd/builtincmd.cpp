@@ -3,6 +3,7 @@
 #include <iostream>
 #include <memory>
 
+#include "shfl.h"
 #include "appmgr/appmgr.h"
 #include "appmgr/downloader.h"
 #include "cmd/job.h"
@@ -16,7 +17,7 @@
 using std::cout, std::endl, std::make_shared,
         cmd::Command, cmd::CommandOption, cmd::findCommand,
         appmgr::loadApp, appmgr::unloadAllApps,appmgr::getApps, appmgr::installApp, appmgr::removeApp, appmgr::addRepo,
-        appmgr::removeRepo, appmgr::App;
+        appmgr::removeRepo, appmgr::App, appmgr::loadedApps;
 
 string writeHelp() {
     stringstream ss;
@@ -31,14 +32,19 @@ string writeHelp() {
             << "  " << fg_green << "@ <workspace name>" << reset << " : Move to the specified workspace" << endl
             << "  " << fg_green << "# <ai prompt>" << reset << " : Interact with AI" << endl
             << "  " << fg_green << "& <os command>" << reset << " : Execute the OS command" << endl
-            << endl
-            << "Commands: " << endl;
-    for (const auto&item: appmgr::getCommands()) {
-        if (auto command = *item; command.getDescription() != "-") {
-            ss << "  " << command.getName() << " : " << command.getDescription()
-                    << endl;
-        }
+            << endl;
+
+    const auto shuffleApp = loadedApps[0];
+    ss << "Commands in '" << shuffleApp->name << "': " << endl;
+    for (const auto&command: shuffleApp->commands) {
+        ss << "  " << command->getName() << " : " << command->getDescription()
+                << endl;
     }
+
+    ss << endl
+            << "If you want to see all apps, type 'appmgr list'." << endl
+            << "If you want to know commands in other apps, type 'help <app>'." << endl;
+
     ss << endl << "Additional Help: " << endl
             << "  For more information on a specific command, type 'help <command>'" << endl
             << "  Visit the online documentation for Shuffle at "
@@ -71,11 +77,6 @@ string shflCreditsCmd(Workspace* ws, map<string, string>&options, const bool bgM
     return "thanks";
 }
 
-string shflCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    // TODO: Print How to use
-    return "true";
-}
-
 string appmgrAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
     return installApp(options["appname"]) ? "true" : "false";
 }
@@ -85,14 +86,13 @@ string appmgrRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMode, 
 }
 
 string appmgrListCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    // print all appmgr infos
     if (!bgMode) {
-        for (const auto&app: appmgr::loadedApps) {
+        for (const auto&app: loadedApps) {
             cout << app->name << " v" << app->getVersion() << ": " << app->description << " (by " << app->author << ")"
                     << endl;
         }
     }
-    return std::to_string(appmgr::loadedApps.size());
+    return std::to_string(loadedApps.size());
 }
 
 string appmgrRepoAddCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
@@ -103,8 +103,10 @@ string appmgrRepoRemoveCmd(Workspace* ws, map<string, string>&options, bool bgMo
     return removeRepo(options["repourl"]) ? "true" : "false";
 }
 
-string appmgrCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
-    // TODO: Print How to use
+string appmgrAddlinkCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
+    Json::Value links = getShflJson("links");
+    links.append(options["program"]);
+    setShflJson("links", links);
     return "true";
 }
 
@@ -114,7 +116,31 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
         return "true";
     }
 
-    vector<string> cmdName = splitBySpace(options["command"]);
+    const string command = options["command"];
+    if (command.empty()) {
+        cout << writeHelp();
+        return "true";
+    }
+
+    shared_ptr<App> app;
+    for (auto loaded_app: loadedApps) {
+        if (loaded_app->name == command) {
+            app = loaded_app;
+            break;
+        }
+    }
+    if (app != nullptr) {
+        stringstream ss;
+        ss << "Commands in '" << app->name << "': " << endl;
+        for (const auto&cmd: app->commands) {
+            ss << "  " << cmd->getName() << " : " << cmd->getDescription()
+                    << endl;
+        }
+        cout << ss.str();
+        return "true";
+    }
+
+    const vector<string> cmdName = splitBySpace(command);
     shared_ptr<Command> cmd = findCommand(cmdName.front());
     if (cmd == nullptr) {
         cout << "Command '" << cmdName.front() << "' not found." << endl;
@@ -126,38 +152,48 @@ string helpCmd(Workspace* ws, map<string, string>&options, bool bgMode, const st
         cmd = findCommand(cmdName[i], cmd->getSubcommands());
     }
 
-    string subcommands;
-    for (const auto&item: cmd->getSubcommands()) {
-        subcommands += item->getName() + ", ";
-    }
-
-    string examples;
-    for (const auto&item: cmd->getExamples()) {
-        examples += "\n  - `" + item.command + "` : " + item.whatItDoes;
-    }
-
     cout << "== About '" << cmd->getName() << "' ==" << endl;
-    cout << "Name: " << cmd->getName() << endl;
-    if (!cmd->getDescription().empty())
-        cout << "Description: " << cmd->getDescription() << endl;
-    if (!cmd->getUsage().empty())
-        cout << "Usage: " << cmd->getUsage() << endl;
-    if (!subcommands.empty())
-        cout << "Subcommands: " << subcommands.substr(0, subcommands.size() - 2) << endl;
-    cout << "Examples: " << examples << endl;
+    cout << cmd->createHelpMessage();
 
     return cmd->getName();
 }
 
-string snippetCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
-    //snf create aa help cd
-    const string snippetName = options["create"];
-    const string cmd = options["value"];
+string snfCreateCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    const string snippetName = options["name"];
 
-    addSnippet(snippetName, cmd);
-    if (!bgMode) cout << "Snippet Created: " << snippetName << " => " << cmd << endl;
+    if (const string cmd = options["value"];
+        addSnippet(snippetName, cmd)) {
+        if (!bgMode) cout << "Snippet Created: " << snippetName << " => " << cmd << endl;
+        return snippetName;
+    }
+    error("Snippet '" + snippetName + "' already exists.");
+    return "false";
+}
 
-    return snippetName;
+string snfRemoveCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    const string snippetName = options["name"];
+
+    if (removeSnippet(snippetName)) {
+        if (!bgMode) cout << "Snippet Removed: " << snippetName << endl;
+        return snippetName;
+    }
+
+    error("Snippet '" + snippetName + "' not found.");
+    return "false";
+}
+
+string snfListCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    if (!bgMode) {
+        if (snippets.empty()) {
+            info("No snippets.");
+            return "0";
+        }
+
+        for (const auto&snippet: snippets) {
+            cout << snippet->getName() << " => " << snippet->getTarget() << endl;
+        }
+    }
+    return std::to_string(snippets.size());
 }
 
 string clearCmd(Workspace* ws, map<string, string>&options, bool bgMode, const string&id) {
@@ -181,12 +217,27 @@ string taskStartCmd(Workspace* ws, map<string, string>&options, const bool bgMod
     return taskId;
 }
 
+string taskStopCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
+    const string taskId = options["taskId"];
+    for (auto&task: tasks) {
+        if (task.getId() == taskId) {
+            if (task.job == nullptr) {
+                error("Cannot stop job. Job is already stopped.");
+                return "job is null";
+            }
+            return task.job->stop() ? "true" : "false";
+        }
+    }
+
+    return "task not found";
+}
+
 string taskLogCmd(Workspace* ws, map<string, string>&options, const bool bgMode, const string&id) {
     const string taskId = options["taskId"];
     for (auto&task: tasks) {
         if (task.getId() == taskId) {
             if (task.job == nullptr) {
-                error("Job is null.");
+                error("Cannot print log. Job is null.");
                 return "job is null";
             }
             string jobId = task.job->id;
@@ -230,8 +281,8 @@ void loadCommands() {
                                                     {
                                                         {"shfl credits", "Show credits."}
                                                     }, shflCreditsCmd));
-    shared_ptr<Command> shfl = make_shared<Command>(Command(
-        "shfl", "Shuffle Command", {}, shflCmd
+    auto shfl = make_shared<Command>(Command(
+        "shfl", "Shuffle Command", {}, incorrect_usage
     ));
     shfl->setSubcommands({
         shflReload, shflUpgrade, shflCredits
@@ -243,7 +294,7 @@ void loadCommands() {
     builtinCommands.push_back(shfl);
 
     auto appmgrAdd = make_shared<Command>(Command("add", "Get new apps from the repository.", {
-                                                      CommandOption("appname", "", "text")
+                                                      CommandOption("appname", "", "text", true)
                                                   }, {
                                                       {
                                                           "appmgr add textutilities",
@@ -260,7 +311,7 @@ void loadCommands() {
                                                   }, appmgrAddCmd));
 
     auto appmgrRemove = make_shared<Command>(Command("remove", "Delete the appmgr from your device.", {
-                                                         CommandOption("appname", "", "app")
+                                                         CommandOption("appname", "", "app", true)
                                                      }, {
                                                          {
                                                              "appmgr remove textutilities",
@@ -275,7 +326,7 @@ void loadCommands() {
                                                    }, appmgrListCmd));
 
     auto appmgrRepoAdd = make_shared<Command>(Command("add", "Add Repository", {
-                                                          CommandOption("repourl", "", "text")
+                                                          CommandOption("repourl", "", "text", true)
                                                       }, {
                                                           {
                                                               "appmgr repo add https://example.com/shflrepo.json",
@@ -284,7 +335,7 @@ void loadCommands() {
                                                       }, appmgrRepoAddCmd));
 
     auto appmgrRepoRemove = make_shared<Command>(Command("remove", "Remove Repository", {
-                                                             CommandOption("repourl", "", "text")
+                                                             CommandOption("repourl", "", "text", true)
                                                          }, {
                                                              {
                                                                  "appmgr repo remove https://example.com/shflrepo.json",
@@ -293,25 +344,74 @@ void loadCommands() {
                                                          }, appmgrRepoRemoveCmd));
 
     auto appmgrRepo = make_shared<Command>(Command(
-        "repo", "Repository Management", {}, do_nothing
+        "repo", "Repository Management", {}, incorrect_usage
     ));
     appmgrRepo->setSubcommands({appmgrRepoAdd, appmgrRepoRemove});
     appmgrRepoAdd->setParent(appmgrRepo);
     appmgrRepoRemove->setParent(appmgrRepo);
 
+    auto appmgrAddlink = make_shared<Command>(Command("addlink", "Link OS command to shuffle command", {
+                                                          CommandOption("program", "program to link to", "text", true),
+                                                      }, {
+                                                          {
+                                                              "appmgr addlink ipconfig",
+                                                              "(In Windows) Link so that the 'ipconfig' command can be used in shuffle as well."
+                                                          },
+                                                          {
+                                                              "appmgr addlink ifconfig",
+                                                              "(In Unix) Link so that the 'ifconfig' command can be used in shuffle as well."
+                                                          }
+                                                      }, appmgrAddlinkCmd));
+
     auto appmgr = make_shared<Command>(Command(
-        "appmgr", "App Manager", {}, appmgrCmd
+        "appmgr", "App Manager", {}, incorrect_usage
     ));
-    appmgr->setSubcommands({appmgrAdd, appmgrRemove, appmgrList, appmgrRepo});
+    appmgr->setSubcommands({appmgrAdd, appmgrRemove, appmgrList, appmgrRepo, appmgrAddlink});
     appmgrAdd->setParent(appmgr);
     appmgrRemove->setParent(appmgr);
     appmgrList->setParent(appmgr);
     appmgrRepo->setParent(appmgr);
+    appmgrAddlink->setParent(appmgr);
 
     builtinCommands.push_back(appmgr);
 
+    auto snfCreate = make_shared<Command>(Command("create", "Create a new snippet.", {
+                                                      CommandOption("name", "", "text", true),
+                                                      CommandOption("value", "", "command", true)
+                                                  }, {
+                                                      {
+                                                          "snf create aa help cd",
+                                                          "Create a new snippet 'aa' with value 'help cd'."
+                                                      }
+                                                  }, snfCreateCmd));
+
+    auto snfRemove = make_shared<Command>(Command("remove", "Remove a snippet.", {
+                                                      CommandOption("name", "", "snippet", true)
+                                                  }, {
+                                                      {
+                                                          "snf remove aa",
+                                                          "Remove the snippet 'aa'."
+                                                      }
+                                                  }, snfRemoveCmd));
+
+    auto snfList = make_shared<Command>(Command("list", "List all snippets.", {
+                                                    {"snf list", "List all snippets."}
+                                                }, snfListCmd));
+
+    auto snf = make_shared<Command>(Command(
+        "snf", "Snippet Management", {}, incorrect_usage
+    ));
+    snf->setSubcommands({snfCreate, snfRemove, snfList});
+    snfCreate->setParent(snf);
+    snfRemove->setParent(snf);
+    snfList->setParent(snf);
+
+    builtinCommands.push_back(snf);
+
     auto help = make_shared<Command>(Command(
         "help", "Show help", {
+            CommandOption("command", "If given, a detailed description of the command is provided.", "cmdorapp", false)
+        }, {
             {"help", "Show help"},
             {"help shfl", "Show help for 'shfl'"},
             {"help shfl upgrade", "Show help for 'shfl upgrade'"},
@@ -330,7 +430,7 @@ void loadCommands() {
     builtinCommands.push_back(clear);
 
     auto taskStart = make_shared<Command>(Command("start", "Start a new background task.", {
-                                                      CommandOption("job", "", "command")
+                                                      CommandOption("job", "", "command", true)
                                                   }, {
                                                       {
                                                           "task start dwnld https://examples.com/largefile",
@@ -338,8 +438,14 @@ void loadCommands() {
                                                       }
                                                   }, taskStartCmd));
 
+    auto taskStop = make_shared<Command>(Command("stop", "Stop a background task.", {
+                                                     CommandOption("taskId", "", "text", true)
+                                                 }, {
+                                                     {"task stop abcdefg12345", "Stop the task 'abcdefg12345'."}
+                                                 }, taskStopCmd));
+
     auto taskLog = make_shared<Command>(Command("log", "Print logs", {
-                                                    CommandOption("taskId", "", "text")
+                                                    CommandOption("taskId", "", "text", true)
                                                 }, {
                                                     {"task log abcdefg12345", "Print logs of the task 'abcdefg12345'."}
                                                 }, taskLogCmd));
@@ -349,10 +455,11 @@ void loadCommands() {
                                                  }, taskListCmd));
 
     auto task = make_shared<Command>(Command(
-        "task", "Manage background tasks", {}, do_nothing
+        "task", "Manage background tasks", {}, incorrect_usage
     ));
-    task->setSubcommands({taskStart, taskLog, taskList});
+    task->setSubcommands({taskStart, taskStop, taskLog, taskList});
     taskStart->setParent(task);
+    taskStop->setParent(task);
     taskLog->setParent(task);
     taskList->setParent(task);
 

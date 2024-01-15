@@ -14,15 +14,20 @@
 #include <restclient-cpp/restclient.h>
 #include <zip/zip.h>
 
+#if defined(__linux__) || defined(__APPLE__)
+#include <unistd.h>
+#endif
+
 #include "utils/console.h"
 #include "version.h"
 
 using std::cout, std::endl;
 
-using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, std::smatch, std::to_string,
-        std::filesystem::temp_directory_path;
-
-string pythonPlatform;
+using std::ifstream, std::ostringstream, std::ofstream, std::sregex_iterator, std::smatch, std::to_string, std::string,
+        std::filesystem::temp_directory_path, std::filesystem::path, std::filesystem::exists, std::filesystem::copy,
+        std::filesystem::is_regular_file,
+        std::filesystem::status, std::filesystem::perms, std::filesystem::absolute,
+        std::filesystem::is_directory, std::filesystem::directory_iterator, std::filesystem::create_directories;
 
 vector<string> splitBySpace(const string&input) {
     std::regex regex_pattern(R"((\S|^)\"[^"]*"|\([^)]*(\)*)|"[^"]*"|\S+)");
@@ -133,44 +138,81 @@ std::string readTextFromWeb(const std::string&url) {
     return "";
 }
 
+struct ProgressData {
+    double lastPercentage;
+};
+
+size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+    FILE* fp = static_cast<FILE *>(userp);
+    return fwrite(contents, size, nmemb, fp);
+}
+
+int ProgressCallback(void* clientp, curl_off_t dltotal, curl_off_t dlnow, curl_off_t ultotal, curl_off_t ulnow) {
+    auto* progressData = static_cast<ProgressData *>(clientp);
+
+    if (dltotal > 0) {
+        int progress = static_cast<int>(static_cast<float>(dlnow) / static_cast<float>(dltotal) * 100);
+
+        if (progress - progressData->lastPercentage >= 1.0) {
+            std::cout << "[";
+            const int pos = progress * 20;
+            for (int i = 0; i < 20; ++i) {
+                if (i < pos) std::cout << "=";
+                else if (i == pos) std::cout << ">";
+                else std::cout << " ";
+            }
+            std::cout << "] " << static_cast<int>(progress * 100.0) << " %\r";
+            progressData->lastPercentage = progress;
+        }
+    }
+
+    return 0;
+}
+
 bool downloadFile(const string&url, const path&file) {
-    RestClient::Response response = RestClient::get(url);
-    while (response.code == 302) {
-        if (!response.headers.count("Location"))
+    ProgressData progress = {0.0};
+
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
+    if (CURL* curl = curl_easy_init()) {
+        CURLcode res;
+
+        if (FILE* fp = fopen(file.string().c_str(), "wb")) {
+            curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+            curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, ProgressCallback);
+            curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &progress);
+            curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
+
+            curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+            curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+
+            curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+
+            res = curl_easy_perform(curl);
+
+            fclose(fp);
+        }
+        else {
+            std::cerr << "Failed to open local file for writing." << std::endl;
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
             return false;
+        }
 
-        string redirectUrl = response.headers["Location"];
-        response = RestClient::get(redirectUrl);
+        if (res != CURLE_OK) {
+            std::cerr << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
+            curl_easy_cleanup(curl);
+            curl_global_cleanup();
+            return false;
+        }
+
+        curl_easy_cleanup(curl);
+        curl_global_cleanup();
+        cout << "[" << string(20, '=') << "] DONE!" << endl;
+        return true;
     }
 
-    if (response.code != 200) {
-        return false;
-    }
-
-    // Open the file for writing
-    ofstream outfile(file, std::ios::binary);
-    if (!outfile.is_open()) {
-        return false;
-    }
-
-    // Get the total size of the file for progress tracking
-    const long long totalSize = response.body.size();
-
-    // Initialize variables for progress tracking
-    long long downloadedSize = 0;
-    while (downloadedSize < totalSize) {
-        constexpr int bufferSize = 8192;
-        char buffer[bufferSize];
-        const int bytesRead = response.body.copy(buffer, bufferSize, downloadedSize);
-        outfile.write(buffer, bytesRead);
-
-        downloadedSize += bytesRead;
-
-        const int progress = static_cast<int>((downloadedSize * 100) / totalSize);
-        std::cout << "Downloading... (" + std::to_string(progress) + "%)" << std::endl;
-        cout.flush();
-    }
-    return true;
+    return false;
 }
 
 int onExtractEntry(const char* filename, void* arg) {
@@ -181,10 +223,17 @@ int onExtractEntry(const char* filename, void* arg) {
 }
 
 path extractZip(const path&zipFile, path extractPath) {
+    if (!exists(zipFile)) {
+        error("Zip file does not exist!");
+        return "";
+    }
     int arg = 0;
-    zip_extract(zipFile.string().c_str(), extractPath.string().c_str(), onExtractEntry, &arg);
-    cout << erase_cursor_to_end << "Extracting... (Done!)" << endl;
-    return extractPath;
+    if (zip_extract(zipFile.string().c_str(), extractPath.string().c_str(), onExtractEntry, &arg) == 0) {
+        cout << erase_cursor_to_end << "Extracting... (Done!)" << endl;
+        return extractPath;
+    }
+    error("Failed to extract zip file ($0)!", {absolute(zipFile).string()});
+    return "";
 }
 
 void updateShuffle() {
@@ -221,8 +270,21 @@ void updateShuffle() {
                   &pi);
 #elif defined(__linux__) || defined(__APPLE__)
     const string command = extractPath.append("updater").string();
-    system(("chmod +x " + command).c_str());
-    system(command.c_str());
+
+    const pid_t pid = fork();
+
+    if (pid == -1) {
+        error("Failed to update Shuffle. (fork() failed.)");
+        return;
+    }
+    if (pid == 0) {
+        const vector<const char *> args{command.c_str(), nullptr};
+        execvp(command.c_str(), const_cast<char * const*>(args.data()));
+
+        // If execvp() returns, an error occurred.
+        error("Failed to update Shuffle. (execvp() failed.)");
+        exit(EXIT_FAILURE);
+    }
 #endif
     exit(0);
 }
@@ -252,4 +314,86 @@ std::string generateRandomString(const int length) {
     }
 
     return randomString;
+}
+
+vector<path> getPathDirectories() {
+    vector<path> directories;
+#ifdef _WIN32
+    string pathEnv = "Path", delimiter = ";";
+#elif defined(__linux__) || defined(__APPLE__)
+    string pathEnv = "PATH", delimiter = ":";
+#endif
+    if (const char* pathVariable = std::getenv(pathEnv.c_str()); pathVariable != nullptr) {
+        for (const auto&directory: split(pathVariable, regex(delimiter))) directories.emplace_back(directory);
+    }
+    return directories;
+}
+
+bool isExecutableInPath(const path&currentDirectory, const string&executableName) {
+    vector<path> directories = getPathDirectories();
+    directories.emplace_back(currentDirectory);
+
+    return std::any_of(directories.begin(), directories.end(), [&](const path&directory) {
+        path fullPath = directory / executableName;
+        bool result = exists(fullPath) && is_regular_file(fullPath) &&
+                      (status(fullPath).permissions() & perms::owner_exec) != perms::none;
+        if (result) return true;
+
+#ifdef _WIN32
+        fullPath = fullPath.string() + ".exe";
+        return exists(fullPath) && is_regular_file(fullPath) &&
+               (status(fullPath).permissions() & perms::owner_exec) != perms::none;
+#else
+        return false;
+#endif
+    });
+}
+
+vector<string> getExecutableFilesInPath(const vector<path>&directories) {
+    vector<string> executables;
+    for (const auto&directory: directories) {
+        try {
+            for (const auto&entry: directory_iterator(directory)) {
+                if (is_regular_file(entry) && (status(entry).permissions() & perms::owner_exec) != perms::none) {
+                    executables.push_back(entry.path().filename().string());
+                }
+            }
+        }
+        catch (const std::exception ignored) {
+        }
+    }
+    return executables;
+}
+
+bool endsWith(const std::string&str, const std::string&suffix) {
+    if (str.length() < suffix.length()) {
+        return false;
+    }
+    return str.substr(str.length() - suffix.length()) == suffix;
+}
+
+#ifdef _WIN32
+FILE* popen(const char* command, const char* modes) {
+    return _popen(command, modes);
+}
+
+int pclose(FILE* pipe) {
+    return _pclose(pipe);
+}
+#endif
+
+bool execute_program(const string&command) {
+    if (FILE* pipe = popen(command.c_str(), "r");
+        pipe != nullptr) {
+        char buffer[128];
+
+        while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+            cout << buffer;
+        }
+
+        if (const int status = pclose(pipe); status == 0) {
+            return true;
+        }
+    }
+    return false;
 }

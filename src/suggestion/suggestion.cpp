@@ -1,6 +1,8 @@
 #include "suggestion/suggestion.h"
 
 #include <vector>
+#include <utils/console.h>
+#include <workspace/snippetmgr.h>
 
 #include "suggestion/proponent.h"
 #include "appmgr/appmgr.h"
@@ -26,7 +28,57 @@ namespace suggestion {
         return dictionary;
     }
 
+    string getVariableSuggestion(Workspace&ws, std::smatch::const_reference key, std::smatch::const_reference value) {
+        if (!value.matched) return "";
+
+        const vector<string> spl = splitBySpace(value);
+        if (spl.empty()) return "";
+
+        const int cur = spl.size() - 1;
+        if (spl[cur][0] == '(') {
+            string cmdName = spl[cur].substr(1);
+            if (cmdName.empty()) return "";
+
+            if (cmdName.length() > 1 && cmdName[cmdName.length() - 1] == ')')
+                cmdName = cmdName.substr(0, cmdName.length() - 1);
+            if (cmdName.length() > 2 && cmdName[cmdName.length() - 2] == ')'
+                && spl[cur][spl[cur].length() - 1] == '!')
+                cmdName = cmdName.substr(0, cmdName.length() - 2);
+
+            const vector<string> cmdNameSpl = splitBySpace(cmdName);
+
+            shared_ptr<Command> cmd = findCommand(cmdNameSpl.front());
+            if (cmd == nullptr) return getSuggestion(ws, cmdName);
+            for (int i = 1; i < cmdNameSpl.size(); ++i) {
+                if (cmd == nullptr) break;
+                cmd = findCommand(cmdNameSpl[i], cmd->getSubcommands());
+            }
+
+            if (cmd == nullptr || cmdName[cmdName.size() - 1] == ' ') {
+                if (string suggestion = getSuggestion(ws, cmdName);
+                    !suggestion.empty())
+                    return suggestion;
+            }
+
+            cmdName = spl[cur].substr(1);
+            if (cmdName.length() > 1 && cmdName[cmdName.length() - 1] == ')')
+                return "!";
+            if (cmdName.length() > 2 && cmdName[cmdName.length() - 2] == ')'
+                && spl[cur][spl[cur].length() - 1] == '!')
+                return "";
+            return ")!";
+        }
+        if (spl[cur][0] == '$')
+            return findSuggestion(ws, spl[cur].substr(1), makeDictionary(ws.getVariables()))[0];
+        return "";
+    }
+
     string getSuggestion(Workspace&ws, const string&input) {
+        if (std::smatch matches; regex_match(input, matches, regex("(\\w*)\\s*=\\s*(\"([^\"]*)\"|([\\s\\S]+)*)"))) {
+            // when input is a variable
+            return getVariableSuggestion(ws, matches[1], matches[2]);
+        }
+
         vector<string> spl = splitBySpace(input);
         if (spl.empty()) return "";
 
@@ -34,7 +86,17 @@ namespace suggestion {
         if (input[input.length() - 1] == ' ') spl.emplace_back("");
 
         if (spl.size() == 1) {
-            suggestion = findSuggestion(ws, spl[0], makeDictionary(appmgr::getCommands()))[0];
+            vector<string> dict = makeDictionary(appmgr::getCommands());
+            for (const auto&snippet: snippets) dict.push_back(snippet->getName());
+            for (const auto& executable : ws.executableFilesInPath) dict.push_back(executable);
+            for (const auto& executable : ws.executableFilesInCurrentDirectory) dict.push_back(executable);
+
+            vector<string> suggestions = findSuggestion(ws, spl[0], dict);
+            std::sort(suggestions.begin(), suggestions.end(), [](const string&a, const string&b) {
+                return a.length() < b.length();
+            });
+
+            suggestion = suggestions[0];
         }
         else {
             shared_ptr<Command> cmd = findCommand(spl[0]);
@@ -65,23 +127,33 @@ namespace suggestion {
                 }
             }
 
-            if (cmd->getOptions().size() > cur - 1) {
-                cmd::CommandOption option = cmd->getOptions()[cur - 1];
-
-                if (cur - 1 > 1 && !args[cur - 1].empty() && args[cur - 1][0] == '-') {
-                    string optName = args[cur - 1].substr(1);
-                    for (auto opt: cmd->getOptions()) {
-                        if (opt.name == optName || std::find(opt.aliases.begin(), opt.aliases.end(), optName) != opt.
-                            aliases.end()) {
-                            option = opt;
-                            break;
-                        }
-                    }
-                }
+            bool isEnoughOptions = cmd->getRequiredOptions().size() <= cur - 1;
+            bool hasOnlyOneOptionalOption = cmd->getOptions().size() == 1 && cmd->getRequiredOptions().empty();
+            bool hasSpecifiedOption = cur > 1 && !args[cur - 2].empty() && args[cur - 2][0] == '-';
+            if (!isEnoughOptions) {
+                cmd::CommandOption option = cmd->getRequiredOptions()[cur - 1];
 
                 Proponent proponent = findProponent(option.type);
                 suggestion = proponent.makeProp(&ws, option, args, cur - 1);
             }
+            else if (hasOnlyOneOptionalOption) {
+                cmd::CommandOption option = cmd->getOptions()[0];
+
+                Proponent proponent = findProponent(option.type);
+                suggestion = proponent.makeProp(&ws, option, args, cur - 1);
+            }
+            else if (hasSpecifiedOption) {
+                string optName = args[cur - 2].substr(1);
+                for (auto option: cmd->getOptions()) {
+                    if (option.name == optName ||
+                        std::find(option.aliases.begin(), option.aliases.end(), optName) != option.aliases.end()) {
+                        Proponent proponent = findProponent(option.type);
+                        suggestion = proponent.makeProp(&ws, option, args, cur - 1);
+                        break;
+                    }
+                }
+            }
+
             if (!suggestion.empty()) return suggestion;
 
             if (spl[cur][0] == '-') {

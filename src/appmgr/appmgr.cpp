@@ -44,46 +44,6 @@ namespace appmgr {
         return res;
     }
 
-    // vector<string> App::makeDynamicSuggestion(Workspace&ws, const string&suggestId) const {
-    //     // Create workspace table
-    //     lua_newtable(L); {
-    //         lua_pushstring(L, ws.currentDirectory().string().c_str());
-    //         lua_setfield(L, -2, "dir");
-    //     } // ws.dir
-    //
-    //     lua_setglobal(L, "workspace");
-    //
-    //     // Create args list
-    //     lua_pushstring(L, suggestId.c_str());
-    //     lua_setglobal(L, "suggestId");
-    //
-    //     lua_getglobal(L, "suggest");
-    //     if (lua_type(L, -1) != LUA_TFUNCTION) {
-    //         error("Error: 'suggest' is not a function!");
-    //         return {};
-    //     }
-    //     if (lua_pcall(L, 0, 0, 0)) {
-    //         error("\nAn error occurred while generating suggestion.\n\n" + string(lua_tostring(L, -1)));
-    //     }
-    //
-    //     const lua_Unsigned tableSize = lua_rawlen(L, -1);
-    //
-    //     if (lua_istable(L, -1)) {
-    //         vector<string> resultArray;
-    //         for (int i = 1; i <= tableSize; ++i) {
-    //             lua_rawgeti(L, -1, i);
-    //
-    //             if (lua_isstring(L, -1)) {
-    //                 resultArray.emplace_back(lua_tostring(L, -1));
-    //             }
-    //
-    //             lua_pop(L, 1);
-    //         }
-    //         return resultArray;
-    //     }
-    //     return {};
-    // }
-
     extern "C" {
     typedef string (*entrypoint_t)(Workspace*, const map<string, string>&, bool);
 
@@ -120,7 +80,8 @@ namespace appmgr {
             const string optionType = option["type"].asString();
             vector<string> aliases;
             for (const auto&alias: option["aliases"]) aliases.push_back(alias.asString());
-            options.emplace_back(optionName, optionDescription, optionType, aliases);
+            const bool isRequired = option["required"].asBool();
+            options.emplace_back(optionName, optionDescription, optionType, aliases, isRequired);
         }
 
         vector<string> aliases;
@@ -174,9 +135,16 @@ namespace appmgr {
                 return "ERROR_LOADING_FUNCTION";
             }
 
-            string res = entrypoint(ws, optionValues, backgroundMode);
-
-            return res;
+            try {
+                string res = entrypoint(ws, optionValues, backgroundMode);
+                return res;
+            }
+            catch (const std::exception&ex) {
+                error("Sorry. An error occurred while executing the command. ($0)", {string(ex.what())});
+                error("");
+                warning("This is not Shuffle's error. Please do not report this issue to the Shuffle team.");
+                return "error";
+            }
         };
         command.setCmd(cmd);
 
@@ -227,7 +195,7 @@ namespace appmgr {
     }
 
     void App::unload() const {
-        for (const auto& function : onUnload) function();
+        for (const auto&function: onUnload) function();
     }
 
 
@@ -241,14 +209,21 @@ namespace appmgr {
     bool addApp(const string&name) {
         vector<string> res;
 
-        Json::Value commandList = getShflJson("apps");
-        commandList.append(name);
-        setShflJson("apps", commandList);
+        Json::Value apps = getShflJson("apps");
+        bool alreadyExists = false;
+        for (const auto&app: apps) {
+            if (app.asString() == name) {
+                alreadyExists = true;
+                break;
+            }
+        }
+        if (!alreadyExists) apps.append(name);
+        setShflJson("apps", apps);
         return true;
     }
 
     void unloadAllApps() {
-        for (const auto& app: loadedApps) {
+        for (const auto&app: loadedApps) {
             app->unload();
         }
         loadedApps.clear();
